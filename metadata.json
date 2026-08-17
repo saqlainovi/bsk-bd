@@ -1,0 +1,6 @@
+{
+  "name": "Bishwo Shahitto Kendro",
+  "description": "The official web portal of Bishwo Shahitto Kendro (BSK), a prominent non-profit institution dedicated to promoting reading habits and cultural development in Bangladesh.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

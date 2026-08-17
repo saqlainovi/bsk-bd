@@ -1,0 +1,19 @@
+{
+  "name": "bsk-directus-cms",
+  "version": "1.0.0",
+  "description": "Directus CMS Backend for Bishwo Shahitto Kendro",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "directus:start": "directus start",
+    "directus:bootstrap": "directus bootstrap"
+  },
+  "dependencies": {
+    "directus": "^11.0.0",
+    "mysql2": "^3.9.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

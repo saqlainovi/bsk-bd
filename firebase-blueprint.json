@@ -1,0 +1,268 @@
+{
+  "entities": {
+    "inquiry": {
+      "title": "Inquiry",
+      "description": "User submitted contact or booking inquiry",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Auto-generated UUID of the inquiry"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user"
+        },
+        "message": {
+          "type": "string",
+          "description": "Message or request details"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["contact", "membership", "auditorium"],
+          "description": "Category of the inquiry"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the inquiry was made"
+        }
+      },
+      "required": ["id", "name", "email", "message", "type", "createdAt"]
+    },
+    "hero_slide": {
+      "title": "Hero Slide",
+      "description": "Top hero banner slider content definition",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "badge_bn": {
+          "type": "string"
+        },
+        "badge_en": {
+          "type": "string"
+        },
+        "title_bn": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
+        "desc_bn": {
+          "type": "string"
+        },
+        "desc_en": {
+          "type": "string"
+        },
+        "bgImage": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        }
+      },
+      "required": ["id", "title_bn", "title_en", "bgImage", "order"]
+    },
+    "recent_activity": {
+      "title": "Recent Activity",
+      "description": "Recent activity announcement item with photo",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title_bn": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
+        "desc_bn": {
+          "type": "string"
+        },
+        "desc_en": {
+          "type": "string"
+        },
+        "date_bn": {
+          "type": "string"
+        },
+        "date_en": {
+          "type": "string"
+        },
+        "loc_bn": {
+          "type": "string"
+        },
+        "loc_en": {
+          "type": "string"
+        },
+        "category_bn": {
+          "type": "string"
+        },
+        "category_en": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        }
+      },
+      "required": ["id", "title_bn", "title_en", "image", "order"]
+    },
+    "website_page": {
+      "title": "Website Page",
+      "description": "Dynamic web page section and layout contents",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title_bn": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
+        "html_title": {
+          "type": "string"
+        },
+        "sections": {
+          "type": "array"
+        }
+      },
+      "required": ["id", "title_bn", "title_en", "sections"]
+    },
+    "notice": {
+      "title": "Notice",
+      "description": "Notice board item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title_bn": { "type": "string" },
+        "title_en": { "type": "string" },
+        "date_bn": { "type": "string" },
+        "date_en": { "type": "string" },
+        "isUrgent": { "type": "boolean" },
+        "isNew": { "type": "boolean" }
+      },
+      "required": ["id", "title_bn", "title_en"]
+    },
+    "event": {
+      "title": "Event",
+      "description": "Seminar or upcoming event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title_bn": { "type": "string" },
+        "title_en": { "type": "string" },
+        "day": { "type": "string" },
+        "dayEn": { "type": "string" },
+        "month": { "type": "string" },
+        "monthEn": { "type": "string" },
+        "chip_bn": { "type": "string" },
+        "chip_en": { "type": "string" },
+        "time_bn": { "type": "string" },
+        "time_en": { "type": "string" },
+        "loc_bn": { "type": "string" },
+        "loc_en": { "type": "string" }
+      },
+      "required": ["id", "title_bn", "title_en"]
+    },
+    "news_item": {
+      "title": "News Item",
+      "description": "Media news or press release item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title_bn": { "type": "string" },
+        "title_en": { "type": "string" },
+        "tag_bn": { "type": "string" },
+        "tag_en": { "type": "string" },
+        "date_bn": { "type": "string" },
+        "date_en": { "type": "string" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "title_bn", "title_en"]
+    },
+    "press": {
+      "title": "Press Release",
+      "description": "Press releases, news and media coverage items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title_bn": { "type": "string" },
+        "title_en": { "type": "string" },
+        "summary": { "type": "string" },
+        "content": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "pdf": { "type": "string" },
+        "category": { "type": "string", "enum": ["Press Release", "News", "Events", "Awards", "Publications"] },
+        "publishedDate": { "type": "string" },
+        "author": { "type": "string" },
+        "status": { "type": "string", "enum": ["published", "draft"] },
+        "mediaSource": { "type": "string" },
+        "newsUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title_bn", "title_en", "category", "status"]
+    }
+  },
+  "firestore": {
+    "/press/{pressId}": {
+      "schema": "press",
+      "description": "Press releases, news articles and media coverage items"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "inquiry",
+      "description": "Database collection for user submitted messages and inquiries"
+    },
+    "/hero_slides/{slideId}": {
+      "schema": "hero_slide",
+      "description": "Slides for the homepage top hero carousel slider"
+    },
+    "/recent_activities/{activityId}": {
+      "schema": "recent_activity",
+      "description": "National achievements and recent programmatic activity records"
+    },
+    "/website_pages/{pageId}": {
+      "schema": "website_page",
+      "description": "Overriding copy and static paragraphs for specific navigation pages"
+    },
+    "/homepage_blocks/{blockId}": {
+      "schema": "any",
+      "description": "CMS overrides for individual cards or text blocks in homepage widgets"
+    },
+    "/homepage_programs/{programId}": {
+      "schema": "any",
+      "description": "Programs in the central programs slider"
+    },
+    "/notices/{noticeId}": {
+      "schema": "notice",
+      "description": "Notices published on the notice board"
+    },
+    "/events/{eventId}": {
+      "schema": "event",
+      "description": "Events and updates published on the bulletin"
+    },
+    "/news_items/{itemId}": {
+      "schema": "news_item",
+      "description": "News articles or press releases"
+    },
+    "/recruitment_circulars/{circularId}": {
+      "schema": "any",
+      "description": "Recruitment job circular details"
+    },
+    "/job_applications/{applicationId}": {
+      "schema": "any",
+      "description": "Submitted job application letters and resumes"
+    }
+  }
+}
