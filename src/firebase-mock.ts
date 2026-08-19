@@ -66,6 +66,9 @@ export async function uploadImageToServer(base64OrFile: string | File): Promise<
     }
 
     if (typeof base64OrFile === 'string') {
+      if (!base64OrFile.startsWith('data:')) {
+        return base64OrFile;
+      }
       const res = await fetch(`${API_URL}?action=upload_image`, {
         method: 'POST',
         headers: {
@@ -93,9 +96,19 @@ export async function uploadImageToServer(base64OrFile: string | File): Promise<
       }
     }
   } catch (err) {
-    console.warn('Direct upload failed, keeping base64:', err);
+    console.warn('Direct upload failed, fallback to base64:', err);
   }
-  return typeof base64OrFile === 'string' ? base64OrFile : '';
+
+  if (typeof base64OrFile !== 'string') {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string || '');
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(base64OrFile);
+    });
+  }
+
+  return base64OrFile;
 }
 
 // LocalStorage Helper functions for instant caching and offline preview

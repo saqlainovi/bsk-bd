@@ -639,20 +639,22 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
   };
 
   // Convert uploaded image file to lightweight Base64 string for Firestore representation
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'hero' | 'activity') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'hero' | 'activity') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (type === 'hero' && editingHero) {
-        setEditingHero({ ...editingHero, bgImage: base64String });
+        setEditingHero({ ...editingHero, bgImage: finalUrl });
       } else if (type === 'activity' && editingActivity) {
-        setEditingActivity({ ...editingActivity, image: base64String });
+        setEditingActivity({ ...editingActivity, image: finalUrl });
       }
-      setPreviewImage(base64String);
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+      setPreviewImage(finalUrl);
+    } catch (err) {
+      console.error("Image upload failed: ", err);
+    }
   };
 
   // Default hardcoded initializers in case user desires to bootstrap or soft reset
@@ -1164,22 +1166,21 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       setActionStatus(language === 'bn' ? 'পৃষ্ঠা সংরক্ষণ করা হচ্ছে...' : 'Saving Page...');
       const cleanedPage = removeUndefinedFields(editingPage);
 
-      // Check document size limit (1MB max in Firestore)
-      const payloadSize = new Blob([JSON.stringify(cleanedPage)]).size;
-      if (payloadSize > 950000) {
-        throw new Error(
-          language === 'bn' 
-            ? 'ছবি বা ফাইলের সংখ্যা/আকার খুব বড় (ফায়ারস্টোর ১ মেগাবাইট সীমা অতিক্রম করেছে)। অনুগ্রহ করে ছবির সাইজ কমান বা কিছু ছবি রিমুভ করুন।'
-            : 'Page payload size too large (> 1MB Firestore limit). Please reduce image size or count.'
-        );
-      }
-
       if (cleanedPage.id === 'press_contact') {
         // Save custom media contact block data to homepage_blocks/media_contact
         await setDoc(doc(db, 'homepage_blocks', 'media_contact'), cleanedPage.mediaContactData || {});
       } else {
         await setDoc(doc(db, 'website_pages', cleanedPage.id), cleanedPage);
       }
+      setPages(prevPages => {
+        const idx = prevPages.findIndex(p => p.id === cleanedPage.id);
+        if (idx >= 0) {
+          const next = [...prevPages];
+          next[idx] = cleanedPage;
+          return next;
+        }
+        return [...prevPages, cleanedPage];
+      });
       setEditingPage(null);
       setActionStatus(language === 'bn' ? 'সফলভাবে সংরক্ষিত!' : 'Page Override Saved!');
       setTimeout(() => setActionStatus(''), 3000);
@@ -1202,19 +1203,21 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     setEditingPage({ ...editingPage, sections: updatedSections });
   };
 
-  const handleSectionImageUpload = (e: React.ChangeEvent<HTMLInputElement>, secIdx: number) => {
+  const handleSectionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, secIdx: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
         const updatedSections = [...editingPage.sections];
-        updatedSections[secIdx].image = base64String;
+        updatedSections[secIdx].image = finalUrl;
         setEditingPage({ ...editingPage, sections: updatedSections });
       }
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Section image upload failed: ", err);
+    }
   };
 
   // Helper to handle custom fields for home page
@@ -1223,97 +1226,109 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     setEditingPage({ ...editingPage, [field]: value });
   };
 
-  const handleHomeImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'intro_image' | 'history_image' | 'achievements_image') => {
+  const handleHomeImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'intro_image' | 'history_image' | 'achievements_image') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
-        setEditingPage({ ...editingPage, [field]: base64String });
+        setEditingPage({ ...editingPage, [field]: finalUrl });
       }
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Home image upload failed: ", err);
+    }
   };
 
-  const handleFounderAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFounderAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
-        setEditingPage({ ...editingPage, founder_avatar: base64String });
+        setEditingPage({ ...editingPage, founder_avatar: finalUrl });
       }
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Founder avatar upload failed: ", err);
+    }
   };
 
-  const handleExcellenceHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcellenceHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
-        setEditingPage({ ...editingPage, hero_image: base64String });
+        setEditingPage({ ...editingPage, hero_image: finalUrl });
       }
-    }).catch((err) => {
-      console.error("Hero image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Hero image upload failed: ", err);
+    }
   };
 
-  const handleExcellenceHighlightImageUpload = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+  const handleExcellenceHighlightImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
         const hls = [...(editingPage.highlights || [])];
         if (hls[idx]) {
-          hls[idx].image = base64String;
+          hls[idx].image = finalUrl;
           setEditingPage({ ...editingPage, highlights: hls });
         }
       }
-    }).catch((err) => {
-      console.error("Highlight image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Highlight image upload failed: ", err);
+    }
   };
 
-  const handleExcellenceGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+  const handleExcellenceGalleryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
         const gal = [...(editingPage.excellence_gallery || [])];
         if (gal[idx]) {
-          gal[idx].image = base64String;
+          gal[idx].image = finalUrl;
           setEditingPage({ ...editingPage, excellence_gallery: gal });
         }
       }
-    }).catch((err) => {
-      console.error("Gallery image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Gallery image upload failed: ", err);
+    }
   };
 
-  const handleExcellenceSideGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+  const handleExcellenceSideGalleryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (editingPage) {
         const gal = [...(editingPage.side_mini_gallery || [])];
         if (gal[idx]) {
-          gal[idx].image = base64String;
+          gal[idx].image = finalUrl;
           setEditingPage({ ...editingPage, side_mini_gallery: gal });
         }
       }
-    }).catch((err) => {
-      console.error("Side mini gallery image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Side mini gallery image upload failed: ", err);
+    }
   };
 
-  const handleGalleryImageUpload = (
+  const handleGalleryImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>, 
     galleryName: 'mission_gallery' | 'history_gallery' | 'achievements_gallery',
     itemIdx: number
@@ -1321,57 +1336,63 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (!editingPage) return;
       const currentGallery = [...(editingPage[galleryName] || [])];
       if (currentGallery[itemIdx]) {
         currentGallery[itemIdx] = {
           ...currentGallery[itemIdx],
-          image: base64String
+          image: finalUrl
         };
         setEditingPage({ ...editingPage, [galleryName]: currentGallery });
       }
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Gallery image upload failed: ", err);
+    }
   };
 
-  const handleExtraSectionImageUpload = (e: React.ChangeEvent<HTMLInputElement>, extIdx: number) => {
+  const handleExtraSectionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, extIdx: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    compressImage(file).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file);
       if (!editingPage) return;
       const currentExtras = [...(editingPage.extra_sections || [])];
       if (currentExtras[extIdx]) {
         currentExtras[extIdx] = {
           ...currentExtras[extIdx],
-          image: base64String
+          image: finalUrl
         };
         setEditingPage({ ...editingPage, extra_sections: currentExtras });
       }
-    }).catch((err) => {
-      console.error("Image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Extra section image upload failed: ", err);
+    }
   };
 
-  const handleBookFairGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+  const handleBookFairGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
     if (!file || !editingPage) return;
 
-    compressImage(file, 600, 600, 0.55).then((base64String) => {
+    try {
+      const uploadedUrl = await uploadImageToServer(file);
+      const finalUrl = uploadedUrl || await compressImage(file, 600, 600, 0.55);
       const currentGallery = [...(editingPage.gallery || [])];
       while (currentGallery.length <= idx) {
         currentGallery.push({ image: '', caption_bn: 'স্মরণীয় মুহূর্ত', caption_en: 'Memorable Moment' });
       }
       currentGallery[idx] = {
         ...currentGallery[idx],
-        image: base64String
+        image: finalUrl
       };
       setEditingPage({ ...editingPage, gallery: currentGallery });
-    }).catch((err) => {
-      console.error("Book fair gallery image compression failed: ", err);
-    });
+    } catch (err) {
+      console.error("Book fair gallery image upload failed: ", err);
+    }
     e.target.value = '';
   };
 
@@ -8443,12 +8464,18 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         };
                       }
 
-                      const handleUpdateSlide = (field: string, slideIdx: number, val: string) => {
+                      const handleUpdateSlide = (field: string, slideIdx: number, val: string, shouldAutoSave = false) => {
                         const copy = JSON.parse(JSON.stringify(activeGallDoc));
-                        copy.slides[slideIdx][field] = val;
-                        if (activeGalleryType === 'ml') setGalleryML(copy);
-                        else if (activeGalleryType === 'rh') setGalleryRH(copy);
-                        else setGalleryCL(copy);
+                        if (copy.slides && copy.slides[slideIdx]) {
+                          copy.slides[slideIdx][field] = val;
+                          if (activeGalleryType === 'ml') setGalleryML(copy);
+                          else if (activeGalleryType === 'rh') setGalleryRH(copy);
+                          else setGalleryCL(copy);
+
+                          if (shouldAutoSave) {
+                            saveHomepageBlock(docIdentifier, copy);
+                          }
+                        }
                       };
 
                       const handleUpdateField = (field: string, val: string) => {
@@ -8461,6 +8488,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                       const handleAddSlide = () => {
                         const copy = JSON.parse(JSON.stringify(activeGallDoc));
+                        if (!copy.slides) copy.slides = [];
                         copy.slides.push({
                           image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
                           category_bn: "আমাদের কার্যক্রম",
@@ -8472,6 +8500,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         if (activeGalleryType === 'ml') setGalleryML(copy);
                         else if (activeGalleryType === 'rh') setGalleryRH(copy);
                         else setGalleryCL(copy);
+                        saveHomepageBlock(docIdentifier, copy);
                       };
 
                       const handleRemoveSlide = (idx: number) => {
@@ -8480,10 +8509,13 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                           'Are you sure you want to remove this photogallery slide?',
                           () => {
                             const copy = JSON.parse(JSON.stringify(activeGallDoc));
-                            copy.slides.splice(idx, 1);
-                            if (activeGalleryType === 'ml') setGalleryML(copy);
-                            else if (activeGalleryType === 'rh') setGalleryRH(copy);
-                            else setGalleryCL(copy);
+                            if (copy.slides) {
+                              copy.slides.splice(idx, 1);
+                              if (activeGalleryType === 'ml') setGalleryML(copy);
+                              else if (activeGalleryType === 'rh') setGalleryRH(copy);
+                              else setGalleryCL(copy);
+                              saveHomepageBlock(docIdentifier, copy);
+                            }
                           }
                         );
                       };
@@ -8605,7 +8637,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                           className="hidden"
                                           disabled={isDirectUploading}
                                           onChange={(e) => handleDirectImageUpload(e, (url) => {
-                                            handleUpdateSlide('image', sIdx, url);
+                                            handleUpdateSlide('image', sIdx, url, true);
                                           })}
                                         />
                                         <Upload className={`h-3 w-3 ${isDirectUploading ? 'animate-spin' : ''}`} />
@@ -8619,7 +8651,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                       <button
                                         type="button"
                                         onClick={() => openImageResizer('portrait', (resizedUrl) => {
-                                          handleUpdateSlide('image', sIdx, resizedUrl);
+                                          handleUpdateSlide('image', sIdx, resizedUrl, true);
                                         })}
                                         className="px-2 py-1.5 border border-stone-200 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-semibold transition flex items-center justify-center gap-1 cursor-pointer shrink-0"
                                         title="Crop / Resize"
