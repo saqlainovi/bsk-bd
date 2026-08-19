@@ -10,8 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, BookOpen, Clock, Globe, ArrowRight, HeartHandshake, Eye, MapPin, CheckCircle2, ChevronRight, X 
 } from 'lucide-react';
-import { db } from './firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { db, collection, onSnapshot } from './firebase';
 import AdminCMS from './components/AdminCMS';
 import AdminLogin from './components/AdminLogin';
 import { isDirectusEnabled, fetchDirectusPages } from './services/directus';

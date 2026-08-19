@@ -8,8 +8,9 @@ import { Language } from '../types';
 import { normalizeImageUrl } from './imageUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import Footer from './Footer';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
+import { 
+  db, handleFirestoreError, OperationType, collection, query, orderBy, onSnapshot, doc 
+} from '../firebase';
 
 const cleanTextEmoji = (str?: string) => {
   if (!str) return '';
@@ -1074,7 +1075,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     <div className="min-h-screen bg-[#FAF7F2] text-[#1A1207] font-sans">
       {/* ── SECTION 1: HERO SLIDER (EDITORIAL ORGANIC CURVE HERO) ── */}
       <div 
-        className="relative w-full h-[260px] xs:h-[300px] sm:h-[58vh] md:h-[65vh] lg:h-[72vh] min-h-[260px] sm:min-h-[440px] max-h-[720px] bg-stone-900 group select-none overflow-hidden"
+        className="relative w-full h-[380px] xs:h-[440px] sm:h-[68vh] md:h-[76vh] lg:h-[84vh] xl:h-[88vh] min-h-[380px] sm:min-h-[520px] md:min-h-[580px] lg:min-h-[660px] max-h-[880px] bg-stone-900 group select-none overflow-hidden"
       >
         
         {/* Full Image Slide Background - Natural cover fitting on both mobile & desktop */}
@@ -1139,7 +1140,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         </div>
 
         {/* Floating Banner Caption Overlay */}
-        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-[135px] md:bottom-[160px] sm:left-10 md:left-16 z-20 sm:max-w-xl md:max-w-2xl text-left pointer-events-none">
+        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-[155px] md:bottom-[185px] lg:bottom-[215px] sm:left-10 md:left-16 z-20 sm:max-w-xl md:max-w-2xl text-left pointer-events-none">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentHeroSlide}
@@ -1167,7 +1168,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         </div>
 
         {/* Desktop-Only Organic Cave-like Curve Cut-out on Bottom-Right Corner */}
-        <div className="hidden sm:block absolute -bottom-px inset-x-0 z-20 pointer-events-none h-[165px] md:h-[185px] lg:h-[205px] w-full leading-none overflow-hidden">
+        <div className="hidden sm:block absolute -bottom-px inset-x-0 z-20 pointer-events-none h-[175px] md:h-[195px] lg:h-[225px] w-full leading-none overflow-hidden">
           <svg 
             viewBox="0 0 1440 260" 
             className="w-full h-full text-[#FAF7F2] block pointer-events-none filter drop-shadow-[0_-6px_12px_rgba(0,0,0,0.16)]"
@@ -2033,14 +2034,16 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         <div className="md:col-span-8 space-y-3">
           <h3 className="font-serif font-extrabold text-[#B8862A] text-lg md:text-xl">
             {dbBeliefBlock ? (
-              language === 'bn' ? dbBeliefBlock.title_bn : dbBeliefBlock.title_en
+              language === 'bn' ? (dbBeliefBlock.title_bn || 'বিশ্বসাহিত্য কেন্দ্র — একটি দেশব্যাপী আন্দোলন') : (dbBeliefBlock.title_en || 'Bishwo Shahitto Kendro — A National Awakening')
             ) : (
               language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র — একটি দেশব্যাপী আন্দোলন' : 'Bishwo Shahitto Kendro — A National Awakening'
             )}
           </h3>
           <p className="text-[11.5px] md:text-[12.5px] text-[#5C4033] leading-relaxed font-sans font-medium">
             {dbBeliefBlock ? (
-              language === 'bn' ? dbBeliefBlock.quote_bn : dbBeliefBlock.quote_en
+              language === 'bn' 
+                ? (dbBeliefBlock.desc_bn || dbBeliefBlock.quote_bn || 'বিশ্বসাহিত্য কেন্দ্র আজ আর শুধুমাত্র একটি সাধারণ লাইব্রেরি বা সভার কামরা নয়। এটি বাংলা ভাষাভাষী মানুষের চিত্তের সামগ্রিক ইতিবাচক পরিবর্তনের জন্য দেশব্যাপী জাতীয় ক্যারেক্টার ও চরিত্র তৈরি করার বিনীত প্রয়াস।') 
+                : (dbBeliefBlock.desc_en || dbBeliefBlock.quote_en || 'Our movement stretches to accommodate every village school and local municipal body through continuous book reading assessments and high intellectual assemblies.')
             ) : (
               language === 'bn'
                 ? 'বিশ্বসাহিত্য কেন্দ্র আজ আর শুধুমাত্র একটি সাধারণ লাইব্রেরি বা সভার কামরা নয়। এটি বাংলা ভাষাভাষী মানুষের চিত্তের সামগ্রিক ইতিবাচক পরিবর্তনের জন্য দেশব্যাপী জাতীয় ক্যারেক্টার ও চরিত্র তৈরি করার বিনীত প্রয়াস।'
@@ -2048,10 +2051,14 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             )}
           </p>
           <button 
-            onClick={() => onNavigate('bsk-history')}
+            onClick={() => onNavigate(dbBeliefBlock?.btnRoute || 'bsk-history')}
             className="px-4 py-1.5 border border-[#B8862A]/40 text-[10.5px] font-bold text-[#B8862A] hover:bg-[#B8862A]/5 hover:text-[#1A1207] rounded transition mt-2 cursor-pointer"
           >
-            {language === 'bn' ? 'আমাদের অর্জন ও ইতিহাস →' : 'Core History & Milestones →'}
+            {dbBeliefBlock ? (
+              language === 'bn' ? (dbBeliefBlock.btnText_bn || 'আমাদের অর্জন ও ইতিহাস →') : (dbBeliefBlock.btnText_en || 'Core History & Milestones →')
+            ) : (
+              language === 'bn' ? 'আমাদের অর্জন ও ইতিহাস →' : 'Core History & Milestones →'
+            )}
           </button>
         </div>
 

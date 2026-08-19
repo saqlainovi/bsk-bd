@@ -3,14 +3,15 @@ import {
   Lock, Layout, Image as ImageIcon, FileText, Plus, Edit2, Trash2, Save, X, RefreshCw, 
   CheckCircle, ArrowLeft, Upload, AlertCircle, Eye, Globe2, BookOpen, Compass, Info,
   Bell, Calendar, Mail, Briefcase, Paperclip, ArrowUpRight, UserCheck, Download, Sparkles,
-  Award, History, PlusCircle, ImagePlus, Quote, GraduationCap, Phone, Pencil, ShieldCheck
+  Award, History, PlusCircle, ImagePlus, Quote, GraduationCap, Phone, Pencil, ShieldCheck,
+  Sliders
 } from 'lucide-react';
-import { db, auth, OperationType, handleFirestoreError } from '../firebase';
 import { 
-  collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc
-} from 'firebase/firestore';
-import { signInAnonymously, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { verifyAdminCredentials } from '../firebase-mock';
+  db, auth, OperationType, handleFirestoreError,
+  collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc,
+  signInAnonymously, signOut, GoogleAuthProvider, signInWithPopup,
+  verifyAdminCredentials, uploadImageToServer
+} from '../firebase';
 import { Language } from '../types';
 import ImageResizer from './ImageResizer';
 import PressCMS from './PressCMS';
@@ -275,11 +276,45 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
   const [resizerOpen, setResizerOpen] = useState<boolean>(false);
   const [resizerPreset, setResizerPreset] = useState<'banner' | 'landscape' | 'square' | 'portrait' | 'any'>('landscape');
   const [onResizerSave, setOnResizerSave] = useState<(resizedBase64: string) => void>(() => () => {});
+  const [isDirectUploading, setIsDirectUploading] = useState<boolean>(false);
 
   const openImageResizer = (preset: 'banner' | 'landscape' | 'square' | 'portrait' | 'any', callback: (resizedUrl: string) => void) => {
     setResizerPreset(preset);
-    setOnResizerSave(() => callback);
+    setOnResizerSave(() => async (resizedBase64: string) => {
+      try {
+        const uploadedUrl = await uploadImageToServer(resizedBase64);
+        callback(uploadedUrl || resizedBase64);
+      } catch (_) {
+        callback(resizedBase64);
+      }
+    });
     setResizerOpen(true);
+  };
+
+  // Direct 1-Click Image Uploader (Zero crop, full resolution 100% untouched)
+  const handleDirectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (imgUrl: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsDirectUploading(true);
+      const serverUrl = await uploadImageToServer(file);
+      if (serverUrl) {
+        callback(serverUrl);
+      } else {
+        // Fallback convert to direct base64
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const b64 = evt.target?.result as string;
+          if (b64) callback(b64);
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.warn("Direct upload error:", err);
+    } finally {
+      setIsDirectUploading(false);
+      e.target.value = '';
+    }
   };
 
   // Track auth user state
@@ -1609,15 +1644,6 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
             ) : null}
 
             <button 
-              type="button"
-              onClick={handleBootstrapDB}
-              className="p-1 px-3 bg-[#B8862A]/20 hover:bg-[#B8862A]/40 text-[#F0CC7A] text-xs font-sans font-bold border border-[#B8862A]/40 rounded-lg hover:text-white transition cursor-pointer flex items-center gap-1.5"
-            >
-              <RefreshCw className="h-3 w-3 animate-spin-slow" />
-              <span>{language === 'bn' ? 'ডাটাবেস সফলভাবে সেটআপ করুন' : 'Setup Default BSK Database'}</span>
-            </button>
-
-            <button 
               onClick={onClose}
               className="p-1 px-3 bg-red-800/10 hover:bg-red-800/30 text-red-200 text-xs font-sans font-bold border border-red-500/20 rounded-lg hover:text-white transition cursor-pointer"
             >
@@ -2146,35 +2172,55 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'সরাসরি ইমেজ লিঙ্ক' : 'Direct Image Web URL'}</label>
+                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'ইমেজ লিঙ্ক বা ফাইল পাথ' : 'Image Link / Server Path'}</label>
                               <input 
-                                type="url"
-                                className="w-full px-3 py-1.5 border border-stone-200 rounded-lg text-xs"
+                                type="text"
+                                className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs font-mono bg-white"
                                 value={editingHero.bgImage}
                                 onChange={(e) => {
                                   setEditingHero({ ...editingHero, bgImage: e.target.value });
                                   setPreviewImage(e.target.value);
                                 }}
-                                placeholder="https://images.unsplash.com/photo-..."
+                                placeholder="./uploads/... অথবা https://..."
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'অথবা পিসি থেকে আপলোড ও অটো রিসাইজ' : 'Or upload & auto-resize image file'}</label>
-                              <button
-                                type="button"
-                                onClick={() => openImageResizer('banner', (resizedUrl) => {
-                                  setEditingHero({ ...editingHero, bgImage: resizedUrl });
-                                  setPreviewImage(resizedUrl);
-                                })}
-                                className="w-full border-2 border-dashed border-[#B8862A]/30 rounded-lg p-3 bg-white text-center hover:bg-[#B8862A]/5 hover:border-[#2E5942] transition duration-150 flex flex-col items-center justify-center space-y-1 cursor-pointer group"
-                              >
-                                <Upload className="h-5 w-5 text-[#B8862A] group-hover:scale-110 transition duration-150" />
-                                <span className="text-[10px] font-bold font-sans text-stone-600">
-                                  {language === 'bn' ? 'ছবি আপলোড ও রিসাইজ করুন' : 'Upload & Resize'}
-                                </span>
-                                <span className="text-[8px] text-[#B8862A] font-sans font-semibold">Recommended size: 1600x600 px (Banner)</span>
-                              </button>
+                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'পিসি থেকে ছবি আপলোড করুন' : 'Upload Image from Computer'}</label>
+                              <div className="flex gap-2">
+                                <label className="flex-1 border-2 border-dashed border-[#2E5942]/40 rounded-lg p-2.5 bg-[#2E5942]/5 text-center hover:bg-[#2E5942]/10 hover:border-[#2E5942] transition duration-150 flex flex-col items-center justify-center space-y-0.5 cursor-pointer group">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden"
+                                    disabled={isDirectUploading}
+                                    onChange={(e) => handleDirectImageUpload(e, (url) => {
+                                      setEditingHero({ ...editingHero, bgImage: url });
+                                      setPreviewImage(url);
+                                    })}
+                                  />
+                                  <Upload className={`h-4 w-4 text-[#2E5942] ${isDirectUploading ? 'animate-spin' : 'group-hover:scale-110'} transition duration-150`} />
+                                  <span className="text-[10px] font-bold font-sans text-[#2E5942]">
+                                    {isDirectUploading 
+                                      ? (language === 'bn' ? 'আপলোড হচ্ছে...' : 'Uploading...') 
+                                      : (language === 'bn' ? 'ফুল ছবি আপলোড (নো ক্রপ)' : 'Full Image Upload (No Crop)')}
+                                  </span>
+                                  <span className="text-[8px] text-stone-500 font-sans">100% Original High-Res</span>
+                                </label>
+
+                                <button
+                                  type="button"
+                                  onClick={() => openImageResizer('banner', (resizedUrl) => {
+                                    setEditingHero({ ...editingHero, bgImage: resizedUrl });
+                                    setPreviewImage(resizedUrl);
+                                  })}
+                                  className="px-3 border border-stone-200 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-sans font-semibold transition flex flex-col items-center justify-center gap-1 cursor-pointer shrink-0"
+                                  title="Open Crop/Resize Tool"
+                                >
+                                  <Sliders className="h-3.5 w-3.5 text-[#B8862A]" />
+                                  <span>{language === 'bn' ? 'রিসাইজার' : 'Resizer'}</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -2463,35 +2509,55 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'ইমেজ লিঙ্ক' : 'Direct Cover Web URL'}</label>
+                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'ইমেজ লিঙ্ক বা ফাইল পাথ' : 'Image Link / Server Path'}</label>
                               <input 
-                                type="url"
-                                className="w-full px-3 py-1.5 border border-stone-200 rounded-lg text-xs"
+                                type="text"
+                                className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs font-mono bg-white"
                                 value={editingActivity.image}
                                 onChange={(e) => {
                                   setEditingActivity({ ...editingActivity, image: e.target.value });
                                   setPreviewImage(e.target.value);
                                 }}
-                                placeholder="https://images.unsplash.com/photo-..."
+                                placeholder="./uploads/... অথবা https://..."
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'অথবা পিসি থেকে আপলোড ও অটো রিসাইজ' : 'Or upload & auto-resize image file'}</label>
-                              <button
-                                type="button"
-                                onClick={() => openImageResizer('landscape', (resizedUrl) => {
-                                  setEditingActivity({ ...editingActivity, image: resizedUrl });
-                                  setPreviewImage(resizedUrl);
-                                })}
-                                className="w-full border-2 border-dashed border-[#B8862A]/30 rounded-lg p-3 bg-white text-center hover:bg-[#B8862A]/5 hover:border-[#2E5942] transition duration-150 flex flex-col items-center justify-center space-y-1 cursor-pointer group"
-                              >
-                                <Upload className="h-5 w-5 text-[#B8862A] group-hover:scale-110 transition duration-150" />
-                                <span className="text-[10px] font-bold font-sans text-stone-600">
-                                  {language === 'bn' ? 'ছবি আপলোড ও রিসাইজ করুন' : 'Upload & Resize'}
-                                </span>
-                                <span className="text-[8px] text-[#B8862A] font-sans font-semibold">Recommended size: 800x500 px (Landscape)</span>
-                              </button>
+                              <label className="text-[9px] font-bold text-stone-600 block">{language === 'bn' ? 'পিসি থেকে ছবি আপলোড করুন' : 'Upload Image from Computer'}</label>
+                              <div className="flex gap-2">
+                                <label className="flex-1 border-2 border-dashed border-[#2E5942]/40 rounded-lg p-2.5 bg-[#2E5942]/5 text-center hover:bg-[#2E5942]/10 hover:border-[#2E5942] transition duration-150 flex flex-col items-center justify-center space-y-0.5 cursor-pointer group">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden"
+                                    disabled={isDirectUploading}
+                                    onChange={(e) => handleDirectImageUpload(e, (url) => {
+                                      setEditingActivity({ ...editingActivity, image: url });
+                                      setPreviewImage(url);
+                                    })}
+                                  />
+                                  <Upload className={`h-4 w-4 text-[#2E5942] ${isDirectUploading ? 'animate-spin' : 'group-hover:scale-110'} transition duration-150`} />
+                                  <span className="text-[10px] font-bold font-sans text-[#2E5942]">
+                                    {isDirectUploading 
+                                      ? (language === 'bn' ? 'আপলোড হচ্ছে...' : 'Uploading...') 
+                                      : (language === 'bn' ? 'ফুল ছবি আপলোড (নো ক্রপ)' : 'Full Image Upload (No Crop)')}
+                                  </span>
+                                  <span className="text-[8px] text-stone-500 font-sans">100% Original High-Res</span>
+                                </label>
+
+                                <button
+                                  type="button"
+                                  onClick={() => openImageResizer('landscape', (resizedUrl) => {
+                                    setEditingActivity({ ...editingActivity, image: resizedUrl });
+                                    setPreviewImage(resizedUrl);
+                                  })}
+                                  className="px-3 border border-stone-200 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-sans font-semibold transition flex flex-col items-center justify-center gap-1 cursor-pointer shrink-0"
+                                  title="Open Crop/Resize Tool"
+                                >
+                                  <Sliders className="h-3.5 w-3.5 text-[#B8862A]" />
+                                  <span>{language === 'bn' ? 'রিসাইজার' : 'Resizer'}</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -8108,81 +8174,107 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                     {!editingProgram ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {homepagePrograms.length === 0 ? (
-                          <div className="p-8 text-center bg-white border border-[#E8DDD0] rounded-xl col-span-2">
-                            <RefreshCw className="h-8 w-8 text-[#B8862A] animate-spin mx-auto mb-2" />
-                            <p className="text-xs text-stone-600 font-sans">
-                              {language === 'bn' 
-                                ? 'কোনো কাস্টম কার্যক্রম যুক্ত করা হয়নি। ওয়েবসাইটটি বর্তমানে হার্ডকোডেড ডিফল্ট ১০টি কার্ড প্রদর্শন করছে।' 
-                                : 'Using the local default 10 cards. Add high-contrast database records above to deploy overrides.'}
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                // Bulk import defaults to Firestore!
-                                const defaultProgs = [
-                                  {
-                                    id: 'aalor-ishkool', title_bn: 'আলোর ইশকুল', title_en: 'Aalor Ishkool',
-                                    desc_bn: 'উচ্চতর মননশীলতা ও সাংস্কৃতিক বোধের স্কুল।', desc_en: 'Advanced mindset and cultural growth seminars.',
-                                    tag_bn: 'সক্রিয়', tag_en: 'Active',
-                                    colorClass: 'bg-[#3D2B14] text-[#F0CC7A]', icon: 'Sparkles',
-                                    bgImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&auto=format&fit=crop&q=80', order: 1
-                                  },
-                                  {
-                                    id: 'mobile-library', title_bn: 'ভ্রাম্যমাণ লাইব্রেরি', title_en: 'Mobile Library Network',
-                                    desc_bn: '৪০০০+ স্কুল ও লোকালয়ে চলমান দ্বীপ্ত লাইব্রেরি।', desc_en: 'Reaching 4,000+ local centers via mobile units.',
-                                    tag_bn: '৪০০০+ স্কুল', tag_en: '4,000+ Schools',
-                                    colorClass: 'bg-[#2E5942] text-emerald-100', icon: 'Truck',
-                                    bgImage: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop&q=80', order: 2
-                                  },
-                                  {
-                                    id: 'reading-habit', title_bn: 'দেশভিত্তিক উৎকর্ষ', title_en: 'National Excellence Program',
-                                    desc_bn: '৬৪ জেলায় দেশভিত্তিক সাহিত্য মূল্যায়ন ধারা।', desc_en: 'Countrywide elite reading evaluation framework.',
-                                    tag_bn: '৬৪ জেলা', tag_en: '64 Districts',
-                                    colorClass: 'bg-[#8B3A1E] text-orange-100', icon: 'Award',
-                                    bgImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600&auto=format&fit=crop&q=80', order: 3
-                                  }
-                                ];
-                                defaultProgs.forEach(p => {
-                                  setDoc(doc(db, 'homepage_programs', p.id), p);
-                                });
-                              }}
-                              className="mt-3 text-xs bg-[#2E5942] text-white px-3 py-1.5 font-bold rounded-lg"
-                            >
-                              {language === 'bn' ? 'ডিফল্ট কার্যক্রমগুলো ডাটাবেসে সেভ করুন' : 'Pre-seed Cloud with Default Programs'}
-                            </button>
-                          </div>
-                        ) : (
-                          homepagePrograms.map((prog) => (
-                            <div key={prog.id} className="bg-white p-4 border border-[#E8DDD0] rounded-2xl flex gap-4 shadow-xs items-start font-sans">
-                              <img src={prog.bgImage} className="w-16 h-20 object-cover rounded-xl border shrink-0 bg-stone-100" />
+                        {(() => {
+                          const defaultList = [
+                            {
+                              id: 'nationwide-excellence', title_bn: 'দেশভিত্তিক উৎকর্ষ কার্যক্রম', title_en: 'Nationwide Excellence Program',
+                              desc_bn: '৬৪ জেলায় দেশভিত্তিক সাহিত্য মূল্যায়ন ও বইপড়া আন্দোলন।', desc_en: 'Countrywide elite reading evaluation & movement.',
+                              tag_bn: '৬৪ জেলা', tag_en: '64 Districts',
+                              colorClass: 'bg-[#8B3A1E] text-orange-100', icon: 'Award',
+                              bgImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1600&auto=format&fit=crop&q=90', order: 1
+                            },
+                            {
+                              id: 'mobile-library', title_bn: 'ভ্রাম্যমাণ লাইব্রেরি', title_en: 'Mobile Library Network',
+                              desc_bn: '৪০০০+ স্কুল ও লোকালয়ে চলমান দ্বীপ্ত লাইব্রেরি।', desc_en: 'Reaching 4,000+ local centers via mobile units.',
+                              tag_bn: '৪০০০+ স্কুল', tag_en: '4,000+ Schools',
+                              colorClass: 'bg-[#2E5942] text-emerald-100', icon: 'Truck',
+                              bgImage: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1600&auto=format&fit=crop&q=90', order: 2
+                            },
+                            {
+                              id: 'reading-habit', title_bn: 'পাঠাভ্যাস উন্নয়ন', title_en: 'Reading Habit Development',
+                              desc_bn: 'শিক্ষা প্রতিষ্ঠানে নিয়মিত বই পড়ার অভ্যাস ও পুরষ্কার।', desc_en: 'Institutional reading encouragement and prizes.',
+                              tag_bn: 'কর্মসূচি', tag_en: 'Program',
+                              colorClass: 'bg-[#1E4A6B] text-sky-100', icon: 'BookOpen',
+                              bgImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=1600&auto=format&fit=crop&q=90', order: 3
+                            },
+                            {
+                              id: 'book-fair', title_bn: 'ভ্রাম্যমাণ বইমেলা', title_en: 'Mobile Book Fair',
+                              desc_bn: 'সারাদেশে ভ্রাম্যমাণ বইমেলা আয়োজন ও মানসম্মত গ্রন্থ প্রদর্শনী।', desc_en: 'Nationwide mobile book fair events & exhibitions.',
+                              tag_bn: 'বাৎসরিক', tag_en: 'Annual',
+                              colorClass: 'bg-[#2E5942] text-emerald-100', icon: 'BookOpen',
+                              bgImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1600&auto=format&fit=crop&q=90', order: 4
+                            },
+                            {
+                              id: 'aalor-ishkool', title_bn: 'আলোর ইশকুল', title_en: 'Aalor Ishkool',
+                              desc_bn: 'উচ্চতর মননশীলতা ও সাংস্কৃতিক বোধের স্কুল।', desc_en: 'Advanced mindset and cultural growth seminars.',
+                              tag_bn: 'সক্রিয়', tag_en: 'Active',
+                              colorClass: 'bg-[#3D2B14] text-[#F0CC7A]', icon: 'Sparkles',
+                              bgImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&auto=format&fit=crop&q=90', order: 5
+                            },
+                            {
+                              id: 'aalor-pathshala', title_bn: 'আলোর পাঠশালা', title_en: 'Aalor Pathshala',
+                              desc_bn: 'সুবিধাবঞ্চিত এলাকায় কমিউনিটি লার্নিং সেন্টার।', desc_en: 'Empowering underprivileged student sectors.',
+                              tag_bn: 'নতুন', tag_en: 'New',
+                              colorClass: 'bg-[#6B5A1E] text-amber-100', icon: 'SchoolIcon',
+                              bgImage: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&auto=format&fit=crop&q=90', order: 6
+                            },
+                            {
+                              id: 'bangalir_chinta', title_bn: 'বাঙালির চিন্তা কর্মসূচি', title_en: 'Bangalir Chinta',
+                              desc_bn: 'বাঙালি মনীষীদের শ্রেষ্ঠ মননশীল ও চিন্তামূলক প্রবন্ধের সংকলন প্রকাশ কর্মসূচি।', desc_en: 'Selected historical and philosophical works and thoughts of Bengal giants.',
+                              tag_bn: 'ঐতিহাসিক', tag_en: 'Historical',
+                              colorClass: 'bg-[#553E2A] text-orange-100', icon: 'BookOpenCheck',
+                              bgImage: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&auto=format&fit=crop&q=90', order: 7
+                            },
+                            {
+                              id: 'primary-teacher', title_bn: 'প্রাথমিক শিক্ষকদের বই পড়া কর্মসূচি', title_en: 'Primary Teachers Reading Program',
+                              desc_bn: 'প্রাথমিক ও মাধ্যমিক শিক্ষকদের বইপড়া কৃষ্টি।', desc_en: 'Enhancement materials for elementary educators.',
+                              tag_bn: 'শিক্ষক উন্নয়ন', tag_en: 'Teachers',
+                              colorClass: 'bg-[#213547] text-slate-100', icon: 'BookOpen',
+                              bgImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1600&auto=format&fit=crop&q=90', order: 8
+                            },
+                            {
+                              id: 'publication', title_bn: 'প্রকাশনা কার্যক্রম', title_en: 'Publications',
+                              desc_bn: 'ধ্রুপদী ও নোবেলবিজয়ী বিশ্বসাহিত্যের উচ্চমানের বাংলা অনুবাদ প্রকাশনা।', desc_en: 'Acclaimed publications of world classics and Bangla translations.',
+                              tag_bn: '১০০০+ বই', tag_en: '1000+ Books',
+                              colorClass: 'bg-[#4A3B32] text-amber-100', icon: 'BookOpen',
+                              bgImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1600&auto=format&fit=crop&q=90', order: 9
+                            }
+                          ];
+
+                          const displayList = (homepagePrograms && homepagePrograms.length > 0) 
+                            ? homepagePrograms 
+                            : defaultList;
+
+                          return displayList.map((prog) => (
+                            <div key={prog.id} className="bg-white p-4 border border-[#E8DDD0] rounded-2xl flex gap-4 shadow-xs items-start font-sans hover:border-[#2E5942]/40 transition">
+                              <img src={prog.bgImage} className="w-16 h-20 object-cover rounded-xl border shrink-0 bg-stone-100 shadow-inner" alt={prog.title_bn} />
                               <div className="space-y-1.5 flex-1 min-w-0">
-                                <h4 className="text-sm font-bold text-stone-900 truncate">{language === 'bn' ? prog.title_bn : prog.title_en}</h4>
-                                <p className="text-[10px] text-stone-500 leading-normal line-clamp-2">{language === 'bn' ? prog.desc_bn : prog.desc_en}</p>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[8px] bg-stone-150 px-1 py-0.5 rounded text-stone-600 font-mono">Order: {prog.order}</span>
-                                  <span className="text-[8px] bg-[#2E5942]/10 text-[#2E5942] px-1 py-0.5 rounded font-mono">{prog.tag_en}</span>
+                                <h4 className="text-sm font-bold text-stone-900 truncate font-serif">{language === 'bn' ? prog.title_bn : prog.title_en}</h4>
+                                <p className="text-[11px] text-stone-500 leading-normal line-clamp-2">{language === 'bn' ? prog.desc_bn : prog.desc_en}</p>
+                                <div className="flex items-center gap-2 pt-0.5">
+                                  <span className="text-[9px] bg-stone-100 px-1.5 py-0.5 rounded text-stone-600 font-mono font-semibold">ক্রম: {prog.order}</span>
+                                  <span className="text-[9px] bg-[#2E5942]/10 text-[#2E5942] px-1.5 py-0.5 rounded font-semibold">{prog.tag_bn || prog.tag_en}</span>
                                 </div>
                               </div>
-                              <div className="flex flex-col gap-1.5">
+                              <div className="flex flex-col gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={() => { setEditingProgram(JSON.parse(JSON.stringify(prog))); setPreviewImage(prog.bgImage); }}
-                                  className="p-1 px-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[10px] font-bold rounded"
+                                  className="p-1.5 px-3 bg-[#B8862A]/10 hover:bg-[#B8862A]/20 border border-[#B8862A]/30 text-[#B8862A] text-xs font-bold rounded-lg transition cursor-pointer"
                                 >
                                   {language === 'bn' ? 'এডিট' : 'Edit'}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => deleteProgramRecord(prog.id)}
-                                  className="p-1 px-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 text-[10px] font-bold rounded"
+                                  className="p-1.5 px-3 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-bold rounded-lg transition cursor-pointer"
                                 >
                                   {language === 'bn' ? 'মুছুন' : 'Delete'}
                                 </button>
                               </div>
                             </div>
-                          ))
-                        )}
+                          ));
+                        })()}
                       </div>
                     ) : (
                       /* EDITING PROGRAM FORM */
@@ -8505,16 +8597,37 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                       onChange={(e) => handleUpdateSlide('image', sIdx, e.target.value)}
                                       className="w-full p-1.5 text-[9px] font-mono border rounded"
                                     />
-                                    <button
-                                      type="button"
-                                      onClick={() => openImageResizer('portrait', (resizedUrl) => {
-                                        handleUpdateSlide('image', sIdx, resizedUrl);
-                                      })}
-                                      className="w-full py-1 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-[10px] font-bold rounded transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                                    >
-                                      <Upload className="h-3 w-3" />
-                                      <span>{language === 'bn' ? 'ছবি আপলোড ও রিসাইজ' : 'Upload & Resize'}</span>
-                                    </button>
+                                    <div className="flex gap-1.5">
+                                      <label className="flex-1 py-1.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-[10px] font-bold rounded-lg transition duration-150 flex items-center justify-center gap-1 cursor-pointer shadow-xs">
+                                        <input 
+                                          type="file" 
+                                          accept="image/*" 
+                                          className="hidden"
+                                          disabled={isDirectUploading}
+                                          onChange={(e) => handleDirectImageUpload(e, (url) => {
+                                            handleUpdateSlide('image', sIdx, url);
+                                          })}
+                                        />
+                                        <Upload className={`h-3 w-3 ${isDirectUploading ? 'animate-spin' : ''}`} />
+                                        <span>
+                                          {isDirectUploading 
+                                            ? (language === 'bn' ? 'আপলোড হচ্ছে...' : 'Uploading...') 
+                                            : (language === 'bn' ? 'ফুল ছবি আপলোড' : 'Full Image Upload')}
+                                        </span>
+                                      </label>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => openImageResizer('portrait', (resizedUrl) => {
+                                          handleUpdateSlide('image', sIdx, resizedUrl);
+                                        })}
+                                        className="px-2 py-1.5 border border-stone-200 rounded-lg bg-stone-50 hover:bg-stone-100 text-stone-600 text-[10px] font-semibold transition flex items-center justify-center gap-1 cursor-pointer shrink-0"
+                                        title="Crop / Resize"
+                                      >
+                                        <Sliders className="h-3 w-3 text-[#B8862A]" />
+                                        <span>{language === 'bn' ? 'রিসাইজার' : 'Resizer'}</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
 
@@ -8953,16 +9066,6 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                   : (language === 'bn' ? 'কানেকশন: অফলাইন 🔴' : 'DB Offline 🔴')
                               }
                             </span>
-                          </button>
-
-                          {/* Setup/Bootstrap Database Action */}
-                          <button
-                            type="button"
-                            onClick={handleBootstrapDB}
-                            className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer border border-[#B8862A]/40 bg-[#B8862A]/10 text-[#8B6508] hover:bg-[#B8862A]/20 font-sans"
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                            <span>{language === 'bn' ? 'ডাটাবেস সেটআপ করুন' : 'Setup DB'}</span>
                           </button>
 
                           <button

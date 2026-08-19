@@ -30,9 +30,9 @@ export default function ImageResizer({
   const [width, setWidth] = useState<number>(1920);
   const [height, setHeight] = useState<number>(1080);
   const [cropMode, setCropMode] = useState<'cover' | 'contain' | 'stretch' | 'blur_fill'>('cover');
-  const [quality, setQuality] = useState<number>(0.98);
+  const [quality, setQuality] = useState<number>(0.92);
   const [autoResize, setAutoResize] = useState<boolean>(true);
-  const [keepRawLossless, setKeepRawLossless] = useState<boolean>(true);
+  const [keepRawLossless, setKeepRawLossless] = useState<boolean>(false);
   const [rawDataUrl, setRawDataUrl] = useState<string>('');
   const [resizedDataUrl, setResizedDataUrl] = useState<string>('');
   const [dragActive, setDragActive] = useState<boolean>(false);

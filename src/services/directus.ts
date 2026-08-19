@@ -1,9 +1,9 @@
-import { createDirectus, rest, readItems, readItem, createItem, staticToken } from '@directus/sdk';
+import { createDirectus, rest, readItems, readItem, createItem, updateItem, staticToken } from '@directus/sdk';
 import { ParsedPage } from '../types';
 
 // Directus API URL from environment variable or fallback
-const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL || '';
-const DIRECTUS_TOKEN = import.meta.env.VITE_DIRECTUS_STATIC_TOKEN || '';
+const DIRECTUS_URL = (import.meta as any).env?.VITE_DIRECTUS_URL || 'https://directus.ovisoft.tech';
+const DIRECTUS_TOKEN = (import.meta as any).env?.VITE_DIRECTUS_STATIC_TOKEN || '';
 
 /**
  * Directus client instance with REST features
@@ -42,23 +42,67 @@ export function getDirectusAssetUrl(assetIdOrPath?: string): string {
 }
 
 /**
- * Fetch all pages from Directus `website_pages` collection
+ * Helper to map raw Directus record (e.g. from bskdb or website_pages) to ParsedPage
+ */
+function mapRawToParsedPage(item: any): ParsedPage {
+  const id = item.page_id || item.id || item.slug || '';
+  const titleBn = item.title || item.title_bn || item.name || id;
+  const contentText = typeof item.content === 'string' ? item.content : JSON.stringify(item.content || '');
+
+  return {
+    id,
+    title_bn: titleBn,
+    title_en: item.title_en || titleBn,
+    html_title: `${titleBn} - বিশ্বসাহিত্য কেন্দ্র`,
+    category: item.category || 'general',
+    sections: item.sections && Array.isArray(item.sections) ? item.sections : [
+      {
+        title: titleBn,
+        content: contentText ? [contentText] : []
+      }
+    ],
+    updated_at: item.date_updated || item.date_created || new Date().toISOString()
+  };
+}
+
+/**
+ * Fetch all pages from Directus (`bskdb` or `website_pages` collections)
  */
 export async function fetchDirectusPages(): Promise<ParsedPage[] | null> {
   if (!directusClient) return null;
+  
+  // Try fetching from bskdb first
+  try {
+    const response = await directusClient.request(
+      readItems('bskdb' as any, {
+        fields: ['*'],
+        limit: 200
+      })
+    );
+    if (response && Array.isArray(response) && response.length > 0) {
+      console.log(`[Directus] Loaded ${response.length} pages from 'bskdb' collection.`);
+      return response.map(mapRawToParsedPage);
+    }
+  } catch (err) {
+    console.log('[Directus] bskdb query attempt:', err);
+  }
+
+  // Fallback to website_pages if bskdb is empty or not found
   try {
     const response = await directusClient.request(
       readItems('website_pages' as any, {
         fields: ['*'],
-        limit: 100,
-        sort: ['sort_order' as any]
+        limit: 200
       })
     );
-    return response as unknown as ParsedPage[];
+    if (response && Array.isArray(response) && response.length > 0) {
+      return response.map(mapRawToParsedPage);
+    }
   } catch (err) {
-    console.warn('[Directus] Could not fetch pages from Directus, falling back to local dataset:', err);
-    return null;
+    console.warn('[Directus] website_pages query attempt:', err);
   }
+
+  return null;
 }
 
 /**
@@ -67,13 +111,74 @@ export async function fetchDirectusPages(): Promise<ParsedPage[] | null> {
 export async function fetchDirectusPage(slug: string): Promise<ParsedPage | null> {
   if (!directusClient) return null;
   try {
+    // Try from bskdb by page_id filter
     const response = await directusClient.request(
+      readItems('bskdb' as any, {
+        filter: { page_id: { _eq: slug } },
+        limit: 1
+      })
+    );
+    if (response && Array.isArray(response) && response.length > 0) {
+      return mapRawToParsedPage(response[0]);
+    }
+  } catch (err) {
+    // ignore
+  }
+
+  try {
+    const fallback = await directusClient.request(
       readItem('website_pages' as any, slug)
     );
-    return response as unknown as ParsedPage;
+    if (fallback) return mapRawToParsedPage(fallback);
   } catch (err) {
     console.warn(`[Directus] Could not fetch page '${slug}':`, err);
-    return null;
+  }
+  return null;
+}
+
+/**
+ * Sync/Save a page to Directus `bskdb` collection directly from Admin CMS
+ */
+export async function syncPageToDirectus(page: Partial<ParsedPage>): Promise<boolean> {
+  if (!directusClient || !page.id) return false;
+  try {
+    const pageId = page.id;
+    const title = page.title_bn || page.title_en || pageId;
+    const contentText = page.sections?.map(s => (s.title ? s.title + ': ' : '') + (Array.isArray(s.content) ? s.content.join(' ') : s.content)).join('\n\n') || '';
+
+    // Check if item exists in bskdb
+    const existing = await directusClient.request(
+      readItems('bskdb' as any, {
+        filter: { page_id: { _eq: pageId } },
+        limit: 1
+      })
+    );
+
+    if (existing && Array.isArray(existing) && existing.length > 0) {
+      const recordId = (existing[0] as any).id;
+      await directusClient.request(
+        updateItem('bskdb' as any, recordId, {
+          title,
+          category: page.category || (existing[0] as any).category || 'main',
+          content: contentText,
+          status: 'published'
+        })
+      );
+    } else {
+      await directusClient.request(
+        createItem('bskdb' as any, {
+          page_id: pageId,
+          title,
+          category: page.category || 'main',
+          content: contentText,
+          status: 'published'
+        })
+      );
+    }
+    return true;
+  } catch (err) {
+    console.warn('[Directus] syncPageToDirectus failed:', err);
+    return false;
   }
 }
 

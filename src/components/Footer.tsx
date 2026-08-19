@@ -96,13 +96,7 @@ export default function Footer({ language, onNavigate }: FooterProps) {
       </div>
       <div className="border-t border-[#B8862A]/10 mt-6 pt-4 w-full flex flex-col sm:flex-row items-center justify-between text-[9.5px] text-[#6B5135] font-sans tracking-wide">
         <span>© ২০২৪ বিশ্বসাহিত্য কেন্দ্র · bskbd.org · সর্বস্বত্ব সংরক্ষিত</span>
-        <button 
-          onClick={() => onNavigate('admin')}
-          className="text-[#6B5135]/50 hover:text-[#B8862A] transition font-sans cursor-pointer flex items-center gap-1 mt-2 sm:mt-0"
-        >
-          <span>🔐</span>
-          <span>{language === 'bn' ? 'অ্যাডমিন প্যানেল' : 'Admin Portal'}</span>
-        </button>
+        <span>আলোকিত মানুষ চাই</span>
       </div>
     </footer>
   );

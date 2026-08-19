@@ -14,8 +14,9 @@ import {
 } from 'react-aria-components';
 import { motion, AnimatePresence } from 'motion/react';
 import React from 'react';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, doc, setDoc, serverTimestamp, query, onSnapshot } from 'firebase/firestore';
+import { 
+  db, handleFirestoreError, OperationType, collection, doc, setDoc, serverTimestamp, query, onSnapshot 
+} from '../firebase';
 import { safeCacheData } from './cacheUtils';
 import { newsItems as defaultNews, events as defaultEvents, notices as defaultNotices, defaultBlogPosts } from '../data/notices_data';
 import { fallbackPress, photoAlbums } from '../data/press_data';

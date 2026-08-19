@@ -92,8 +92,10 @@ export default function Navbar({
   // GSAP Refs for Portals
   const bcrsRef = React.useRef<HTMLAnchorElement>(null);
   const alorRef = React.useRef<HTMLAnchorElement>(null);
-  const bcrsTextRef = React.useRef<HTMLSpanElement>(null);
-  const alorTextRef = React.useRef<HTMLSpanElement>(null);
+  const bcrsTextRef = React.useRef<HTMLDivElement>(null);
+  const alorTextRef = React.useRef<HTMLDivElement>(null);
+  const portalContainerRef = React.useRef<HTMLDivElement>(null);
+  const [hoveredPortal, setHoveredPortal] = React.useState<'bcrs' | 'alor' | null>(null);
 
   // GSAP Refs for Search & Language controls
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
@@ -223,6 +225,7 @@ export default function Navbar({
     toggleLanguage();
   };
 
+  // Ultra-smooth, glitch-free GSAP morphing animation between BCRS and Alor Pathshala portals
   React.useEffect(() => {
     const bcrs = bcrsRef.current;
     const alor = alorRef.current;
@@ -230,123 +233,46 @@ export default function Navbar({
     const alorText = alorTextRef.current;
     if (!bcrs || !alor) return;
 
-    // Premium subtle entry slide animation
-    gsap.fromTo([bcrs, alor], 
-      { opacity: 0, x: 20 },
-      { opacity: 1, x: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out', clearProps: 'transform' }
-    );
-
-    const onBcrsEnter = () => {
-      const isLarge = window.innerWidth >= 1280;
-      gsap.to(bcrs, {
-        width: isLarge ? '155px' : '110px',
-        minWidth: isLarge ? '155px' : '110px',
-        duration: 0.4,
-        ease: 'power2.out',
-        overwrite: 'auto'
-      });
-      gsap.to(alor, {
-        width: isLarge ? '100px' : '75px',
-        minWidth: isLarge ? '100px' : '75px',
-        duration: 0.4,
-        ease: 'power2.out',
-        overwrite: 'auto'
-      });
-      if (bcrsText) {
-        gsap.to(bcrsText, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.3,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      }
-      if (alorText) {
-        gsap.to(alorText, {
-          opacity: isLarge ? 0.45 : 0,
-          scale: isLarge ? 0.95 : 0.8,
-          duration: 0.3,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      }
+    const computeWidths = () => {
+      const w = window.innerWidth;
+      if (w >= 1536) return { def: 155, act: 205, sib: 105 };
+      if (w >= 1280) return { def: 130, act: 175, sib: 85 };
+      if (w >= 1024) return { def: 105, act: 145, sib: 70 };
+      if (w >= 768) return { def: 95, act: 130, sib: 65 };
+      return { def: 85, act: 115, sib: 55 };
     };
 
-    const onAlorEnter = () => {
-      const isLarge = window.innerWidth >= 1280;
-      gsap.to(alor, {
-        width: isLarge ? '165px' : '120px',
-        minWidth: isLarge ? '165px' : '120px',
-        duration: 0.4,
-        ease: 'power2.out',
-        overwrite: 'auto'
-      });
-      gsap.to(bcrs, {
-        width: isLarge ? '95px' : '65px',
-        minWidth: isLarge ? '95px' : '65px',
-        duration: 0.4,
-        ease: 'power2.out',
-        overwrite: 'auto'
-      });
-      if (alorText) {
-        gsap.to(alorText, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.3,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      }
-      if (bcrsText) {
-        gsap.to(bcrsText, {
-          opacity: isLarge ? 0.45 : 0,
-          scale: isLarge ? 0.95 : 0.8,
-          duration: 0.3,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
+    const { def, act, sib } = computeWidths();
+
+    if (hoveredPortal === 'bcrs') {
+      gsap.to(bcrs, { width: `${act}px`, duration: 0.38, ease: 'power2.out', overwrite: 'auto' });
+      gsap.to(alor, { width: `${sib}px`, duration: 0.38, ease: 'power2.out', overwrite: 'auto' });
+      if (bcrsText) gsap.to(bcrsText, { opacity: 1, scale: 1.03, duration: 0.25, ease: 'power1.out', overwrite: 'auto' });
+      if (alorText) gsap.to(alorText, { opacity: 0.7, scale: 0.94, duration: 0.25, ease: 'power1.out', overwrite: 'auto' });
+    } else if (hoveredPortal === 'alor') {
+      gsap.to(alor, { width: `${act}px`, duration: 0.38, ease: 'power2.out', overwrite: 'auto' });
+      gsap.to(bcrs, { width: `${sib}px`, duration: 0.38, ease: 'power2.out', overwrite: 'auto' });
+      if (alorText) gsap.to(alorText, { opacity: 1, scale: 1.03, duration: 0.25, ease: 'power1.out', overwrite: 'auto' });
+      if (bcrsText) gsap.to(bcrsText, { opacity: 0.7, scale: 0.94, duration: 0.25, ease: 'power1.out', overwrite: 'auto' });
+    } else {
+      gsap.to([bcrs, alor], { width: `${def}px`, duration: 0.45, ease: 'power2.out', overwrite: 'auto' });
+      if (bcrsText) gsap.to(bcrsText, { opacity: 1, scale: 1, duration: 0.3, ease: 'power1.out', overwrite: 'auto' });
+      if (alorText) gsap.to(alorText, { opacity: 1, scale: 1, duration: 0.3, ease: 'power1.out', overwrite: 'auto' });
+    }
+  }, [hoveredPortal, language, portals]);
+
+  // Handle live window resize for portals when idle
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (!hoveredPortal && bcrsRef.current && alorRef.current) {
+        const w = window.innerWidth;
+        const def = w >= 1536 ? 155 : (w >= 1280 ? 130 : (w >= 1024 ? 105 : (w >= 768 ? 95 : 85)));
+        gsap.to([bcrsRef.current, alorRef.current], { width: `${def}px`, duration: 0.2, overwrite: 'auto' });
       }
     };
-
-    const onLeave = () => {
-      gsap.to([bcrs, alor], {
-        clearProps: 'width,minWidth',
-        duration: 0.5,
-        ease: 'power2.out',
-        overwrite: 'auto'
-      });
-      if (bcrsText) {
-        gsap.to(bcrsText, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.4,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      }
-      if (alorText) {
-        gsap.to(alorText, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.4,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      }
-    };
-
-    bcrs.addEventListener('mouseenter', onBcrsEnter);
-    alor.addEventListener('mouseenter', onAlorEnter);
-    bcrs.addEventListener('mouseleave', onLeave);
-    alor.addEventListener('mouseleave', onLeave);
-
-    return () => {
-      bcrs.removeEventListener('mouseenter', onBcrsEnter);
-      alor.removeEventListener('mouseenter', onAlorEnter);
-      bcrs.removeEventListener('mouseleave', onLeave);
-      alor.removeEventListener('mouseleave', onLeave);
-    };
-  }, [language, portals]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [hoveredPortal]);
 
   const categories = [
     {
@@ -408,35 +334,37 @@ export default function Navbar({
   }, []);
 
   return (
-    <header className="relative w-full max-w-full bg-[#F9F6F1] text-[#1A1207] border-b border-[#B8862A]/20 shadow-sm z-50 overflow-x-clip">
-      <div className="w-full max-w-full px-2 sm:px-4 lg:px-2 xl:px-4 2xl:px-8 pr-0 h-16 sm:h-18 lg:h-20 flex items-center justify-between">
+    <header className="relative w-full max-w-full bg-[#F9F6F1] text-[#1A1207] border-b border-[#B8862A]/20 shadow-xs z-50 overflow-x-clip">
+      <div className="w-full max-w-full pl-0 pr-0 h-16 sm:h-18 lg:h-20 flex items-center justify-between">
         
-        {/* Left Side: Brand Logo wrapper */}
-        <div 
-          onClick={() => { setCurrentTab('dashboard'); closeAllMenus(); }}
-          className="flex items-center justify-start cursor-pointer shrink-0 py-1 ml-1 sm:ml-2 lg:ml-1 xl:ml-3 2xl:ml-6 w-[130px] xs:w-[150px] sm:w-[175px] md:w-[195px] lg:w-[135px] xl:w-[160px] 2xl:w-[220px] h-full"
-        >
-          <motion.img 
-            ref={logoRef}
-            src="https://bskbd.org/assets/img/logo_bn2.png" 
-            alt="Bishwo Shahitto Kendro Logo" 
-            className="h-10 xs:h-11 sm:h-12 md:h-13 lg:h-10 xl:h-11 2xl:h-15 w-auto object-contain transition-all duration-200 contrast-[1.08] brightness-[0.98] drop-shadow-2xs"
-            style={{ imageRendering: '-webkit-optimize-contrast' }}
-            referrerPolicy="no-referrer"
-            whileHover={{ scale: 1.04, y: -1 }}
-            whileTap={{ scale: 0.96 }}
-          />
+        {/* Left Section: Brand Logo - Occupies the entire space between the left border and the first menu item ('মূল পাতা'), placing the logo exactly in the middle of that space */}
+        <div className="flex items-center justify-start lg:justify-center shrink-0 lg:flex-1 pl-3 sm:pl-4 lg:pl-0 h-full min-w-0">
+          <div 
+            onClick={() => { setCurrentTab('dashboard'); closeAllMenus(); }}
+            className="flex items-center justify-center cursor-pointer py-1 h-full select-none"
+          >
+            <motion.img 
+              ref={logoRef}
+              src="https://bskbd.org/assets/img/logo_bn2.png" 
+              alt="Bishwo Shahitto Kendro Logo" 
+              className="h-9 xs:h-10 sm:h-11 md:h-12 lg:h-10 xl:h-11 2xl:h-13 w-auto object-contain transition-all duration-200 contrast-[1.08] brightness-[0.98] drop-shadow-2xs"
+              style={{ imageRendering: '-webkit-optimize-contrast' }}
+              referrerPolicy="no-referrer"
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
+            />
+          </div>
         </div>
 
-        {/* Center: Desktop Navigation Dropdowns */}
-        <nav className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 min-[1366px]:space-x-1.5 2xl:space-x-2 mx-1 shrink min-w-0 overflow-hidden">
+        {/* Center Section: Desktop Navigation Items - Strictly Centered in the Middle of the Navbar */}
+        <nav className="hidden lg:flex items-center justify-center space-x-0.5 xl:space-x-1 min-[1366px]:space-x-1.5 2xl:space-x-2 shrink-0">
           {/* Direct flat button for Home (মূল পাতা) */}
           <button
             onClick={() => { setCurrentTab('dashboard'); closeAllMenus(); }}
-            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
+            className={`px-1.5 xl:px-2 min-[1366px]:px-2.5 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
               currentTab === 'dashboard' 
-                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
             }`}
           >
             {language === 'bn' ? 'মূল পাতা' : 'Home'}
@@ -449,21 +377,21 @@ export default function Navbar({
               <div key={idx} className="relative shrink-0">
                 <AriaMenuTrigger>
                   <AriaButton
-                    className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap flex items-center space-x-0.5 2xl:space-x-1 transition cursor-pointer border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8862A]/50 shrink-0 ${
+                    className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap flex items-center space-x-0.5 2xl:space-x-1 transition cursor-pointer border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8862A]/50 shrink-0 ${
                       isAnyInCatActive 
-                        ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                        : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                        ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                        : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
                     }`}
                   >
                     <span>{language === 'bn' ? cat.title_bn : cat.title_en}</span>
-                    <ChevronDown className="h-2.5 w-2.5 2xl:h-3 2xl:w-3 text-[#B8862A] transition-transform duration-200" />
+                    <ChevronDown className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-[#B8862A] transition-transform duration-200" />
                   </AriaButton>
 
                   <AriaPopover 
                     className="w-72 bg-[#F9F6F1] border border-[#B8862A]/20 rounded-xl shadow-xl overflow-hidden py-2 z-50 focus:outline-none animate-fade-in"
                     placement={idx === 2 ? 'bottom end' : 'bottom start'}
                   >
-                    <div className="px-3 pb-2 mb-1 border-b border-[#B8862A]/10 text-[10px] uppercase font-bold text-[#B8862A] tracking-wider font-mono">
+                    <div className="px-3 pb-2 mb-1 border-b border-[#B8862A]/10 text-[11px] uppercase font-bold text-[#B8862A] tracking-wider font-mono">
                       {language === 'bn' ? cat.title_bn : cat.title_en}
                     </div>
                     
@@ -488,13 +416,13 @@ export default function Navbar({
                           <AriaMenuItem
                             key={item.id}
                             id={item.id}
-                            className={`w-full flex items-center px-3 py-2 rounded-lg text-[13px] font-medium text-left transition focus:outline-none cursor-pointer ${
+                            className={`w-full flex items-center px-3 py-2 rounded-lg text-[13.5px] font-semibold text-left transition focus:outline-none cursor-pointer ${
                               isActive 
                                 ? 'bg-[#B8862A] text-stone-950 font-bold shadow-inner' 
-                                : 'text-[#1A1207]/85 hover:text-[#B8862A] hover:bg-[#B8862A]/10 focus:bg-[#B8862A]/10 focus:text-[#B8862A]'
+                                : 'text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/10 focus:bg-[#B8862A]/10 focus:text-[#B8862A]'
                             }`}
                           >
-                            <Icon className={`mr-2.5 h-3.5 w-3.5 shrink-0 ${isActive ? 'text-stone-950' : 'text-[#B8862A]'}`} />
+                            <Icon className={`mr-2.5 h-4 w-4 shrink-0 ${isActive ? 'text-stone-950' : 'text-[#B8862A]'}`} />
                             <span className="truncate">
                               {language === 'bn' ? item.title_bn : item.title_en}
                             </span>
@@ -511,10 +439,10 @@ export default function Navbar({
           {/* Direct flat button for Notice/Bigopti (বিজ্ঞপ্তি) */}
           <button
             onClick={() => { setCurrentTab('notice'); closeAllMenus(); }}
-            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
+            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
               currentTab === 'notice' || currentTab === 'recruitment'
-                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
             }`}
           >
             {language === 'bn' ? 'বিজ্ঞপ্তি' : 'Announcements'}
@@ -523,10 +451,10 @@ export default function Navbar({
           {/* Direct flat button for Press (প্রেস) */}
           <button
             onClick={() => { setCurrentTab('press'); closeAllMenus(); }}
-            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
+            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
               currentTab === 'press' 
-                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
             }`}
           >
             {language === 'bn' ? 'প্রেস' : 'Press'}
@@ -535,10 +463,10 @@ export default function Navbar({
           {/* Direct flat button for Blog (ব্লগ) */}
           <button
             onClick={() => { setCurrentTab('blog'); closeAllMenus(); }}
-            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
+            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
               currentTab === 'blog' 
-                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
             }`}
           >
             {language === 'bn' ? 'ব্লগ' : 'Blog'}
@@ -547,10 +475,10 @@ export default function Navbar({
           {/* Direct flat button for Contact (যোগাযোগ) */}
           <button
             onClick={() => { setCurrentTab('contact'); closeAllMenus(); }}
-            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[10.5px] xl:text-[11.5px] min-[1366px]:text-[12.5px] min-[1536px]:text-[14px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
+            className={`px-1 xl:px-1.5 min-[1366px]:px-2 2xl:px-3 py-1 xl:py-1.5 2xl:py-2 rounded-md text-[12px] xl:text-[13px] min-[1366px]:text-[14px] min-[1536px]:text-[15px] font-bold font-serif whitespace-nowrap transition cursor-pointer border shrink-0 ${
               currentTab === 'contact' 
-                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30' 
-                : 'border-transparent text-[#1A1207]/80 hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
+                ? 'text-[#B8862A] bg-[#B8862A]/10 border-[#B8862A]/30 font-extrabold' 
+                : 'border-transparent text-[#140E06] hover:text-[#B8862A] hover:bg-[#B8862A]/5 hover:border-[#B8862A]/10'
             }`}
           >
             {language === 'bn' ? 'যোগাযোগ' : 'Contact'}
@@ -614,23 +542,40 @@ export default function Navbar({
         </nav>
 
         {/* Right Side: Tools (Portals & Mobile Hamburger) */}
-        <div className="flex items-center self-stretch h-full space-x-1 sm:space-x-1.5 lg:space-x-1 min-[1366px]:space-x-1.5 2xl:space-x-2 pr-2 sm:pr-4 lg:pr-0 pl-1 min-[1366px]:pl-2 2xl:pl-4 shrink-0">
+        <div className="flex items-center justify-end self-stretch h-full p-0 m-0 shrink-0 lg:flex-1">
           
-          {/* Our Portals Container - Seamlessly joined and covers 100% of navbar height */}
-          <div className="hidden sm:flex items-stretch self-stretch h-full mr-0 shrink-0">
+          {/* Mobile Hamburger Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-1.5 mr-2 sm:mr-3 rounded-lg border border-[#B8862A]/20 bg-[#B8862A]/10 text-[#B8862A] hover:bg-[#B8862A]/25 transition cursor-pointer shrink-0"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          {/* Our Portals Container - Seamlessly joined and strictly flush to the website frame's right edge (0px right gap) */}
+          <div 
+            ref={portalContainerRef}
+            onMouseLeave={() => setHoveredPortal(null)}
+            className="hidden sm:flex items-stretch self-stretch h-full p-0 m-0 shrink-0 select-none overflow-hidden"
+          >
             {/* BCRS (Bangalir Chinta) Portal Link */}
-            <motion.a
+            <a
               ref={bcrsRef}
               href={bcrsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex items-center justify-center overflow-hidden px-1.5 lg:px-1 xl:px-1.5 min-[1366px]:px-2.5 2xl:px-4 border-l border-r border-[#B8862A]/10 text-xs font-bold transition shrink-0 cursor-pointer h-full min-w-[70px] lg:min-w-[55px] xl:min-w-[65px] min-[1366px]:min-w-[78px] min-[1440px]:min-w-[90px] 2xl:min-w-[115px] z-10"
+              onMouseEnter={() => setHoveredPortal('bcrs')}
+              className="group relative flex items-center justify-center overflow-hidden px-1.5 sm:px-2 min-[1366px]:px-3 2xl:px-4 border-l border-r border-[#B8862A]/20 text-xs font-bold transition shrink-0 cursor-pointer h-full z-10 select-none will-change-[width]"
               title={bcrsTooltip}
-              style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 100%, 0 100%)' }}
+              style={{ 
+                clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%)',
+                width: '125px'
+              }}
             >
               {/* Background Image with Hover Scale */}
               <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-550 group-hover:scale-115 scale-110"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 ease-out group-hover:scale-115 scale-105"
                 style={{ backgroundImage: `url("${bcrsBgImage}")` }}
               />
               <div 
@@ -638,39 +583,39 @@ export default function Navbar({
                 style={{ backgroundColor: `rgba(12, 10, 9, ${bcrsOpacity})` }}
               />
               
-              <div className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-[#B8862A]/25 to-transparent pointer-events-none group-hover:via-[#B8862A]/60 transition-all duration-500" />
-              <div className="absolute right-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-[#B8862A]/25 to-transparent pointer-events-none group-hover:via-[#B8862A]/60 transition-all duration-500" />
-              <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.7)] group-hover:shadow-[inset_0_0_20px_rgba(184,134,42,0.35)] transition-shadow duration-500 pointer-events-none" />
+              <div className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-[#B8862A]/30 to-transparent pointer-events-none group-hover:via-[#B8862A]/70 transition-all duration-300" />
+              <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.7)] group-hover:shadow-[inset_0_0_20px_rgba(184,134,42,0.35)] transition-shadow duration-300 pointer-events-none" />
 
-              <motion.div
-                className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-25 pointer-events-none z-10"
-                initial={{ left: '-150%' }}
-                whileHover={{ left: '150%' }}
-                transition={{ duration: 1.2, ease: "easeInOut" }}
-              />
+              {/* Light sheen animation */}
+              <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-25 pointer-events-none transition-transform duration-1000 -translate-x-[150%] group-hover:translate-x-[150%]" />
 
-              <motion.div 
-                className="relative z-10 flex items-center space-x-1 text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)] whitespace-nowrap"
-                whileHover={{ y: -1.5 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+              <div 
+                ref={bcrsTextRef}
+                className="relative z-10 flex items-center space-x-1 text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)] whitespace-nowrap transition-transform duration-300 group-hover:-translate-y-0.5"
               >
                 <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#F0CC7A] shrink-0" />
-                <span ref={bcrsTextRef} className="font-serif tracking-wide text-[10px] lg:text-[8.5px] xl:text-[9.5px] min-[1366px]:text-[10.5px] min-[1440px]:text-[12px] 2xl:text-[13.5px]">{bcrsTitle}</span>
-              </motion.div>
-            </motion.a>
+                <span className="font-serif tracking-wide text-[10px] sm:text-[10.5px] min-[1366px]:text-[11.5px] min-[1440px]:text-[12.5px] 2xl:text-[14px]">
+                  {bcrsTitle}
+                </span>
+              </div>
+            </a>
 
             {/* Alor Pathshala Portal Link */}
-            <motion.a
+            <a
               ref={alorRef}
               href={alorUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex items-center justify-center overflow-hidden px-1.5 lg:px-1 xl:px-1.5 min-[1366px]:px-2.5 2xl:px-4 -ml-[8px] border-r border-[#2E5942]/10 text-xs font-bold transition shrink-0 cursor-pointer h-full min-w-[75px] lg:min-w-[60px] xl:min-w-[70px] min-[1366px]:min-w-[85px] min-[1440px]:min-w-[98px] 2xl:min-w-[125px] z-0"
+              onMouseEnter={() => setHoveredPortal('alor')}
+              className="group relative flex items-center justify-center overflow-hidden px-1.5 sm:px-2 min-[1366px]:px-3 2xl:px-4 -ml-[10px] border-r border-[#2E5942]/20 text-xs font-bold transition shrink-0 cursor-pointer h-full z-0 select-none will-change-[width]"
               title={alorTooltip}
-              style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 8px 100%)' }}
+              style={{ 
+                clipPath: 'polygon(0 0, 100% 0, 100% 100%, 10px 100%)',
+                width: '125px'
+              }}
             >
               <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-550 group-hover:scale-115 scale-110"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 ease-out group-hover:scale-115 scale-105"
                 style={{ backgroundImage: `url("${alorBgImage}")` }}
               />
               <div 
@@ -678,34 +623,23 @@ export default function Navbar({
                 style={{ backgroundColor: `rgba(12, 10, 9, ${alorOpacity})` }}
               />
               
-              <div className="absolute right-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-[#2E5942]/25 to-transparent pointer-events-none group-hover:via-[#2E5942]/60 transition-all duration-500" />
-              <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.7)] group-hover:shadow-[inset_0_0_20px_rgba(46,89,66,0.35)] transition-shadow duration-500 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-[#2E5942]/30 to-transparent pointer-events-none group-hover:via-[#2E5942]/70 transition-all duration-300" />
+              <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.7)] group-hover:shadow-[inset_0_0_20px_rgba(46,89,66,0.35)] transition-shadow duration-300 pointer-events-none" />
 
-              <motion.div
-                className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-25 pointer-events-none z-10"
-                initial={{ left: '-150%' }}
-                whileHover={{ left: '150%' }}
-                transition={{ duration: 1.2, ease: "easeInOut" }}
-              />
+              {/* Light sheen animation */}
+              <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-25 pointer-events-none transition-transform duration-1000 -translate-x-[150%] group-hover:translate-x-[150%]" />
 
-              <motion.div 
-                className="relative z-10 flex items-center space-x-1 text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)] whitespace-nowrap"
-                whileHover={{ y: -1.5 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+              <div 
+                ref={alorTextRef}
+                className="relative z-10 flex items-center space-x-1 text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)] whitespace-nowrap transition-transform duration-300 group-hover:-translate-y-0.5"
               >
                 <GraduationCap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#F0CC7A] shrink-0" />
-                <span ref={alorTextRef} className="font-serif tracking-wide text-[10px] lg:text-[8.5px] xl:text-[9.5px] min-[1366px]:text-[10.5px] min-[1440px]:text-[12px] 2xl:text-[13.5px]">{alorTitle}</span>
-              </motion.div>
-            </motion.a>
+                <span className="font-serif tracking-wide text-[10px] sm:text-[10.5px] min-[1366px]:text-[11.5px] min-[1440px]:text-[12.5px] 2xl:text-[14px]">
+                  {alorTitle}
+                </span>
+              </div>
+            </a>
           </div>
-
-          {/* Mobile Hamburguer Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 mr-2 sm:mr-4 rounded-lg border border-[#B8862A]/20 bg-[#B8862A]/10 text-[#B8862A] hover:bg-[#B8862A]/25 transition cursor-pointer"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
 
         </div>
       </div>

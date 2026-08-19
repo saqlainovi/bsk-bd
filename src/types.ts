@@ -1,6 +1,7 @@
 export interface PageSection {
   title: string;
   content: string[];
+  content_en?: string[];
   image?: string;
   period?: string;
   is_former?: boolean;
@@ -86,6 +87,11 @@ export interface ParsedPage {
   title_bn: string;
   title_en: string;
   html_title: string;
+  category?: string;
+  hero_desc_bn?: string;
+  hero_desc_en?: string;
+  created_at?: string;
+  updated_at?: string;
   sections: PageSection[];
   key_facts?: KeyFact[];
   

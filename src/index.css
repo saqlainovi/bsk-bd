@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;500;600;700;800;900&family=Tiro+Bangla:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Hind Siliguri", "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Noto Serif Bengali", "DM Serif Display", Georgia, serif;
+  --font-sans: "Hind Siliguri", "Noto Sans Bengali", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "SolaimanLipi", "Kalpurush", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali", "Tiro Bangla", "DM Serif Display", Georgia, "SutonnyMJ", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-ink: #1A1207;
-  --color-ink2: #3D2B14;
-  --color-ink3: #6B5135;
+  --color-ink: #140E06;
+  --color-ink2: #2B1E0E;
+  --color-ink3: #4A3824;
   --color-gold: #B8862A;
   --color-gold2: #D4A84B;
   --color-gold3: #F0CC7A;
@@ -20,21 +20,62 @@
   --color-bsk-rust: #8B3A1E;
 }
 
+/* Responsive Dynamic Typography Baseline - Scaled for high clarity across screens */
 html {
+  font-size: 16px;
   overflow-x: hidden;
   max-width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 16.5px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 17.5px;
+  }
 }
 
 body {
   background-color: #FFFFFF;
-  color: #1A1207;
+  color: #140E06;
   font-family: var(--font-sans);
+  font-weight: 450;
+  line-height: 1.68;
+  letter-spacing: 0.012em;
   overflow-x: hidden;
   max-width: 100%;
   width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Enhanced font weight & clarity for headings & titles */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: #140E06;
+  text-rendering: optimizeLegibility;
+}
+
+/* Sharp readability for bold and emphasis text */
+b, strong {
+  font-weight: 700;
+  color: #140E06;
 }
 
 #root {
@@ -124,10 +165,20 @@ img {
   image-rendering: crisp-edges;
 }
 
-/* Universal Paragraph Text Justification Across the Website */
+/* Universal Paragraph Text Justification & Readability Across the Website */
 p {
   text-align: justify;
   text-justify: inter-word;
+  color: #1F170E;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Enhanced high-contrast readability for body elements */
+button, input, textarea, select {
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Prose and Markdown Content Justification */
@@ -136,6 +187,9 @@ p {
 article p {
   text-align: justify;
   text-justify: inter-word;
+  color: #1F170E;
+  font-size: 1.05rem;
+  line-height: 1.75;
 }
 
 /* Explicit alignment overrides preserve their intentional styling */
@@ -147,6 +201,15 @@ p.text-left,
 .text-left p,
 .no-justify {
   text-align: inherit;
+}
+
+/* Boosted contrast for muted and small texts to eliminate haziness/blurriness */
+.text-stone-500, .text-stone-600 {
+  color: #382A1B !important;
+}
+
+.text-stone-400 {
+  color: #594735 !important;
 }
 
 

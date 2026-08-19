@@ -3,10 +3,9 @@ import {
   FileText, Plus, Edit2, Trash2, Save, X, Upload, Image as ImageIcon, PhoneCall, Mail
 } from 'lucide-react';
 import { 
-  collection, doc, setDoc, deleteDoc, onSnapshot 
-} from 'firebase/firestore';
+  collection, doc, setDoc, deleteDoc, onSnapshot, handleFirestoreError, OperationType
+} from '../firebase';
 import { Language } from '../types';
-import { handleFirestoreError, OperationType } from '../firebase';
 import { safeCacheData } from './cacheUtils';
 
 interface PressCMSProps {
