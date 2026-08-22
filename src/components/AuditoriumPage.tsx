@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Landmark, Calendar, Clock, Phone, Mail, MapPin, Search, 
-  Sparkles, CheckCircle2, ShieldAlert, Info, ArrowRight,
+  CheckCircle2, ShieldAlert, Info, ArrowRight,
   Tv, Mic, Wifi, Users, ChevronRight, FileText, Check, X, 
   AlertTriangle, Send, Building, LayoutGrid, Coffee, 
   Download, Printer, DollarSign, Layers

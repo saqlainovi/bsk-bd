@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Coffee, Utensils, Clock, MapPin, Sparkles, CheckCircle2, 
+  Coffee, Utensils, Clock, MapPin, CheckCircle2, 
   Image as ImageIcon, Eye, X
 } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
@@ -85,7 +85,7 @@ export const CafePage: React.FC<CafePageProps> = ({
       {/* --- 2. ENVIRONMENT & HIGHLIGHTS --- */}
       <div className="bg-[#FAF7F2] rounded-2xl p-6 border border-[#E8DDD0] space-y-4 shadow-xs">
         <h2 className="text-xl font-bold text-[#140E06] font-serif flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#B8862A]" />
+          <Coffee className="w-5 h-5 text-[#B8862A]" />
           <span>{isBn ? 'ক্যাফেটেরিয়ার বৈশিষ্ট্য ও পরিবেশ' : 'Cafeteria Highlights & Ambiance'}</span>
         </h2>
 

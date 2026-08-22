@@ -614,7 +614,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   return (
     <div className="space-y-8 animate-fade-in text-[#1A1207]">
       {/* Page Header banner */}
-      {page.id !== 'press' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && page.id !== 'bookshop' && page.id !== 'auditorium' && page.id !== 'facilities' && (
+      {page.id !== 'press' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && page.id !== 'bookshop' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'cafe' && page.id !== 'building' && page.id !== 'publication' && (
         <div className="border-b border-[#B8862A]/20 pb-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between">
             <div className="space-y-1">

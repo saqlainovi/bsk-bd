@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Building2, Landmark, MapPin, Layers, CheckCircle2, 
-  Sparkles, Clock, Phone, Mail, ArrowRight, ShieldCheck, 
+  Building, Clock, Phone, Mail, ArrowRight, ShieldCheck, 
   Coffee, BookOpen, Tv, Users, Image as ImageIcon, ExternalLink,
   ChevronRight, Calendar
 } from 'lucide-react';
@@ -472,7 +472,7 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
       <div className="bg-gradient-to-r from-[#FAF7F2] to-[#F7EFE5] border-2 border-[#B8862A]/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
         <div className="space-y-2 text-left">
           <div className="inline-flex items-center space-x-2 bg-[#B8862A]/15 text-[#8C6212] px-3 py-1 rounded-full text-xs font-bold font-mono">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Building className="w-3.5 h-3.5" />
             <span>{language === 'bn' ? 'মিলনায়তন বুকিং সেবা' : 'Auditorium Booking Service'}</span>
           </div>
           <h3 className="font-serif text-2xl font-extrabold text-[#1A1207]">

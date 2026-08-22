@@ -4,7 +4,7 @@ import {
   CheckCircle, ArrowLeft, Upload, AlertCircle, Eye, Globe2, BookOpen, Compass, Info,
   Bell, Calendar, Mail, Briefcase, Paperclip, ArrowUpRight, UserCheck, Download, Sparkles,
   Award, History, PlusCircle, ImagePlus, Quote, GraduationCap, Phone, Pencil, ShieldCheck,
-  Sliders
+  Sliders, Database
 } from 'lucide-react';
 import { 
   db, auth, OperationType, handleFirestoreError,
@@ -183,7 +183,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
   const [authLoading, setAuthLoading] = useState<boolean>(false);
 
   // Active Admin Tab
-  const [activeTab, setActiveTab] = useState<'hero' | 'activities' | 'blocks' | 'stats' | 'programs' | 'galleries' | 'movement' | 'about_management' | 'programs_cms' | 'notice_board' | 'contact' | 'recruitment' | 'press_cms' | 'blog_cms'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'activities' | 'blocks' | 'stats' | 'programs' | 'galleries' | 'movement' | 'about_management' | 'programs_cms' | 'notice_board' | 'contact' | 'recruitment' | 'press_cms' | 'blog_cms' | 'database_cms'>('hero');
 
   // Firestore DB status
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
@@ -1966,6 +1966,19 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
               >
                 <BookOpen className="h-4 w-4" />
                 <span>{language === 'bn' ? '১৪. ব্লগ নিবন্ধ ও রিভিউ' : '14. Blog & Reviews'}</span>
+              </button>
+
+              {/* Tab 15: Database & MySQL Backup */}
+              <button
+                onClick={() => { setActiveTab('database_cms'); }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold leading-none tracking-wide transition cursor-pointer text-left ${
+                  activeTab === 'database_cms' 
+                    ? 'bg-[#2E5942] text-white shadow-md' 
+                    : 'text-stone-700 hover:bg-[#2E5942]/5'
+                }`}
+              >
+                <Database className="h-4 w-4 text-[#B8862A]" />
+                <span>{language === 'bn' ? '১৫. ডাটাবেস ও ব্যাকআপ (MySQL)' : '15. Database & SQL Backup'}</span>
               </button>
             </div>
 
@@ -11865,6 +11878,143 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         )}
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* TAB 15: DATABASE MANAGEMENT & MYSQL BACKUP */}
+                {activeTab === 'database_cms' && (
+                  <div className="space-y-6 font-sans text-left">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                      <div>
+                        <h3 className="text-lg font-serif font-extrabold text-[#1A1207] flex items-center gap-2">
+                          <Database className="h-5 w-5 text-[#B8862A]" />
+                          <span>{language === 'bn' ? '১৫. ডাটাবেস ব্যবস্থাপনা ও cPanel / MySQL ব্যাকআপ' : '15. Database Management & MySQL Export'}</span>
+                        </h3>
+                        <p className="text-xs text-stone-500 mt-0.5">
+                          {language === 'bn' 
+                            ? 'আপনার ওয়েবসাইটের সর্বমোট ২২টি ডাটাবেস টেবিল, cPanel / phpMyAdmin ইম্পোর্ট ডাম্প ও ব্যাকআপ ফাইল নিয়ন্ত্রণ করুন' 
+                            : 'Manage 22 full database tables, cPanel/phpMyAdmin dumps & live database state'}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={checkDbConnection}
+                          disabled={checkingDb}
+                          className={`px-3.5 py-2 text-xs font-bold rounded-xl transition flex items-center gap-2 cursor-pointer border ${
+                            checkingDb 
+                              ? 'bg-stone-100 text-stone-400 border-stone-200' 
+                              : isDbConnected 
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' 
+                                : 'bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100'
+                          }`}
+                        >
+                          <span className={`w-2.5 h-2.5 rounded-full ${isDbConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse'}`} />
+                          <span>
+                            {checkingDb 
+                              ? (language === 'bn' ? 'পরীক্ষা হচ্ছে...' : 'Testing...') 
+                              : isDbConnected 
+                                ? (language === 'bn' ? 'ডাটাবেস কানেকশন: সচল 🟢' : 'DB Connected 🟢') 
+                                : (language === 'bn' ? 'ডাটাবেস কানেকশন: অফলাইন 🔴' : 'DB Offline 🔴')}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Card 1: MySQL Dump bskbd_new.sql */}
+                      <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4">
+                        <div className="flex items-center gap-3 border-b pb-3 border-stone-100">
+                          <div className="p-2.5 bg-[#2E5942]/10 text-[#2E5942] rounded-xl">
+                            <Download className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-serif font-extrabold text-stone-900 text-sm md:text-base">
+                              {language === 'bn' ? 'phpMyAdmin / MySQL ডাটাবেস ডাম্প (bskbd_new.sql)' : 'phpMyAdmin MySQL Dump (bskbd_new.sql)'}
+                            </h4>
+                            <p className="text-[11px] text-stone-500">
+                              {language === 'bn' ? 'cPanel-এর phpMyAdmin-এ সরাসরি ইম্পোর্ট করার জন্য উপযোগী পূর্ণাঙ্গ SQL ফাইল' : 'Ready to import into cPanel phpMyAdmin with 22 structured tables'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8DDD0] space-y-2">
+                          <span className="text-[10px] font-bold text-[#8C6212] uppercase tracking-wider block">
+                            {language === 'bn' ? 'ডাটাবেসে অন্তর্ভুক্ত ২২টি টেবিল:' : 'Included Database Tables (22 Total):'}
+                          </span>
+                          <p className="text-[11px] font-mono text-stone-700 leading-relaxed bg-white p-2.5 rounded-lg border border-stone-200">
+                            bsk_admin_users, bsk_blog_reviews, bsk_documents, bsk_events, bsk_hero_slides, bsk_homepage_blocks, bsk_inquiries, bsk_job_applications, bsk_media_files, bsk_news, bsk_notices, bsk_photo_albums, bsk_press, bsk_programs, bsk_recent_activities, bsk_recruitment_circulars, bsk_settings, bsk_website_pages, hero_slides, inquiries, notices, website_pages
+                          </p>
+                        </div>
+
+                        <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                          <a
+                            href="/bskbd_new.sql"
+                            download="bskbd_new.sql"
+                            className="flex-1 py-2.5 bg-[#2E5942] hover:bg-[#234734] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center justify-center gap-2 cursor-pointer text-center"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span>{language === 'bn' ? 'bskbd_new.sql ফাইল ডাউনলোড করুন' : 'Download bskbd_new.sql File'}</span>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Card 2: Live Seed & Bootstrap */}
+                      <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4">
+                        <div className="flex items-center gap-3 border-b pb-3 border-stone-100">
+                          <div className="p-2.5 bg-[#B8862A]/10 text-[#B8862A] rounded-xl">
+                            <RefreshCw className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-serif font-extrabold text-stone-900 text-sm md:text-base">
+                              {language === 'bn' ? 'অনলাইন ক্লাউড ডাটাবেস লোডার' : 'Cloud / Firestore Seed & Bootstrap'}
+                            </h4>
+                            <p className="text-[11px] text-stone-500">
+                              {language === 'bn' ? 'লাইভ ক্লাউড ডাটাবেসে বিশ্বসাহিত্য কেন্দ্রের প্রমিত সকল কন্টেন্ট নতুন করে লোড করুন' : 'Populate BSK standard default content into the live Cloud database'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E8DDD0] space-y-2">
+                          <span className="text-[10px] font-bold text-[#8C6212] uppercase tracking-wider block">
+                            {language === 'bn' ? 'স্বয়ংক্রিয় সেটআপ সুবিধা:' : 'Automatic Setup Actions:'}
+                          </span>
+                          <ul className="text-[11px] text-stone-600 space-y-1 list-disc list-inside font-medium">
+                            <li>{language === 'bn' ? 'হোমপেজ ব্যানার স্লাইডার ও কার্যক্রম ডাটা লোড' : 'Seed homepage banners & activities'}</li>
+                            <li>{language === 'bn' ? 'সকল পেজের মৌলিক টেক্সট কপি রেডি রাখা' : 'Initialize all page texts & custom sections'}</li>
+                            <li>{language === 'bn' ? 'অডিটোরিয়াম, ক্যাফেটেরিয়া, লাইব্রেরি ও বুক শপ কন্টেন্ট' : 'Populate halls, cafe, library & bookshop info'}</li>
+                          </ul>
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={handleBootstrapDB}
+                            className="w-full py-2.5 bg-[#B8862A] hover:bg-[#966b1e] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            <span>{language === 'bn' ? 'ক্লাউড ডাটাবেস সম্পূর্ণ বুটস্ট্র্যাপ করুন' : 'Seed BSK Cloud Database Now'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Instructions Box */}
+                    <div className="bg-[#2E5942]/5 border-2 border-[#2E5942]/20 rounded-2xl p-5 space-y-3">
+                      <h4 className="font-serif font-extrabold text-[#2E5942] text-sm flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-[#B8862A]" />
+                        <span>{language === 'bn' ? 'cPanel / phpMyAdmin-ইম্পোর্ট গাইড' : 'How to Import this Database into cPanel / phpMyAdmin?'}</span>
+                      </h4>
+                      <ol className="text-xs text-stone-700 space-y-2 list-decimal list-inside font-medium leading-relaxed">
+                        <li>{language === 'bn' ? 'cPanel ড্যাশবোর্ডে প্রবেশ করে phpMyAdmin অপশনে যান।' : 'Log into your cPanel dashboard and open phpMyAdmin.'}</li>
+                        <li>{language === 'bn' ? 'বামের ডাটাবেস তালিকা থেকে bskbd_new বা আপনার তৈরি ডাটাবেস সিলেক্ট করুন।' : 'Select your database (bskbd_new) from the left sidebar.'}</li>
+                        <li>{language === 'bn' ? 'উপরের "Import" ট্যাবে ক্লিক করে "Choose File" থেকে bskbd_new.sql ফাইলটি আপলোড করুন।' : 'Click the "Import" tab at the top and choose the downloaded bskbd_new.sql file.'}</li>
+                        <li>{language === 'bn' ? 'নিচের "Go" বাটনে ক্লিক করলেই কয়েক সেকেন্ডের মধ্যে ২২টি টেবিল এবং যাবতীয় তথ্য ইম্পোর্ট হয়ে যাবে।' : 'Click the "Go" button to automatically create all 22 tables and import data.'}</li>
+                      </ol>
+                    </div>
                   </div>
                 )}
 
