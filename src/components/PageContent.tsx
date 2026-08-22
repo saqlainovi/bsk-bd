@@ -28,6 +28,7 @@ import { MobileLibraryPage } from './MobileLibraryPage';
 import { CafePage } from './CafePage';
 import { AuditoriumPage } from './AuditoriumPage';
 import { BuildingPage } from './BuildingPage';
+import { BookShopPage } from './BookShopPage';
 
 interface PageContentProps {
   page: ParsedPage;
@@ -613,7 +614,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   return (
     <div className="space-y-8 animate-fade-in text-[#1A1207]">
       {/* Page Header banner */}
-      {page.id !== 'press' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && (
+      {page.id !== 'press' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && page.id !== 'bookshop' && page.id !== 'auditorium' && page.id !== 'facilities' && (
         <div className="border-b border-[#B8862A]/20 pb-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between">
             <div className="space-y-1">
@@ -4012,9 +4013,18 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
           <BuildingPage page={page} language={language} onNavigate={onNavigate} />
         ) : page.id === 'cafe' ? (
           <CafePage page={page} language={language} onNavigate={onNavigate} />
+        ) : page.id === 'bookshop' ? (
+          <BookShopPage
+            page={page}
+            language={language}
+            onNavigate={onNavigate}
+            setActivePhoto={setActivePhoto}
+            setActivePhotoIndex={setActivePhotoIndex}
+            setActiveAlbumPhotos={setActiveAlbumPhotos}
+          />
         ) : (
           <div className="space-y-6 w-full">
-            {page.id !== 'press' && page.id !== 'notice' && page.id !== 'central-library' && page.id !== 'ataglance' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'building' && page.id !== 'cafe' && Array.isArray(page.sections) && page.sections.map((sec, sIdx) => {
+            {page.id !== 'press' && page.id !== 'notice' && page.id !== 'central-library' && page.id !== 'ataglance' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'building' && page.id !== 'cafe' && page.id !== 'bookshop' && Array.isArray(page.sections) && page.sections.map((sec, sIdx) => {
               // If section contains zero paragraphs, let's skip or show a notice
               if ((!sec.content || !Array.isArray(sec.content) || sec.content.length === 0) && !sec.title) return null;
               

@@ -3,7 +3,7 @@ import {
   Landmark, Calendar, Clock, Phone, Mail, MapPin, Search, 
   Sparkles, CheckCircle2, ShieldAlert, Info, ArrowRight,
   Tv, Mic, Wifi, Users, ChevronRight, FileText, Check, X, 
-  AlertTriangle, Calculator, Send, Building, LayoutGrid, Coffee, 
+  AlertTriangle, Send, Building, LayoutGrid, Coffee, 
   Download, Printer, DollarSign, Layers
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
@@ -51,21 +51,12 @@ export interface RoomOption {
 }
 
 export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, onNavigate }) => {
-  // Navigation / View mode: 'all' | 'table' | 'calculator' | 'rules'
-  const [activeSection, setActiveSection] = useState<'all' | 'table' | 'calculator' | 'rules'>('all');
+  // Navigation / View mode: 'all' | 'table' | 'rules'
+  const [activeSection, setActiveSection] = useState<'all' | 'table' | 'rules'>('all');
   
   // Filter for Room Cards
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Calculator State
-  const [calcRoomId, setCalcRoomId] = useState<string>('r103');
-  const [calcShiftType, setCalcShiftType] = useState<'single' | 'double'>('single');
-  const [calcIsAc, setCalcIsAc] = useState<boolean>(true);
-  const [calcAddSound, setCalcAddSound] = useState<boolean>(true);
-  const [calcAddMultimedia, setCalcAddMultimedia] = useState<boolean>(false);
-  const [calcAddProjector, setCalcAddProjector] = useState<boolean>(true);
-  const [calcWifiDevices, setCalcWifiDevices] = useState<number>(3);
 
   // Booking Modal State
   const [bookingModalOpen, setBookingModalOpen] = useState<boolean>(false);
@@ -336,19 +327,6 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
     return matchesCat && matchesQuery;
   });
 
-  // Calculate rent dynamically for calculator
-  const calcRoom = roomsData.find(r => r.id === calcRoomId) || roomsData[0];
-  const calcBaseRent = calcShiftType === 'single'
-    ? (calcRoom.hasAcOption ? (calcIsAc ? calcRoom.singleShiftAc : calcRoom.singleShiftNonAc) : calcRoom.singleShiftAc)
-    : (calcRoom.hasAcOption ? (calcIsAc ? calcRoom.doubleShiftAc : calcRoom.doubleShiftNonAc) : calcRoom.doubleShiftAc);
-
-  const calcShiftMultiplier = calcShiftType === 'single' ? 1 : 2;
-  const calcSoundFee = calcAddSound ? calcRoom.soundSystemCost * calcShiftMultiplier : 0;
-  const calcMediaFee = calcAddMultimedia ? calcRoom.multimediaCost * calcShiftMultiplier : 0;
-  const calcProjectorFee = calcAddProjector ? calcRoom.projectorCost * calcShiftMultiplier : 0;
-  const calcWifiFee = calcWifiDevices <= 3 ? 1000 : 1000 + (calcWifiDevices - 3) * 200;
-  const calcTotalCost = calcBaseRent + calcSoundFee + calcMediaFee + calcProjectorFee + calcWifiFee;
-
   // Submit Booking Form to Firestore
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -517,18 +495,6 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
 
               <button
                 onClick={() => {
-                  setActiveSection('calculator');
-                  const el = document.getElementById('calc-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="inline-flex items-center space-x-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all cursor-pointer"
-              >
-                <Calculator className="w-4 h-4 text-[#F0CC7A]" />
-                <span>{language === 'bn' ? 'ভাড়া ক্যালকুলেটর (Estimator)' : 'Rent Estimator'}</span>
-              </button>
-
-              <button
-                onClick={() => {
                   setTargetRoom(roomsData[0]);
                   setBookingModalOpen(true);
                 }}
@@ -593,18 +559,6 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
           >
             <FileText className="w-4 h-4" />
             <span>{language === 'bn' ? 'অফিশিয়াল মূল্য তালিকা ও আসবাবপত্র' : 'Official Price & Furniture Table'}</span>
-          </button>
-
-          <button
-            onClick={() => setActiveSection('calculator')}
-            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center space-x-2 cursor-pointer ${
-              activeSection === 'calculator'
-                ? 'bg-[#B8862A] text-white shadow-xs'
-                : 'bg-white text-stone-700 border border-[#E8DDD0] hover:border-[#B8862A] hover:text-[#B8862A]'
-            }`}
-          >
-            <Calculator className="w-4 h-4" />
-            <span>{language === 'bn' ? 'ভাড়া ক্যালকুলেটর' : 'Rent Estimator'}</span>
           </button>
 
           <button
@@ -893,19 +847,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => {
-                      setCalcRoomId(room.id);
-                      setActiveSection('calculator');
-                      const el = document.getElementById('calc-section');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="text-xs text-[#8C6212] font-bold hover:underline inline-flex items-center space-x-1 cursor-pointer"
-                  >
-                    <Calculator className="w-3.5 h-3.5 text-[#B8862A]" />
-                    <span>{language === 'bn' ? 'খরচ হিসাব' : 'Estimate'}</span>
-                  </button>
+                <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-2">
 
                   <button
                     onClick={() => {
@@ -923,307 +865,6 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
             ))}
           </div>
 
-        </div>
-      )}
-
-
-      {/* 5. SECTION: RENT CALCULATOR */}
-      {(activeSection === 'all' || activeSection === 'calculator') && (
-        <div id="calc-section" className="bg-white border border-[#E8DDD0] rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-          
-          <div className="flex items-center space-x-3 border-b border-[#E8DDD0] pb-4">
-            <div className="p-3 bg-[#F7EFE5] text-[#8C6212] rounded-2xl">
-              <Calculator className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="font-serif text-2xl font-extrabold text-[#1A1207]">
-                {language === 'bn' ? 'বিএসকে মিলনায়তন ভাড়া ও আনুষঙ্গিক খরচ পরিমাপক' : 'BSK Auditorium Rental Cost Estimator'}
-              </h2>
-              <p className="text-xs text-stone-600 font-sans mt-0.5">
-                {language === 'bn'
-                  ? 'আপনার কাঙ্ক্ষিত রুম, শিফট এবং অতিরিক্ত সাউন্ড/প্রজেক্টর/ইন্টারনেট নির্বাচন করে মুহূর্তেই প্রাক্কলিত মোট খরচ হিসাব করুন।'
-                  : 'Select room, shift type, AC option, and accessories to compute instant total estimated rent with VAT.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* Left Inputs */}
-            <div className="lg:col-span-7 space-y-5">
-              
-              {/* Select Room */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-800 font-serif block">
-                  {language === 'bn' ? '১. রুম চয়ন করুন (Select Room / Hall):' : '1. Select Room:'}
-                </label>
-                <select
-                  value={calcRoomId}
-                  onChange={(e) => setCalcRoomId(e.target.value)}
-                  className="w-full p-3 bg-[#FAF8F5] border border-[#E8DDD0] rounded-xl text-xs font-bold text-[#1A1207] focus:ring-2 focus:ring-[#B8862A]"
-                >
-                  {roomsData.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.titleBn} — (রুম {r.roomNo}, {r.capacityBn})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Shift Type */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-800 font-serif block">
-                  {language === 'bn' ? '২. সময় / শিফট চয়ন:' : '2. Select Shift:'}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setCalcShiftType('single')}
-                    className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
-                      calcShiftType === 'single'
-                        ? 'bg-[#B8862A] text-white border-[#B8862A] shadow-xs'
-                        : 'bg-white text-stone-700 border-stone-200 hover:border-[#B8862A]'
-                    }`}
-                  >
-                    <span className="block font-serif text-sm">{language === 'bn' ? '১ শিফট (৫ ঘণ্টা)' : '1 Shift (5 Hours)'}</span>
-                    <span className="text-[10px] opacity-80 font-normal font-sans block mt-0.5">
-                      {language === 'bn' ? 'সকাল ৯-২ টা অথবা বিকাল ৪-৯ টা' : 'Morning or Evening'}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCalcShiftType('double')}
-                    className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
-                      calcShiftType === 'double'
-                        ? 'bg-[#B8862A] text-white border-[#B8862A] shadow-xs'
-                        : 'bg-white text-stone-700 border-stone-200 hover:border-[#B8862A]'
-                    }`}
-                  >
-                    <span className="block font-serif text-sm">{language === 'bn' ? '২ শিফট (পুরো দিন)' : '2 Shifts (Full Day)'}</span>
-                    <span className="text-[10px] opacity-80 font-normal font-sans block mt-0.5">
-                      {language === 'bn' ? 'সকাল ৯:০০ থেকে রাত ৯:০০ টা' : 'Full Day Duration'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* AC Radio Option if room supports non-AC/AC */}
-              {calcRoom.hasAcOption && (
-                <div className="space-y-1.5 bg-[#FAF2E6] p-3 rounded-xl border border-[#B8862A]/20">
-                  <label className="text-xs font-bold text-stone-800 font-serif block">
-                    {language === 'bn' ? '৩. কুলিং টাইপ (AC / Non-AC Option):' : '3. Cooling Option:'}
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-stone-800 cursor-pointer">
-                      <input 
-                        type="radio"
-                        name="calcAcOption"
-                        checked={calcIsAc}
-                        onChange={() => setCalcIsAc(true)}
-                        className="text-[#B8862A]"
-                      />
-                      <span>{language === 'bn' ? 'এসি (Air Conditioned)' : 'AC Air Conditioned'}</span>
-                    </label>
-                    <label className="flex items-center space-x-2 text-xs font-bold text-stone-800 cursor-pointer">
-                      <input 
-                        type="radio"
-                        name="calcAcOption"
-                        checked={!calcIsAc}
-                        onChange={() => setCalcIsAc(false)}
-                        className="text-[#B8862A]"
-                      />
-                      <span>{language === 'bn' ? 'নন-এসি (Non-AC)' : 'Non-AC'}</span>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {/* Accessories Checkboxes */}
-              <div className="space-y-2 pt-2 border-t border-stone-200">
-                <label className="text-xs font-bold text-stone-800 font-serif block">
-                  {language === 'bn' ? '৪. প্রয়োজনীয় অতিরিক্ত সরঞ্জামাদি:' : '4. Additional Equipment:'}
-                </label>
-
-                <div className="space-y-2 text-xs font-sans">
-                  {calcRoom.soundSystemCost > 0 && (
-                    <label className="flex items-center justify-between p-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl cursor-pointer">
-                      <span className="flex items-center space-x-2">
-                        <input 
-                          type="checkbox"
-                          checked={calcAddSound}
-                          onChange={(e) => setCalcAddSound(e.target.checked)}
-                          className="rounded text-[#B8862A]"
-                        />
-                        <Mic className="w-4 h-4 text-[#B8862A]" />
-                        <span>{language === 'bn' ? 'সাউন্ড সিস্টেম (Sound System)' : 'Sound System'}</span>
-                      </span>
-                      <span className="font-mono font-bold text-stone-700">
-                        ৳{(calcRoom.soundSystemCost * calcShiftMultiplier).toLocaleString('bn-BD')}/-
-                      </span>
-                    </label>
-                  )}
-
-                  <label className="flex items-center justify-between p-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl cursor-pointer">
-                    <span className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox"
-                        checked={calcAddMultimedia}
-                        onChange={(e) => setCalcAddMultimedia(e.target.checked)}
-                        className="rounded text-[#B8862A]"
-                      />
-                      <Tv className="w-4 h-4 text-[#B8862A]" />
-                      <span>{language === 'bn' ? 'মাল্টিমিডিয়া প্যানেল (Multimedia Panel)' : 'Multimedia Panel'}</span>
-                    </span>
-                    <span className="font-mono font-bold text-stone-700">
-                      ৳{(calcRoom.multimediaCost * calcShiftMultiplier).toLocaleString('bn-BD')}/-
-                    </span>
-                  </label>
-
-                  <label className="flex items-center justify-between p-2.5 bg-[#FAF8F5] border border-stone-200 rounded-xl cursor-pointer">
-                    <span className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox"
-                        checked={calcAddProjector}
-                        onChange={(e) => setCalcAddProjector(e.target.checked)}
-                        className="rounded text-[#B8862A]"
-                      />
-                      <Tv className="w-4 h-4 text-[#B8862A]" />
-                      <span>{language === 'bn' ? 'স্ক্রিনসহ প্রজেক্টর (Projector)' : 'Projector'}</span>
-                    </span>
-                    <span className="font-mono font-bold text-stone-700">
-                      ৳{(calcRoom.projectorCost * calcShiftMultiplier).toLocaleString('bn-BD')}/-
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Wi-Fi Devices */}
-              <div className="space-y-1.5 pt-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-stone-800 font-serif flex items-center space-x-1.5">
-                    <Wifi className="w-4 h-4 text-[#B8862A]" />
-                    <span>{language === 'bn' ? 'ইন্টারনেট ডিভাইস সংখ্যা:' : 'Wi-Fi Devices:'}</span>
-                  </label>
-                  <span className="font-mono text-xs font-bold text-[#B8862A]">
-                    {calcWifiDevices} {language === 'bn' ? 'টি ডিভাইস' : 'devices'}
-                  </span>
-                </div>
-                <input 
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={calcWifiDevices}
-                  onChange={(e) => setCalcWifiDevices(parseInt(e.target.value))}
-                  className="w-full accent-[#B8862A]"
-                />
-                <p className="text-[10px] text-stone-500 font-sans">
-                  {language === 'bn' 
-                    ? '* প্রথম ৩টি ডিভাইসের জন্য ১,০০০/- টাকা। অতিরিক্ত প্রতিটি ডিভাইসের জন্য ২০০/- টাকা চার্জ প্রযোজ্য।' 
-                    : '* First 3 devices BDT 1,000. BDT 200 for each additional device.'}
-                </p>
-              </div>
-
-            </div>
-
-            {/* Right Summary Box */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-[#2C2214] via-[#1A1207] to-[#0F0A04] text-white rounded-2xl p-6 flex flex-col justify-between space-y-6 shadow-lg border border-[#B8862A]/30">
-              
-              <div className="space-y-4">
-                <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                  <span className="text-xs font-bold font-mono uppercase text-[#F0CC7A] tracking-wider">
-                    {language === 'bn' ? 'আনুমানিক ভাড়ার বিবরণী' : 'Cost Breakdown'}
-                  </span>
-                  <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-stone-300">
-                    VAT Included
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="font-serif text-lg font-bold text-white">
-                    {language === 'bn' ? calcRoom.titleBn : calcRoom.titleEn}
-                  </h3>
-                  <p className="text-xs text-stone-300 font-mono">
-                    {language === 'bn' ? `রুম: ${calcRoom.roomNo} | ${calcRoom.capacityBn}` : `Room ${calcRoom.roomNo} | ${calcRoom.capacityEn}`}
-                  </p>
-                </div>
-
-                {/* Line Items */}
-                <div className="space-y-2 text-xs font-mono text-stone-200 pt-2 border-t border-white/10">
-                  <div className="flex justify-between">
-                    <span>{language === 'bn' ? 'মূল হল ভাড়া:' : 'Base Rent:'}</span>
-                    <span>৳{calcBaseRent.toLocaleString('bn-BD')}/-</span>
-                  </div>
-
-                  {calcSoundFee > 0 && (
-                    <div className="flex justify-between text-stone-300">
-                      <span>{language === 'bn' ? 'সাউন্ড সিস্টেম:' : 'Sound System:'}</span>
-                      <span>৳{calcSoundFee.toLocaleString('bn-BD')}/-</span>
-                    </div>
-                  )}
-
-                  {calcMediaFee > 0 && (
-                    <div className="flex justify-between text-stone-300">
-                      <span>{language === 'bn' ? 'মাল্টিমিডিয়া প্যানেল:' : 'Multimedia:'}</span>
-                      <span>৳{calcMediaFee.toLocaleString('bn-BD')}/-</span>
-                    </div>
-                  )}
-
-                  {calcProjectorFee > 0 && (
-                    <div className="flex justify-between text-stone-300">
-                      <span>{language === 'bn' ? 'প্রজেক্টর ও স্ক্রিন:' : 'Projector:'}</span>
-                      <span>৳{calcProjectorFee.toLocaleString('bn-BD')}/-</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-stone-300">
-                    <span>{language === 'bn' ? `ওয়াইফাই (${calcWifiDevices} ডিভাইস):` : `Wi-Fi (${calcWifiDevices} Dev):`}</span>
-                    <span>৳{calcWifiFee.toLocaleString('bn-BD')}/-</span>
-                  </div>
-                </div>
-
-                {/* Grand Total */}
-                <div className="bg-black/40 border border-[#B8862A]/40 p-4 rounded-xl space-y-1 text-center">
-                  <span className="text-[11px] text-stone-300 font-sans uppercase block">
-                    {language === 'bn' ? 'সর্বমোট প্রদেয় টাকা (ভ্যাট সহ):' : 'Grand Total Payable (VAT Inc):'}
-                  </span>
-                  <span className="font-mono text-3xl font-extrabold text-[#F0CC7A] block">
-                    ৳{calcTotalCost.toLocaleString('bn-BD')}/-
-                  </span>
-                </div>
-
-                <div className="text-[11px] text-stone-300 font-sans space-y-1 bg-white/5 p-3 rounded-lg border border-white/10">
-                  <p className="flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#F0CC7A] shrink-0" />
-                    <span>{language === 'bn' ? 'ভ্যাটের সাথে কোনো পৃথক চার্জ যোগ হবে না।' : 'No extra VAT charge. All rates are net.'}</span>
-                  </p>
-                  <p className="flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#F0CC7A] shrink-0" />
-                    <span>{language === 'bn' ? 'বুকিং এর সময় ৫০% অর্থ অগ্রিম প্রদান করতে হবে।' : '50% advance required upon booking.'}</span>
-                  </p>
-                </div>
-
-              </div>
-
-              <button
-                onClick={() => {
-                  setTargetRoom(calcRoom);
-                  setShiftSelection(calcShiftType === 'single' ? 'morning' : 'both');
-                  setAcSelection(calcIsAc);
-                  setReqSound(calcAddSound);
-                  setReqMultimedia(calcAddMultimedia);
-                  setReqProjector(calcAddProjector);
-                  setBookingModalOpen(true);
-                }}
-                className="w-full bg-[#B8862A] hover:bg-[#9A6D1F] text-white py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-2"
-              >
-                <Send className="w-4 h-4" />
-                <span>{language === 'bn' ? 'এই খরচে বুকিং আবেদন জমা দিন' : 'Submit Booking With Quote'}</span>
-              </button>
-
-            </div>
-
-          </div>
         </div>
       )}
 
