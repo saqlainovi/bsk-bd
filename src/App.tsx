@@ -10,22 +10,57 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, BookOpen, Clock, Globe, ArrowRight, HeartHandshake, Eye, MapPin, CheckCircle2, ChevronRight, X 
 } from 'lucide-react';
-import { db, collection, onSnapshot } from './firebase';
+import { cpanelApi } from './services/cpanelApi';
 import AdminCMS from './components/AdminCMS';
 import AdminLogin from './components/AdminLogin';
-import { isDirectusEnabled, fetchDirectusPages } from './services/directus';
+import JobApplicationPage from './components/JobApplicationPage';
+import { DonationPage } from './components/DonationPage';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = React.useState<string>('dashboard');
+  const isCmsSubdomain = React.useMemo(() => {
+    if (typeof window !== 'undefined' && ((window as any).__BSK_CMS_MODE__ === true || (window as any).__IS_CMS_ONLY__ === true)) {
+      return true;
+    }
+    if (typeof window === 'undefined') return false;
+    const host = window.location.hostname.toLowerCase();
+    const searchParams = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+
+    return (
+      host === 'cms.bskbd.org' ||
+      host.startsWith('cms.') ||
+      host.includes('cms-') ||
+      host.startsWith('admin.') ||
+      host.includes('admin-') ||
+      pathname === '/admin' ||
+      pathname.startsWith('/admin/') ||
+      pathname === '/cms' ||
+      pathname.startsWith('/cms/') ||
+      hash.includes('admin') ||
+      hash.includes('cms') ||
+      searchParams.get('mode') === 'cms' ||
+      searchParams.get('cms') === '1' ||
+      searchParams.get('admin') === '1'
+    );
+  }, []);
+
+  const [currentTab, setCurrentTab] = React.useState<string>(() => isCmsSubdomain ? 'admin' : 'dashboard');
   const [language, setLanguage] = React.useState<Language>('bn');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [isAdminCMSOpen, setIsAdminCMSOpen] = React.useState<boolean>(false);
   const [overriddenPages, setOverriddenPages] = React.useState<ParsedPage[]>([]);
-  const [isPageLoading, setIsPageLoading] = React.useState<boolean>(true);
+  const [activeApplyCircular, setActiveApplyCircular] = React.useState<any | null>(null);
+  const [isPageLoading, setIsPageLoading] = React.useState<boolean>(false);
   const [storageWarning, setStorageWarning] = React.useState<boolean>(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = React.useState<boolean>(() => {
     try {
-      return sessionStorage.getItem('bsk_admin_passcode_verified') === 'true';
+      return (
+        sessionStorage.getItem('bsk_admin_passcode_verified') === 'true' ||
+        sessionStorage.getItem('bsk_admin_authenticated') === 'true' ||
+        !!sessionStorage.getItem('bsk_admin_token') ||
+        !!localStorage.getItem('bsk_admin_token')
+      );
     } catch (_) {
       return false;
     }
@@ -61,57 +96,123 @@ export default function App() {
     };
   }, []);
 
-  // Intercept and synchronize URL paths or hashes
+  // Intercept and synchronize URL paths, query parameters, or hashes
   React.useEffect(() => {
-    const checkPath = (p: string) => {
-      const sanitized = p.replace(/^\//, '').toLowerCase();
-      if (sanitized === 'admin') return 'admin';
-      if (sanitized === 'aknojore') return 'ataglance';
-      if (sanitized === 'home') return 'home';
-      if (sanitized === 'founder') return 'founder';
-      if (sanitized === 'trustees') return 'trustees';
-      if (sanitized === 'organogram') return 'organogram';
-      if (sanitized === 'mobile-library') return 'mobile-library';
-      if (sanitized === 'central-library' || sanitized === 'library') return 'central-library';
-      if (sanitized === 'reading-habit') return 'reading-habit';
-      if (sanitized === 'aalor-ishkool') return 'aalor-ishkool';
-      if (sanitized === 'aalor-pathshala') return 'aalor-pathshala';
-      if (sanitized === 'bangalir_chinta') return 'bangalir_chinta';
-      if (sanitized === 'primary-teacher') return 'primary-teacher';
-      if (sanitized === 'nationwide-excellence' || sanitized === 'nationwide_excellence' || sanitized === 'utkorsho') return 'nationwide-excellence';
-      if (sanitized === 'book-fair' || sanitized === 'book_fair' || sanitized === 'boimela') return 'book-fair';
-      if (sanitized === 'publication') return 'publication';
-      if (sanitized === 'bookshop') return 'bookshop';
-      if (sanitized === 'building') return 'building';
-      if (sanitized === 'auditorium' || sanitized === 'facilities' || sanitized === 'facility' || sanitized === 'hall') return 'auditorium';
-      if (sanitized === 'cafe' || sanitized === 'cafeteria' || sanitized === 'canteen') return 'cafe';
-      if (sanitized === 'notice' || sanitized === 'recruitment' || sanitized === 'bigopti') return 'notice';
-      if (sanitized === 'blog' || sanitized === 'blogs') return 'blog';
-      return null;
+    const checkPath = (p: string): string | null => {
+      if (!p && !isCmsSubdomain) return null;
+      try {
+        // remove leading/trailing slashes, index.html, queries
+        const cleanRaw = (p || '').split('?')[0].split('#')[0];
+        const decoded = decodeURIComponent(cleanRaw);
+        const sanitized = decoded.replace(/^\/+|\/+$/g, '').replace(/index\.html$/i, '').replace(/^\/+|\/+$/g, '').trim().toLowerCase();
+        
+        if (isCmsSubdomain) {
+          if (!sanitized || sanitized === 'admin' || sanitized === 'admin-cms' || sanitized === 'cms' || sanitized === 'login' || sanitized === 'auth' || sanitized === 'dashboard' || sanitized === 'main' || sanitized === 'portal') {
+            return 'admin';
+          }
+        }
+
+        if (!sanitized || sanitized === 'dashboard' || sanitized === 'main' || sanitized === 'portal') return isCmsSubdomain ? 'admin' : 'dashboard';
+        if (sanitized === 'admin' || sanitized === 'admin-cms' || sanitized === 'cms' || sanitized === 'login' || sanitized === 'auth') return 'admin';
+        if (sanitized === 'aknojore' || sanitized === 'ataglance' || sanitized === 'at-a-glance') return 'ataglance';
+        if (sanitized === 'home' || sanitized === 'about' || sanitized === 'about-us' || sanitized === 'porichiti') return 'home';
+        if (sanitized === 'founder' || sanitized === 'president' || sanitized === 'abdullah-abu-sayeed' || sanitized === 'sayeed') return 'founder';
+        if (sanitized === 'mission' || sanitized === 'vision' || sanitized === 'broto') return 'mission';
+        if (sanitized === 'achievement' || sanitized === 'achievements' || sanitized === 'awards' || sanitized === 'award') return 'achievement';
+        if (sanitized === 'bsk-history' || sanitized === 'history' || sanitized === 'itibritto') return 'bsk-history';
+        if (sanitized === 'governance' || sanitized === 'trustee-board' || sanitized === 'trustees' || sanitized === 'trustee') return 'trustees';
+        if (sanitized === 'organogram' || sanitized === 'structure' || sanitized === 'administrative-structure') return 'organogram';
+        if (sanitized === 'mobile-library' || sanitized === 'mobile_library' || sanitized === 'mobilelibrary' || sanitized === 'bhramyaman' || sanitized === 'bhramyaman-library') return 'mobile-library';
+        if (sanitized === 'central-library' || sanitized === 'library' || sanitized === 'central_library' || sanitized === 'kendrio-library') return 'central-library';
+        if (sanitized === 'reading-habit' || sanitized === 'reading_habit' || sanitized === 'reading-habit-dev' || sanitized === 'readinghabit' || sanitized === 'pathobhyas') return 'reading-habit';
+        if (sanitized === 'aalor-ishkool' || sanitized === 'aalor_ishkool' || sanitized === 'aalorishkool' || sanitized === 'alor-ishkool' || sanitized === 'alorishkool') return 'aalor-ishkool';
+        if (sanitized === 'aalor-pathshala' || sanitized === 'aalor_pathshala' || sanitized === 'aalorpathshala' || sanitized === 'alor-pathshala' || sanitized === 'pathshala') return 'aalor-pathshala';
+        if (sanitized === 'bangalir_chinta' || sanitized === 'bangalir-chinta' || sanitized === 'bangalirchinta') return 'bangalir_chinta';
+        if (sanitized === 'primary-teacher' || sanitized === 'primary_teacher' || sanitized === 'primaryteacher' || sanitized === 'teacher-reading') return 'primary-teacher';
+        if (sanitized === 'nationwide-excellence' || sanitized === 'nationwide_excellence' || sanitized === 'utkorsho' || sanitized === 'deshbittik') return 'nationwide-excellence';
+        if (sanitized === 'book-fair' || sanitized === 'book_fair' || sanitized === 'boimela' || sanitized === 'mela') return 'book-fair';
+        if (sanitized === 'publication' || sanitized === 'publications' || sanitized === 'prokashona' || sanitized === 'publishing') return 'publication';
+        if (sanitized === 'bookshop' || sanitized === 'books' || sanitized === 'boi-bikroy' || sanitized === 'store' || sanitized === 'shop') return 'bookshop';
+        if (sanitized === 'building' || sanitized === 'bhaban' || sanitized === 'kendro-bhaban') return 'building';
+        if (sanitized === 'auditorium' || sanitized === 'auditoriums' || sanitized === 'facilities' || sanitized === 'facility' || sanitized === 'hall' || sanitized === 'halls' || sanitized === 'seminar') return 'auditorium';
+        if (sanitized === 'cafe' || sanitized === 'cafeteria' || sanitized === 'canteen') return 'cafe';
+        if (sanitized === 'notice' || sanitized === 'notices' || sanitized === 'announcement' || sanitized === 'announcements' || sanitized === 'notish') return 'notice';
+        if (sanitized === 'recruitment' || sanitized === 'career' || sanitized === 'careers' || sanitized === 'bigopti' || sanitized === 'jobs' || sanitized === 'job' || sanitized === 'vacancies') return 'recruitment';
+        if (sanitized === 'job-application' || sanitized === 'job-apply' || sanitized === 'apply' || sanitized === 'application') return 'job-application';
+        if (sanitized === 'donation' || sanitized === 'donations' || sanitized === 'donate' || sanitized === 'support' || sanitized === 'sahojogita' || sanitized === 'onudan') return 'donation';
+        if (sanitized === 'blog' || sanitized === 'blogs' || sanitized === 'article' || sanitized === 'articles') return 'blog';
+        if (sanitized === 'press' || sanitized === 'media' || sanitized === 'news' || sanitized === 'press-release') return 'press';
+        if (sanitized === 'contact' || sanitized === 'inquiry' || sanitized === 'feedback' || sanitized === 'jogajog') return 'contact';
+
+        // Check against any dynamic or static page ID in json
+        const allKnownPages = websiteContentRaw as ParsedPage[];
+        const matchedPage = allKnownPages.find(p => p.id.toLowerCase() === sanitized);
+        if (matchedPage) return matchedPage.id;
+
+        return sanitized;
+      } catch (_) {
+        return null;
+      }
     };
 
     const handleUrlCheck = () => {
+      // 1. Check if arriving via 404 SPA fallback redirect (sessionStorage)
+      const redirected = sessionStorage.redirect || sessionStorage.getItem('spa_redirect_path');
+      if (redirected) {
+        delete sessionStorage.redirect;
+        sessionStorage.removeItem('spa_redirect_path');
+        try {
+          let urlObj: URL;
+          if (redirected.startsWith('http')) {
+            urlObj = new URL(redirected);
+          } else {
+            urlObj = new URL(redirected, window.location.origin);
+          }
+          const tab = checkPath(urlObj.pathname) || checkPath(urlObj.searchParams.get('page') || '') || checkPath(urlObj.hash.replace(/^#\/?/, ''));
+          if (tab) {
+            setCurrentTab(tab);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // 2. Check query parameters like ?page=founder or ?tab=home
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryTab = searchParams.get('tab') || searchParams.get('page') || searchParams.get('p') || searchParams.get('route');
+        if (queryTab) {
+          const validQueryTab = checkPath(queryTab);
+          if (validQueryTab) {
+            setCurrentTab(validQueryTab);
+            return;
+          }
+        }
+      } catch (_) {}
+
       const path = window.location.pathname;
       const hash = window.location.hash;
 
-      // Check hash first
+      // 3. Check hash first (#/founder or #founder)
       const hashPart = hash.replace(/^#\/?/, '');
-      const hashTab = checkPath(hashPart);
-      if (hashTab) {
-        setCurrentTab((prev) => prev !== hashTab ? hashTab : prev);
-        return;
+      if (hashPart) {
+        const hashTab = checkPath(hashPart);
+        if (hashTab) {
+          setCurrentTab((prev) => prev !== hashTab ? hashTab : prev);
+          return;
+        }
       }
 
-      // Check pathname
+      // 4. Check pathname (/founder or /home)
       const pathTab = checkPath(path);
       if (pathTab) {
         setCurrentTab((prev) => prev !== pathTab ? pathTab : prev);
         return;
       }
 
-      // Default to dashboard
-      if (path === '/' || path === '') {
-        setCurrentTab((prev) => prev !== 'dashboard' ? 'dashboard' : prev);
+      // 5. Default to admin on CMS subdomain, otherwise dashboard
+      if (path === '/' || path === '' || path === '/index.html') {
+        const defaultTarget = isCmsSubdomain ? 'admin' : 'dashboard';
+        setCurrentTab((prev) => prev !== defaultTarget ? defaultTarget : prev);
       }
     };
 
@@ -127,12 +228,24 @@ export default function App() {
 
   // Update browser URL / History state when currentTab changes
   React.useEffect(() => {
+    if (isCmsSubdomain) {
+      // On cms.bskbd.org subdomain, maintain clean root URL without pushing /admin
+      if (window.location.pathname !== '/' && window.location.pathname !== '') {
+        window.history.replaceState({ tab: 'admin' }, '', '/');
+      }
+      return;
+    }
+
     const tabToPathMap: Record<string, string> = {
       dashboard: '/',
       ataglance: '/aknojore',
       admin: '/admin',
       home: '/home',
       founder: '/founder',
+      mission: '/mission',
+      achievement: '/achievement',
+      'bsk-history': '/bsk-history',
+      governance: '/governance',
       trustees: '/trustees',
       organogram: '/organogram',
       'mobile-library': '/mobile-library',
@@ -151,12 +264,15 @@ export default function App() {
       facilities: '/auditorium',
       cafe: '/cafe',
       notice: '/notice',
+      recruitment: '/recruitment',
+      'job-application': '/job-application',
+      donation: '/donation',
       blog: '/blog',
       contact: '/contact',
       press: '/press',
     };
 
-    const targetPath = tabToPathMap[currentTab] || '/';
+    const targetPath = tabToPathMap[currentTab] || `/${currentTab}`;
     
     // Only update if path is actually different to avoid pushState loops or duplicate entries
     if (window.location.pathname !== targetPath) {
@@ -164,56 +280,34 @@ export default function App() {
     }
   }, [currentTab]);
 
-  // Periodically listen to website_pages database overrides in real-time
+  // Listen to website_pages cPanel database overrides in real-time
   React.useEffect(() => {
-    // If Directus is enabled via environment variables, try fetching from Directus first
-    if (isDirectusEnabled()) {
-      fetchDirectusPages().then((directusPages) => {
-        if (directusPages && directusPages.length > 0) {
-          setOverriddenPages(directusPages);
-          setIsPageLoading(false);
-        } else {
-          // Fallback to Firestore listener if directus returned empty
-          subscribeFirestore();
-        }
-      }).catch(() => {
-        subscribeFirestore();
-      });
-      return;
-    }
-
-    subscribeFirestore();
-
-    function subscribeFirestore() {
-      // Graceful fallback timer: if the database doesn't respond or connection is offline within 2.5 seconds,
-      // gracefully dismiss the loader and display the local static default content.
-      const fallbackTimer = setTimeout(() => {
-        console.warn("Firestore/Directus connection timed out. Falling back to local static content.");
-        setIsPageLoading(false);
-      }, 2500);
-
-      const unsub = onSnapshot(collection(db, 'website_pages'), (snapshot) => {
-        clearTimeout(fallbackTimer);
-        const pgs: ParsedPage[] = [];
-        snapshot.forEach((doc) => {
-          pgs.push(doc.data() as ParsedPage);
-        });
+    const loadPages = async () => {
+      try {
+        const pgs = await cpanelApi.getCollection<ParsedPage>('website_pages');
         setOverriddenPages(pgs);
+      } catch (error) {
+        console.warn("Error fetching pages from cPanel database:", error);
+      } finally {
         setIsPageLoading(false);
-      }, (error) => {
-        clearTimeout(fallbackTimer);
-        console.warn("Error subscribing to pages database: ", error);
-        setIsPageLoading(false);
-      });
+      }
+    };
 
-      return () => {
-        clearTimeout(fallbackTimer);
-        unsub();
-      };
-    }
+    loadPages();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        loadPages();
+      }
+    };
+
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('bsk_db_updated', handleUpdate);
+    };
   }, []);
 
-  // Dynamically merge local static JSON with the live Firestore overrides
+  // Dynamically merge local static JSON with the live cPanel database overrides
   const websiteContent = React.useMemo(() => {
     return (websiteContentRaw as ParsedPage[]).map((page) => {
       const match = overriddenPages.find(op => op.id === page.id);
@@ -251,7 +345,10 @@ export default function App() {
     if (clean === 'trustees' || clean === 'governance') return 'trustees';
     if (clean === 'organogram') return 'organogram';
     if (clean === 'press') return 'press';
-    if (clean === 'notice' || clean === 'recruitment' || clean === 'bigopti' || clean === 'announcement' || clean === 'announcements') return 'notice';
+    if (clean === 'recruitment' || clean === 'career' || clean === 'bigopti' || clean === 'jobs' || clean === 'vacancies') return 'recruitment';
+    if (clean === 'job-application' || clean === 'job-apply' || clean === 'apply' || clean === 'application') return 'job-application';
+    if (clean === 'donation' || clean === 'donations' || clean === 'donate' || clean === 'support' || clean === 'sahojogita' || clean === 'onudan') return 'donation';
+    if (clean === 'notice' || clean === 'announcement' || clean === 'announcements') return 'notice';
     if (clean === 'blog' || clean === 'blogs' || clean === 'article' || clean === 'articles') return 'blog';
     if (clean === 'contact') return 'contact';
 
@@ -281,6 +378,19 @@ export default function App() {
         id: 'cafe',
         title_bn: 'ক্যাফেটেরিয়া',
         title_en: 'BSK Cafe',
+        html_title: 'ক্যাফেটেরিয়া',
+        sections: []
+      };
+    }
+
+    if (norm === 'recruitment') {
+      const recPage = websiteContent.find(p => p.id === 'recruitment') || (websiteContentRaw as ParsedPage[]).find(p => p.id === 'recruitment');
+      if (recPage) return recPage;
+      return {
+        id: 'recruitment',
+        title_bn: 'নিয়োগ বিজ্ঞপ্তি ও ক্যারিয়ার সুযোগ',
+        title_en: 'Career Circulars & Opportunities',
+        html_title: 'নিয়োগ বিজ্ঞপ্তি',
         sections: []
       };
     }
@@ -301,41 +411,50 @@ export default function App() {
     const query = searchQuery.toLowerCase();
 
     for (const page of websiteContent) {
+      if (!page) continue;
       // Check titles match
-      const titleMatches = page.title_bn.toLowerCase().includes(query) || page.title_en.toLowerCase().includes(query);
+      const titleMatches = (page.title_bn || '').toLowerCase().includes(query) || (page.title_en || '').toLowerCase().includes(query);
       
-      for (const sec of page.sections) {
-        if (sec.title.toLowerCase().includes(query)) {
-          results.push({
-            pageId: page.id,
-            pageTitleBn: page.title_bn,
-            pageTitleEn: page.title_en,
-            sectionTitle: sec.title,
-            matchText: sec.content[0] || (language === 'bn' ? 'এই অনুচ্ছেদে বিস্তারিত তথ্য রয়েছে।' : 'Details inside this section.')
-          });
-          continue;
-        }
-
-        for (const pText of sec.content) {
-          if (pText.toLowerCase().includes(query)) {
-            // Find snippet around match
+      if (Array.isArray(page.sections)) {
+        for (const sec of page.sections) {
+          if (!sec) continue;
+          if (sec.title && sec.title.toLowerCase().includes(query)) {
             results.push({
               pageId: page.id,
               pageTitleBn: page.title_bn,
               pageTitleEn: page.title_en,
-              sectionTitle: sec.title || page.title_bn,
-              matchText: pText
+              sectionTitle: sec.title,
+              matchText: (Array.isArray(sec.content) && sec.content[0]) || (language === 'bn' ? 'এই অনুচ্ছেদে বিস্তারিত তথ্য রয়েছে।' : 'Details inside this section.')
             });
+            continue;
+          }
+
+          if (Array.isArray(sec.content)) {
+            for (const pText of sec.content) {
+              if (pText && pText.toLowerCase().includes(query)) {
+                // Find snippet around match
+                results.push({
+                  pageId: page.id,
+                  pageTitleBn: page.title_bn,
+                  pageTitleEn: page.title_en,
+                  sectionTitle: sec.title || page.title_bn,
+                  matchText: pText
+                });
+              }
+            }
           }
         }
       }
     }
     return results;
-  }, [searchQuery, language]);
+  }, [searchQuery, language, websiteContent]);
 
-  const handleStatNavigate = (tabId: string) => {
+  const handleStatNavigate = (tabId: string, extraData?: any) => {
     setIsPageLoading(true);
     const target = normalizeTabId(tabId);
+    if (extraData) {
+      setActiveApplyCircular(extraData);
+    }
     setCurrentTab(target);
     setSearchQuery('');
     setTimeout(() => {
@@ -343,7 +462,8 @@ export default function App() {
     }, 450);
   };
 
-  if (currentTab === 'admin') {
+  // If on CMS subdomain or currentTab is admin, render Admin portal exclusively
+  if (isCmsSubdomain || currentTab === 'admin') {
     return (
       <div className="min-h-screen w-full bg-[#FAF7F2] text-[#1A1207] flex flex-col justify-between bg-grain select-none">
         <div className="flex-1 flex flex-col w-full">
@@ -354,11 +474,15 @@ export default function App() {
                 setIsAdminLoggedIn(true);
               }} 
               onBackToHome={() => {
-                setCurrentTab('dashboard');
-                if (window.location.pathname === '/admin') {
-                  window.history.pushState({}, '', '/');
+                if (isCmsSubdomain) {
+                  window.location.href = 'https://bskbd.org';
                 } else {
-                  window.location.hash = '';
+                  setCurrentTab('dashboard');
+                  if (window.location.pathname === '/admin') {
+                    window.history.pushState({}, '', '/');
+                  } else {
+                    window.location.hash = '';
+                  }
                 }
               }} 
             />
@@ -366,11 +490,16 @@ export default function App() {
             <AdminCMS 
               language={language} 
               onClose={() => {
-                setCurrentTab('dashboard');
-                if (window.location.pathname === '/admin') {
-                  window.history.pushState({}, '', '/');
+                if (isCmsSubdomain) {
+                  // Staying inside CMS on cms.bskbd.org
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                  window.location.hash = '';
+                  setCurrentTab('dashboard');
+                  if (window.location.pathname === '/admin') {
+                    window.history.pushState({}, '', '/');
+                  } else {
+                    window.location.hash = '';
+                  }
                 }
               }} 
             />
@@ -536,7 +665,7 @@ export default function App() {
               >
                 <Dashboard language={language} onNavigate={handleStatNavigate} />
               </motion.div>
-            ) : currentTab === 'founder' && activePage ? (
+            ) : currentTab === 'founder' ? (
               /* Dedicated profile of Professor Abdullah Abu Sayeed */
               <motion.div
                 key="founder"
@@ -545,7 +674,45 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.15 }}
               >
-                <FounderTribute page={activePage} language={language} />
+                <FounderTribute 
+                  page={
+                    (activePage && activePage.id === 'founder' ? activePage : null) || 
+                    websiteContent.find(p => p.id === 'founder') || 
+                    (websiteContentRaw as ParsedPage[]).find(p => p.id === 'founder') || 
+                    { id: 'founder', title_bn: 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ', title_en: 'Prof. Abdullah Abu Sayeed', html_title: 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ', sections: [] }
+                  } 
+                  language={language} 
+                />
+              </motion.div>
+            ) : currentTab === 'job-application' ? (
+              /* Dedicated Job Application Page */
+              <motion.div
+                key="job-application"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
+              >
+                <JobApplicationPage
+                  circular={activeApplyCircular}
+                  language={language}
+                  onNavigate={handleStatNavigate}
+                  onBack={() => handleStatNavigate('recruitment')}
+                />
+              </motion.div>
+            ) : currentTab === 'donation' ? (
+              /* Dedicated Support & Donation Page */
+              <motion.div
+                key="donation"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
+              >
+                <DonationPage
+                  language={language}
+                  onNavigate={handleStatNavigate}
+                />
               </motion.div>
             ) : activePage ? (
               /* Standard dynamic page content */

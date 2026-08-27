@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Award, BookOpen, Users, MapPin, Sparkles, CheckCircle2, ChevronRight, ChevronLeft,
   Download, Phone, Mail, FileText, Send, Eye, ShieldCheck, GraduationCap, 
   Trophy, BookCheck, ArrowRight, Compass, Heart, Share2, Camera, Image as ImageIcon, X
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultNationwideExcellenceData } from '../data/specializedPagesDefaults';
 
 interface NationwideExcellencePageProps {
   page: ParsedPage;
@@ -27,6 +29,29 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
   const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', institute: '', message: '' });
   const [galleryPage, setGalleryPage] = useState(1);
   const [selectedHighlight, setSelectedHighlight] = useState<any | null>(null);
+
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'nationwide-excellence');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultNationwideExcellenceData, ...page, ...dbPageData };
 
   // Default Stats fallback if not provided in page
   const defaultStats = [
@@ -267,9 +292,22 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
 
   const coordinator = page.coordinator || defaultCoordinator;
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiryForm.name || !inquiryForm.phone) return;
+    try {
+      await cpanelApi.addDoc('inquiries', {
+        name: inquiryForm.name,
+        phone: inquiryForm.phone,
+        institution: inquiryForm.institute || '',
+        message: inquiryForm.message || '',
+        type: 'nationwide_excellence',
+        source: 'Nationwide Excellence Program',
+        createdAt: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Error saving inquiry:', err);
+    }
     setInquirySubmitted(true);
   };
 
@@ -287,7 +325,7 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
         {/* Background Image Overlay */}
         <div 
           className="absolute inset-0 z-0 opacity-25 bg-cover bg-center filter blur-xs scale-105"
-          style={{ backgroundImage: `url(${page.hero_image || '/assets/IMGS/482211665_1052017196949761_6208359942702643653_n.jpg'})` }} 
+          style={{ backgroundImage: `url(${page.hero_image || page.bgImage || page.cover_image || page.image || '/assets/IMGS/482211665_1052017196949761_6208359942702643653_n.jpg'})` }} 
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#1A1207] via-[#1A1207]/90 to-transparent z-0" />
 

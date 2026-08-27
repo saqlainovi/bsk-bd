@@ -1,149 +1,25 @@
-// firebase-mock.ts - Secure Interceptor routing calls directly to MySQL (via api.php)
-const API_URL = './api.php';
+// firebase-mock.ts - High-Performance Database Adapter routing calls to cPanel MySQL API Service
+import {
+  cpanelApi,
+  getAdminToken,
+  setAdminToken,
+  clearAdminToken,
+  verifyAdminCredentials,
+  uploadImageToServer,
+  getApiUrl
+} from './services/cpanelApi';
 
-// Admin Token Manager
-export const getAdminToken = (): string | null => {
-  try {
-    const token = sessionStorage.getItem('bsk_admin_token') || localStorage.getItem('bsk_admin_token');
-    if (token) return token;
-    const isVerified = sessionStorage.getItem('bsk_admin_passcode_verified') === 'true';
-    if (isVerified) return '5656';
-    return null;
-  } catch (_) {
-    return '5656';
-  }
+export {
+  getAdminToken,
+  setAdminToken,
+  clearAdminToken,
+  verifyAdminCredentials,
+  uploadImageToServer,
+  getApiUrl
 };
-
-export const setAdminToken = (token: string) => {
-  try {
-    sessionStorage.setItem('bsk_admin_token', token);
-    localStorage.setItem('bsk_admin_token', token);
-    sessionStorage.setItem('bsk_admin_passcode_verified', 'true');
-  } catch (_) {}
-};
-
-export const clearAdminToken = () => {
-  try {
-    sessionStorage.removeItem('bsk_admin_token');
-    localStorage.removeItem('bsk_admin_token');
-    sessionStorage.removeItem('bsk_admin_passcode_verified');
-  } catch (_) {}
-};
-
-export async function verifyAdminCredentials(params: { username?: string; password?: string; passcode?: string }) {
-  try {
-    const res = await fetch(`${API_URL}?action=admin_login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    });
-    const data = await res.json();
-    if (data && data.success && data.token) {
-      setAdminToken(data.token);
-      return { success: true, token: data.token, user: data.user };
-    }
-    return { success: false, error: data?.error || 'লগইন ব্যর্থ হয়েছে!' };
-  } catch (err: any) {
-    // Offline or fallback verification
-    const pass = params.password || params.passcode || '';
-    const user = (params.username || '').toLowerCase();
-    if (pass === '5656' || pass === 'bsk@2026' || (user === 'admin' && pass === 'admin')) {
-      const fallbackToken = 'offline_admin_token_' + Date.now();
-      setAdminToken(fallbackToken);
-      return { success: true, token: fallbackToken };
-    }
-    return { success: false, error: 'সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।' };
-  }
-}
-
-export async function uploadImageToServer(base64OrFile: string | File): Promise<string> {
-  try {
-    const token = getAdminToken();
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-      headers['X-Admin-Token'] = token;
-    }
-
-    if (typeof base64OrFile === 'string') {
-      if (!base64OrFile.startsWith('data:')) {
-        return base64OrFile;
-      }
-      const res = await fetch(`${API_URL}?action=upload_image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers
-        },
-        body: JSON.stringify({ image_base64: base64OrFile, admin_token: token })
-      });
-      const data = await res.json();
-      if (data && data.success && data.url) {
-        return data.url;
-      }
-    } else {
-      const formData = new FormData();
-      formData.append('image', base64OrFile);
-      if (token) formData.append('admin_token', token);
-      const res = await fetch(`${API_URL}?action=upload_image`, {
-        method: 'POST',
-        headers,
-        body: formData
-      });
-      const data = await res.json();
-      if (data && data.success && data.url) {
-        return data.url;
-      }
-    }
-  } catch (err) {
-    console.warn('Direct upload failed, fallback to base64:', err);
-  }
-
-  if (typeof base64OrFile !== 'string') {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string || '');
-      reader.onerror = () => resolve('');
-      reader.readAsDataURL(base64OrFile);
-    });
-  }
-
-  return base64OrFile;
-}
-
-// LocalStorage Helper functions for instant caching and offline preview
-const getLocalCollection = (name: string): any[] => {
-  try {
-    const data = localStorage.getItem(`_db_${name}`);
-    return data ? JSON.parse(data) : [];
-  } catch (_) {
-    return [];
-  }
-};
-
-const setLocalCollection = (name: string, items: any[]) => {
-  try {
-    localStorage.setItem(`_db_${name}`, JSON.stringify(items));
-  } catch (_) {}
-};
-
-async function safeFetchJson(url: string, options?: any) {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) return null;
-    const text = await res.text();
-    // If the response is raw PHP or HTML error page
-    if (text.trim().startsWith('<?php') || text.trim().startsWith('<') || text.trim().startsWith('<!DOCTYPE')) {
-      return null;
-    }
-    return JSON.parse(text);
-  } catch (err) {
-    return null;
-  }
-}
 
 // Mock App
-export const initializeApp = (config: any) => {
+export const initializeApp = (_config: any) => {
   return { name: '[BSK-Database-Bridge]' };
 };
 
@@ -154,7 +30,8 @@ export class MockAuth {
 
   constructor() {
     try {
-      if (sessionStorage.getItem('bsk_admin_passcode_verified') === 'true' || getAdminToken()) {
+      const token = getAdminToken();
+      if (token) {
         this.currentUser = {
           uid: 'admin-uid-123',
           email: 'admin@bskbd.org',
@@ -191,7 +68,7 @@ export class MockAuth {
     return { user: this.currentUser };
   }
 
-  async signInWithPopup(provider: any) {
+  async signInWithPopup(_provider: any) {
     this.currentUser = {
       uid: 'google-uid-123',
       email: 'admin@bskbd.org',
@@ -212,7 +89,7 @@ export class MockAuth {
 
 export const auth = new MockAuth();
 
-export const initializeAuth = (app: any, options?: any) => {
+export const initializeAuth = (_app: any, _options?: any) => {
   return auth;
 };
 
@@ -236,12 +113,12 @@ export const signInWithPopup = async (authObj: MockAuth, provider?: any) => {
   return await authObj.signInWithPopup(provider);
 };
 
-export const setPersistence = async (authObj: any, persistence: any) => {
+export const setPersistence = async (_authObj: any, _persistence: any) => {
   return true;
 };
 
 export class GoogleAuthProvider {
-  setCustomParameters(params: any) {}
+  setCustomParameters(_params: any) {}
 }
 
 // Mock Firestore references
@@ -255,7 +132,7 @@ export class MockCollectionRef {
 
 // Mock Firestore
 export const db = { _mock: true };
-export const initializeFirestore = (app: any, options: any) => {
+export const initializeFirestore = (_app: any, _options: any) => {
   return db;
 };
 
@@ -266,10 +143,10 @@ export const getFirestore = () => {
 export const persistentLocalCache = () => ({});
 export const persistentMultipleTabManager = () => ({});
 export const memoryLocalCache = () => ({});
-export const getDocFromServer = async (docRef: any) => getDoc(docRef);
+
 export const serverTimestamp = () => new Date().toISOString();
 
-export function collection(db: any, name: string) {
+export function collection(_db: any, name: string) {
   return new MockCollectionRef(name);
 }
 
@@ -280,7 +157,7 @@ export function doc(dbOrCol: any, path?: string, ...pathSegments: string[]) {
   return new MockDocRef(path || '', pathSegments[0] || '');
 }
 
-export function query(colRef: any, ...args: any[]) {
+export function query(colRef: any, ..._args: any[]) {
   return colRef;
 }
 
@@ -314,218 +191,81 @@ const createQuerySnapshot = (items: any[]) => ({
 export async function getDoc(docRef: MockDocRef) {
   const collectionName = docRef.collectionName;
   const id = docRef.id;
-
-  let data = await safeFetchJson(`${API_URL}?action=get_doc&collection=${collectionName}&id=${id}`);
-  
-  if (data !== null) {
-    // Update local cache
-    const items = getLocalCollection(collectionName);
-    const index = items.findIndex((item: any) => item.id === id);
-    if (index !== -1) {
-      items[index] = data;
-    } else {
-      items.push(data);
-    }
-    setLocalCollection(collectionName, items);
-  } else {
-    // Fallback to local cache
-    const items = getLocalCollection(collectionName);
-    data = items.find((item: any) => item.id === id) || null;
-  }
-
+  const data = await cpanelApi.getDoc(collectionName, id);
   return createDocSnapshot(id, data);
+}
+
+export async function getDocFromServer(docRef: MockDocRef) {
+  const collectionName = docRef.collectionName;
+  const id = docRef.id;
+  const result = await cpanelApi.getDocFromServer(collectionName, id);
+  return createDocSnapshot(id, result.data);
 }
 
 export async function getDocs(queryOrCol: any) {
   const collectionName = queryOrCol instanceof MockCollectionRef ? queryOrCol.name : (queryOrCol?.collectionName || queryOrCol?.name || '');
-  
-  let data = await safeFetchJson(`${API_URL}?action=get_collection&name=${collectionName}`);
-  
-  if (Array.isArray(data)) {
-    // Update local cache with latest database rows
-    setLocalCollection(collectionName, data);
-  } else {
-    // Fallback to local cache
-    data = getLocalCollection(collectionName);
-  }
-
+  const data = await cpanelApi.getCollection(collectionName);
   return createQuerySnapshot(data || []);
 }
 
-export async function setDoc(docRef: MockDocRef, payload: any) {
+export async function setDoc(docRef: MockDocRef, payload: any, options?: { merge?: boolean }) {
   const collectionName = docRef.collectionName;
   const id = docRef.id;
 
-  const dataWithId = { ...payload, id };
-  if (!dataWithId.createdAt) {
-    dataWithId.createdAt = new Date().toISOString();
-  }
-  dataWithId.updatedAt = new Date().toISOString();
-
-  // 1. Immediately update Local cache for instant UI feedback
-  const items = getLocalCollection(collectionName);
-  const index = items.findIndex((item: any) => item.id === id);
-  if (index !== -1) {
-    items[index] = dataWithId;
-  } else {
-    items.push(dataWithId);
-  }
-  setLocalCollection(collectionName, items);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: collectionName } }));
+  let finalPayload = payload;
+  if (options?.merge) {
+    const existing = await cpanelApi.getDoc(collectionName, id);
+    finalPayload = { ...(existing || {}), ...payload, id };
   }
 
-  // 2. Persist directly to MySQL Database via api.php with Auth Token Header
-  const token = getAdminToken();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-    headers['X-Admin-Token'] = token;
-  }
-
-  const remoteResult = await safeFetchJson(`${API_URL}?action=set_doc`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      collection: collectionName,
-      id: id,
-      data: dataWithId,
-      admin_token: token
-    })
-  });
-
-  return remoteResult || { success: true };
+  const result = await cpanelApi.setDoc(collectionName, id, finalPayload);
+  return result;
 }
 
 export async function addDoc(colRef: MockCollectionRef, payload: any) {
   const collectionName = colRef.name;
-  const id = Math.random().toString(36).substring(2, 15);
-  const dataWithId = { ...payload, id };
-  if (!dataWithId.createdAt) {
-    dataWithId.createdAt = new Date().toISOString();
-  }
-  dataWithId.updatedAt = new Date().toISOString();
-
-  // 1. Immediately update local cache
-  const items = getLocalCollection(collectionName);
-  items.push(dataWithId);
-  setLocalCollection(collectionName, items);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: collectionName } }));
-  }
-
-  // 2. Persist to MySQL via api.php with Auth Token Header
-  const token = getAdminToken();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-    headers['X-Admin-Token'] = token;
-  }
-
-  await safeFetchJson(`${API_URL}?action=set_doc`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      collection: collectionName,
-      id,
-      data: dataWithId,
-      admin_token: token
-    })
-  });
-
-  return { id };
+  return await cpanelApi.addDoc(collectionName, payload);
 }
 
 export async function deleteDoc(docRef: MockDocRef) {
   const collectionName = docRef.collectionName;
   const id = docRef.id;
-
-  // 1. Immediately remove from local cache
-  const items = getLocalCollection(collectionName);
-  const filtered = items.filter((item: any) => item.id !== id);
-  setLocalCollection(collectionName, filtered);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: collectionName } }));
-  }
-
-  // 2. Delete row from MySQL Database via api.php with Auth Token Header
-  const token = getAdminToken();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-    headers['X-Admin-Token'] = token;
-  }
-
-  const remoteResult = await safeFetchJson(`${API_URL}?action=delete_doc`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      collection: collectionName,
-      id,
-      admin_token: token
-    })
-  });
-
-  return remoteResult || { success: true };
+  return await cpanelApi.deleteDoc(collectionName, id);
 }
 
-export function onSnapshot(queryOrColOrDoc: any, onNext: (snapshot: any) => void, onError?: (error: any) => void) {
-  const isDoc = queryOrColOrDoc instanceof MockDocRef || (queryOrColOrDoc && typeof queryOrColOrDoc.id === 'string' && typeof queryOrColOrDoc.collectionName === 'string');
-  const collectionName = isDoc ? queryOrColOrDoc.collectionName : (queryOrColOrDoc instanceof MockCollectionRef ? queryOrColOrDoc.name : (queryOrColOrDoc?.collectionName || queryOrColOrDoc?.name || ''));
+export function onSnapshot(target: any, callback: (snapshot: any) => void, _onError?: (error: any) => void) {
+  let isMounted = true;
 
-  let active = true;
-  const fetchAndTrigger = async () => {
+  const loadData = async () => {
     try {
-      if (isDoc) {
-        const id = queryOrColOrDoc.id;
-        
-        let data = await safeFetchJson(`${API_URL}?action=get_doc&collection=${collectionName}&id=${id}`);
-        if (data !== null) {
-          const items = getLocalCollection(collectionName);
-          const index = items.findIndex((item: any) => item.id === id);
-          if (index !== -1) items[index] = data;
-          else items.push(data);
-          setLocalCollection(collectionName, items);
-        } else {
-          const items = getLocalCollection(collectionName);
-          data = items.find((item: any) => item.id === id) || null;
-        }
-        
-        onNext(createDocSnapshot(id, data));
-      } else {
-        let data = await safeFetchJson(`${API_URL}?action=get_collection&name=${collectionName}`);
-        if (Array.isArray(data)) {
-          setLocalCollection(collectionName, data);
-        } else {
-          data = getLocalCollection(collectionName);
-        }
-        
-        onNext(createQuerySnapshot(data || []));
+      if (target instanceof MockDocRef) {
+        const snap = await getDoc(target);
+        if (isMounted) callback(snap);
+      } else if (target instanceof MockCollectionRef || target?.name || target?.collectionName) {
+        const snap = await getDocs(target);
+        if (isMounted) callback(snap);
       }
-    } catch (e) {
-      if (onError) onError(e);
-    }
+    } catch (_) {}
   };
 
-  fetchAndTrigger();
-  // Poll every 3 seconds for live synchronization
-  const interval = setInterval(fetchAndTrigger, 3000);
+  loadData();
 
-  const onCustomUpdate = (e: any) => {
-    if (!e.detail || e.detail.collection === collectionName) {
-      fetchAndTrigger();
+  const handleUpdate = (e: any) => {
+    const detailCol = e?.detail?.collection;
+    const targetCol = target instanceof MockDocRef ? target.collectionName : (target?.name || target?.collectionName);
+    if (!detailCol || !targetCol || detailCol === targetCol) {
+      loadData();
     }
   };
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('bsk_db_updated', onCustomUpdate);
+    window.addEventListener('bsk_db_updated', handleUpdate);
   }
 
   return () => {
-    active = false;
-    clearInterval(interval);
+    isMounted = false;
     if (typeof window !== 'undefined') {
-      window.removeEventListener('bsk_db_updated', onCustomUpdate);
+      window.removeEventListener('bsk_db_updated', handleUpdate);
     }
   };
 }

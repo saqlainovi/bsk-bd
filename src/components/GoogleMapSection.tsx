@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from '@vis.gl/react-google-maps';
 import { MapPin, Navigation, Phone, Clock, ExternalLink } from 'lucide-react';
+import { cpanelApi } from '../services/cpanelApi';
+import { GoogleMapSettings } from '../types';
 
 interface GoogleMapSectionProps {
   language: 'bn' | 'en';
@@ -15,8 +17,46 @@ const API_KEY =
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
 export const GoogleMapSection: React.FC<GoogleMapSectionProps> = ({ language }) => {
-  const center = { lat: 23.74831, lng: 90.39281 }; // Bishwo Shahitto Kendro, Banglamotor, Dhaka
-  const MAP_URL = 'https://maps.app.goo.gl/nGZ4X7sXKzokaJdb8';
+  const [mapSettings, setMapSettings] = useState<GoogleMapSettings | null>(null);
+
+  useEffect(() => {
+    const fetchMapSettings = async () => {
+      try {
+        const data = await cpanelApi.getDoc('website_pages', 'global_settings');
+        if (data?.google_map) {
+          setMapSettings(data.google_map);
+        }
+      } catch (err) {
+        console.warn("Error loading Google Map settings via cpanelApi:", err);
+      }
+    };
+
+    fetchMapSettings();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchMapSettings();
+      }
+    };
+
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('bsk_db_updated', handleUpdate);
+    };
+  }, []);
+
+  const lat = mapSettings?.latitude ?? 23.74831;
+  const lng = mapSettings?.longitude ?? 90.39281;
+  const center = { lat, lng };
+  const MAP_URL = mapSettings?.map_url || mapSettings?.embed_url || 'https://maps.app.goo.gl/nGZ4X7sXKzokaJdb8';
+
+  const title = language === 'bn'
+    ? (mapSettings?.title_bn || 'গুগল ম্যাপে আমাদের অবস্থান')
+    : (mapSettings?.title_en || 'Our Location on Google Maps');
+
+  const address = language === 'bn'
+    ? (mapSettings?.address_bn || 'বিশ্বসাহিত্য কেন্দ্র ভবন, ১৭ কাজী নজরুল ইসলাম এভিনিউ, বাংলামোটর, ঢাকা ১০০০')
+    : (mapSettings?.address_en || 'Bishwo Shahitto Kendro, 17 Kazi Nazrul Islam Avenue, Banglamotor, Dhaka 1000');
 
   const [infoOpen, setInfoOpen] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid'>('roadmap');
@@ -31,13 +71,11 @@ export const GoogleMapSection: React.FC<GoogleMapSectionProps> = ({ language }) 
               <MapPin className="w-5 h-5" />
             </span>
             <h3 className="font-serif font-extrabold text-lg md:text-xl text-[#1A1207]">
-              {language === 'bn' ? 'গুগল ম্যাপে আমাদের অবস্থান' : 'Our Location on Google Maps'}
+              {title}
             </h3>
           </div>
           <p className="text-xs text-stone-600 font-sans">
-            {language === 'bn'
-              ? 'বিশ্বসাহিত্য কেন্দ্র ভবন, ১৭ কাজী নজরুল ইসলাম এভিনিউ, বাংলামোটর, ঢাকা ১০০০'
-              : 'Bishwo Shahitto Kendro, 17 Kazi Nazrul Islam Avenue, Banglamotor, Dhaka 1000'}
+            {address}
           </p>
         </div>
 

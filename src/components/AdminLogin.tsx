@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User, Eye, EyeOff, AlertCircle, ArrowLeft, BookOpen } from 'lucide-react';
 import { Language } from '../types';
-import { verifyAdminCredentials } from '../firebase-mock';
+import { verifyAdminCredentials } from '../services/cpanelApi';
 
 interface AdminLoginProps {
   language: Language;

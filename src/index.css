@@ -68,14 +68,12 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: 0.005em;
-  color: #140E06;
   text-rendering: optimizeLegibility;
 }
 
 /* Sharp readability for bold and emphasis text */
 b, strong {
   font-weight: 700;
-  color: #140E06;
 }
 
 #root {
@@ -159,17 +157,23 @@ b, strong {
   }
 }
 
-/* Image scaling quality enhancements on non-integer/High-DPI screens */
+/* Image scaling quality enhancements for high-DPI and standard displays */
 img {
+  image-rendering: auto;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+}
+
+.hero-slider-img {
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Universal Paragraph Text Justification & Readability Across the Website */
 p {
   text-align: justify;
   text-justify: inter-word;
-  color: #1F170E;
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
@@ -187,7 +191,6 @@ button, input, textarea, select {
 article p {
   text-align: justify;
   text-justify: inter-word;
-  color: #1F170E;
   font-size: 1.05rem;
   line-height: 1.75;
 }
@@ -203,13 +206,38 @@ p.text-left,
   text-align: inherit;
 }
 
-/* Boosted contrast for muted and small texts to eliminate haziness/blurriness */
-.text-stone-500, .text-stone-600 {
-  color: #382A1B !important;
+/* Ensure all text inside dark brown banners and dark cards across all pages are 100% crisp pure white */
+[class*="bg-[#1A1207]"],
+[class*="bg-[#3D2B14]"],
+[class*="bg-[#2D1F0D]"],
+[class*="bg-[#1A0A08]"],
+[class*="bg-[#2C1F0D]"],
+.bg-dark-brown,
+.dark-section {
+  color: #FFFFFF;
 }
 
-.text-stone-400 {
-  color: #594735 !important;
+[class*="bg-[#1A1207]"] h1,
+[class*="bg-[#1A1207]"] h2,
+[class*="bg-[#1A1207]"] h3,
+[class*="bg-[#1A1207]"] h4,
+[class*="bg-[#1A1207]"] h5,
+[class*="bg-[#1A1207]"] h6,
+[class*="bg-[#3D2B14]"] h1,
+[class*="bg-[#3D2B14]"] h2,
+[class*="bg-[#3D2B14]"] h3,
+[class*="bg-[#3D2B14]"] h4,
+[class*="bg-[#2D1F0D]"] h1,
+[class*="bg-[#2D1F0D]"] h2,
+[class*="bg-[#2D1F0D]"] h3,
+[class*="bg-[#2D1F0D]"] h4 {
+  color: #FFFFFF;
+}
+
+[class*="bg-[#1A1207]"] p:not([class*="text-[#F0CC7A]"]):not([class*="text-[#B8862A]"]):not([class*="text-amber-"]):not([class*="text-yellow-"]):not([class*="text-gold"]),
+[class*="bg-[#3D2B14]"] p:not([class*="text-[#F0CC7A]"]):not([class*="text-[#B8862A]"]):not([class*="text-amber-"]):not([class*="text-yellow-"]):not([class*="text-gold"]),
+[class*="bg-[#2D1F0D]"] p:not([class*="text-[#F0CC7A]"]):not([class*="text-[#B8862A]"]):not([class*="text-amber-"]):not([class*="text-yellow-"]):not([class*="text-gold"]) {
+  color: #FFFFFF;
 }
 
 

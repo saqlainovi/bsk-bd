@@ -3,15 +3,81 @@ import path from 'path';
 import fs from 'fs';
 
 const distDir = path.join(process.cwd(), 'dist');
-const zipPath = path.join(process.cwd(), 'build.zip');
+const publicDir = path.join(process.cwd(), 'public');
+const universalZipPath = path.join(process.cwd(), 'build.zip');
+const websiteZipPath = path.join(process.cwd(), 'website-build.zip');
+const cmsBuildZipPath = path.join(process.cwd(), 'cms-build.zip');
+const cmsZipPath = path.join(process.cwd(), 'cms.zip');
 
 if (fs.existsSync(distDir)) {
-  const zip = new AdmZip();
-  // Add everything in dist/ directly to the root of the zip file
-  zip.addLocalFolder(distDir);
-  zip.writeZip(zipPath);
-  console.log(`Successfully packed build.zip! Path: ${zipPath}`);
+  // Guarantee special cPanel server files exist in dist/
+  const filesToEnsure = ['.htaccess', '404.html', '_redirects', 'api.php'];
+  filesToEnsure.forEach(file => {
+    const src = path.join(publicDir, file);
+    const dest = path.join(distDir, file);
+    if (fs.existsSync(src) && !fs.existsSync(dest)) {
+      fs.copyFileSync(src, dest);
+      console.log(`Copied ${file} to dist/`);
+    }
+  });
+
+  // 1. Universal Build Zip
+  const universalZip = new AdmZip();
+  universalZip.addLocalFolder(distDir);
+  universalZip.writeZip(universalZipPath);
+  console.log(`Successfully packed build.zip! Path: ${universalZipPath}`);
+
+  // 2. Website Build Zip (for new.bskbd.org)
+  const websiteZip = new AdmZip();
+  websiteZip.addLocalFolder(distDir);
+  websiteZip.writeZip(websiteZipPath);
+  console.log(`Successfully packed website-build.zip (for new.bskbd.org)! Path: ${websiteZipPath}`);
+
+  // 3. Create Dedicated Standalone CMS Dist with embedded CMS mode
+  const cmsDistDir = path.join(process.cwd(), 'dist-cms-temp');
+  if (fs.existsSync(cmsDistDir)) {
+    fs.rmSync(cmsDistDir, { recursive: true, force: true });
+  }
+  fs.cpSync(distDir, cmsDistDir, { recursive: true });
+
+  const cmsIndexHtmlPath = path.join(cmsDistDir, 'index.html');
+  if (fs.existsSync(cmsIndexHtmlPath)) {
+    let indexHtmlContent = fs.readFileSync(cmsIndexHtmlPath, 'utf8');
+    // Inject global CMS flag directly into <head>
+    const cmsScript = `<script>window.__BSK_CMS_MODE__=true;window.__IS_CMS_ONLY__=true;</script>`;
+    indexHtmlContent = indexHtmlContent.replace('<head>', `<head>${cmsScript}`);
+    indexHtmlContent = indexHtmlContent.replace(
+      /<title>.*?<\/title>/i,
+      `<title>বিশ্বসাহিত্য কেন্দ্র — CMS অ্যাডমিন পোর্টাল</title>`
+    );
+    fs.writeFileSync(cmsIndexHtmlPath, indexHtmlContent, 'utf8');
+  }
+
+  // Pack cms-build.zip and cms.zip
+  const cmsZip = new AdmZip();
+  cmsZip.addLocalFolder(cmsDistDir);
+  cmsZip.writeZip(cmsBuildZipPath);
+  console.log(`Successfully packed cms-build.zip (for cms.bskbd.org)! Path: ${cmsBuildZipPath}`);
+
+  const cmsDirectZip = new AdmZip();
+  cmsDirectZip.addLocalFolder(cmsDistDir);
+  cmsDirectZip.writeZip(cmsZipPath);
+  console.log(`Successfully packed cms.zip (for cms.bskbd.org)! Path: ${cmsZipPath}`);
+
+  // Copy zip files to public/ and dist/ for direct web downloads
+  const generatedZips = ['build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip'];
+  generatedZips.forEach(zipName => {
+    const srcPath = path.join(process.cwd(), zipName);
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, path.join(publicDir, zipName));
+      fs.copyFileSync(srcPath, path.join(distDir, zipName));
+    }
+  });
+
+  // Clean up temp folder
+  fs.rmSync(cmsDistDir, { recursive: true, force: true });
 } else {
   console.error('dist/ folder does not exist. Run build first!');
   process.exit(1);
 }
+

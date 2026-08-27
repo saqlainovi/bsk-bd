@@ -12,8 +12,7 @@ import {
   MenuItem as AriaMenuItem 
 } from 'react-aria-components';
 import { Language } from '../types';
-import { db } from '../firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { cpanelApi } from '../services/cpanelApi';
 import { motion } from 'motion/react';
 import { gsap } from 'gsap';
 
@@ -64,16 +63,38 @@ export default function Navbar({
     }
   }, []);
 
+  const [globalSettings, setGlobalSettings] = React.useState<any>(null);
+
   React.useEffect(() => {
-    const unsub = onSnapshot(doc(db, 'homepage_blocks', 'portals'), (snapshot) => {
-      if (snapshot.exists()) {
-        setPortals(snapshot.data());
+    const fetchNavbarSettings = async () => {
+      try {
+        const portalsData = await cpanelApi.getDoc('homepage_blocks', 'portals');
+        if (portalsData) setPortals(portalsData);
+
+        const globalData = await cpanelApi.getDoc('website_pages', 'global_settings');
+        if (globalData) setGlobalSettings(globalData);
+      } catch (err) {
+        console.warn("Error loading Navbar settings via cpanelApi:", err);
       }
-    }, (err) => {
-      console.warn("Firestore portals config error:", err);
-    });
-    return () => unsub();
+    };
+
+    fetchNavbarSettings();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'homepage_blocks' || e.detail.collection === 'website_pages') {
+        fetchNavbarSettings();
+      }
+    };
+
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('bsk_db_updated', handleUpdate);
+    };
   }, []);
+
+  const annBar = globalSettings?.announcement_bar;
+  const navSet = globalSettings?.navbar_settings;
+  const logoUrl = navSet?.logo_url || "https://bskbd.org/assets/img/logo_bn2.png";
 
   const bcrsUrl = portals?.bcrs?.url || "https://bcrs.bskbd.org/";
   const bcrsTitle = language === 'bn' ? (portals?.bcrs?.title_bn || 'বাঙালির চিন্তা') : (portals?.bcrs?.title_en || 'BCRS');
@@ -324,6 +345,15 @@ export default function Navbar({
     setMobileMenuOpen(false);
   };
 
+  const handleOpenAdmin = () => {
+    if (onAdminCMSOpen) {
+      onAdminCMSOpen();
+    } else {
+      setCurrentTab('admin');
+    }
+    closeAllMenus();
+  };
+
   // Close dropdown on clicking outside
   React.useEffect(() => {
     const handleOutsideClick = () => {
@@ -335,9 +365,42 @@ export default function Navbar({
 
   return (
     <header className="relative w-full max-w-full bg-[#F9F6F1] text-[#1A1207] border-b border-[#B8862A]/20 shadow-xs z-50 overflow-x-clip">
+      {/* Dynamic Announcement Ticker Bar */}
+      {annBar?.enabled !== false && (annBar?.text_bn || annBar?.text_en) && (
+        <div className="bg-[#2E5942] text-white py-1.5 px-4 border-b border-[#203F2F] font-sans text-xs flex items-center justify-between gap-3 shadow-inner z-50">
+          <div className="flex items-center gap-2.5 overflow-hidden mx-auto md:mx-0">
+            <span className="px-2 py-0.5 bg-[#F0CC7A] text-[#1A1207] font-bold text-[10px] rounded-full shrink-0 tracking-wide uppercase">
+              {language === 'bn' ? 'বিজ্ঞপ্তি' : 'Notice'}
+            </span>
+            <p className="truncate font-medium text-[11px] md:text-xs tracking-wide">
+              {language === 'bn' ? annBar?.text_bn : (annBar?.text_en || annBar?.text_bn)}
+            </p>
+          </div>
+          {annBar?.link && (
+            <a
+              href={annBar.link}
+              onClick={(e) => {
+                if (annBar.link?.startsWith('/')) {
+                  e.preventDefault();
+                  const pageId = annBar.link.replace('/', '');
+                  setCurrentTab(pageId);
+                }
+              }}
+              className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-[#F0CC7A] hover:underline shrink-0"
+            >
+              <span>
+                {language === 'bn' 
+                  ? (annBar?.button_text_bn || 'বিস্তারিত দেখুন →')
+                  : (annBar?.button_text_en || 'Learn More →')}
+              </span>
+            </a>
+          )}
+        </div>
+      )}
+
       <div className="w-full max-w-full pl-0 pr-0 h-16 sm:h-18 lg:h-20 flex items-center justify-between">
         
-        {/* Left Section: Brand Logo - Occupies the entire space between the left border and the first menu item ('মূল পাতা'), placing the logo exactly in the middle of that space */}
+        {/* Left Section: Brand Logo */}
         <div className="flex items-center justify-start lg:justify-center shrink-0 lg:flex-1 pl-3 sm:pl-4 lg:pl-0 h-full min-w-0">
           <div 
             onClick={() => { setCurrentTab('dashboard'); closeAllMenus(); }}
@@ -345,7 +408,7 @@ export default function Navbar({
           >
             <motion.img 
               ref={logoRef}
-              src="https://bskbd.org/assets/img/logo_bn2.png" 
+              src={logoUrl} 
               alt="Bishwo Shahitto Kendro Logo" 
               className="h-9 xs:h-10 sm:h-11 md:h-12 lg:h-10 xl:h-11 2xl:h-13 w-auto object-contain transition-all duration-200 contrast-[1.08] brightness-[0.98] drop-shadow-2xs"
               style={{ imageRendering: '-webkit-optimize-contrast' }}

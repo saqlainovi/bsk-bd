@@ -58,6 +58,8 @@ export {
   clearAdminToken,
 };
 
+export { cpanelApi } from './services/cpanelApi';
+
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
@@ -67,7 +69,7 @@ export enum OperationType {
   WRITE = 'write',
 }
 
-export interface FirestoreErrorInfo {
+export interface DatabaseErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
@@ -84,11 +86,15 @@ export interface FirestoreErrorInfo {
   };
 }
 
-export function handleFirestoreError(
+export type FirestoreErrorInfo = DatabaseErrorInfo;
+
+export function handleDatabaseError(
   error: unknown,
   operationType: OperationType,
   path: string | null
 ): void {
   const errorMsg = error instanceof Error ? error.message : String(error);
-  console.warn(`[Database Sync] Operation: ${operationType} on "${path}". Notice:`, errorMsg);
+  console.warn(`[cPanel Database Sync] Operation: ${operationType} on "${path}". Notice:`, errorMsg);
 }
+
+export const handleFirestoreError = handleDatabaseError;

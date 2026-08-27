@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   GraduationCap, BookOpen, Sparkles, Compass, CheckCircle, 
   HelpCircle, ArrowRight, Award, Music, Film, Layers, 
@@ -6,8 +6,8 @@ import {
   BookMarked, Lightbulb, Users, Phone, MapPin, Search, Star
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultAalorIshkoolData } from '../data/specializedPagesDefaults';
 
 interface AalorIshkoolPageProps {
   page: ParsedPage;
@@ -29,7 +29,30 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
   const [activeYear, setActiveYear] = useState<number>(1);
   const [searchBook, setSearchBook] = useState('');
 
-  // Firebase Admission Form State
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'aalor-ishkool');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultAalorIshkoolData, ...page, ...dbPageData };
+
+  // Admission Form State
   const [form, setForm] = useState({ name: '', phone: '', email: '', occupation: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -45,13 +68,13 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
     setError('');
 
     try {
-      await addDoc(collection(db, 'alor_ishkool_applications'), {
+      await cpanelApi.addDoc('alor_ishkool_applications', {
         name: form.name,
         phone: form.phone,
         email: form.email || '',
         occupation: form.occupation || '',
         message: form.message || '',
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
         source: 'Aalor Ishkool Page'
       });
       setSubmitted(true);
@@ -254,137 +277,113 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
       { titleBn: "প্রদোষে প্রাকৃতজন", authorBn: "শওকত আলী" },
       { titleBn: "খোয়াবনামা", authorBn: "আখতারুজ্জামান ইলিয়াস" },
       { titleBn: "সূর্য দীঘল বাড়ি", authorBn: "আবু ইসহাক" },
-      { titleBn: "আরণ্যক", authorBn: "বিভূতিভূষণ বন্দ্যোপাধ্যায়" },
-      { titleBn: "ডন কিহোতে", authorBn: "মিগুয়েল দে সার্ভেন্টিস" },
-      { titleBn: "আমার ছেলেবেলা", authorBn: "ম্যাক্সিম গোর্কি" },
-      { titleBn: "পৃথিবীর পাঠশালায়", authorBn: "ম্যাক্সিম গোর্কি" },
-      { titleBn: "পৃথিবীর পথে", authorBn: "ম্যাক্সিম গোর্কি" },
-      { titleBn: "উপখণ্ড", authorBn: "গজেন্দ্র কুমার মিত্র" },
-      { titleBn: "দি প্লেগ", authorBn: "আলবেয়ার কামু" },
-      { titleBn: "উত্তম পুরুষ", authorBn: "রশীদ করিম" },
-      { titleBn: "দ্য অ্যালকেমিস্ট", authorBn: "পাউলো কোয়েলহো" },
-      { titleBn: "ডেড সোলস", authorBn: "নিকোলাই গোগল" },
-      { titleBn: "দিবারাত্রির কাব্য", authorBn: "মানিক বন্দ্যোপাধ্যায়" },
-      { titleBn: "সম্রাট জোন্স", authorBn: "ইউজিন ও নীল" },
-      { titleBn: "শ্রেষ্ঠ উর্দু গল্প (১-৫ খণ্ড)", authorBn: "বিশ্বসাহিত্য কেন্দ্র" },
-      { titleBn: "চৌড়াই চরিত মানস", authorBn: "সতীনাথ ভাদুড়ী" },
-      { titleBn: "হাজার চুরাশীর মা", authorBn: "মহাশ্বেতা দেবী" },
-      { titleBn: "কুবেরের বিষয় আশয়", authorBn: "শ্যামল গঙ্গোপাধ্যায়" },
-      { titleBn: "আলসওয়ার জয়গান", authorBn: "বার্ট্রান্ড রাসেল" },
-      { titleBn: "মানববিদ্বেষী", authorBn: "মলিয়ের" },
-      { titleBn: "ছিন্নপত্র", authorBn: "রবীন্দ্রনাথ ঠাকুর" },
-      { titleBn: "হাসুলীবাঁকের উপকথা", authorBn: "তারাশঙ্কর বন্দ্যোপাধ্যায়" },
-      { titleBn: "ট্রেন টু পাকিস্তান", authorBn: "খুশবন্ত সিং" },
-      { titleBn: "চাচা কাহিনী", authorBn: "সৈয়দ মুজতবা আলী" },
-      { titleBn: "সে রাতে পূর্ণিমা ছিল", authorBn: "শহীদুল জহির" },
-      { titleBn: "মৃচ্ছকটিক", authorBn: "শূদ্রক" },
-      { titleBn: "চাণক্যের অর্থশাস্ত্র", authorBn: "কৌটিল্য" },
-      { titleBn: "বার্থ অব ট্র্যাজেডি", authorBn: "ফ্রেডরিক নিটশে" },
-      { titleBn: "সেপিয়েন্স", authorBn: "নোয়া হারারি" },
-      { titleBn: "আল বিরুনীর ভারততত্ত্ব", authorBn: "আবু রায়হান আল-বিরুনী" },
-      { titleBn: "বাাবরনামা", authorBn: "জহির উদ্-দিন মুহম্মদ বাবর" },
-      { titleBn: "ইবনে বতুতার ভ্রমণ", authorBn: "ইবনে বতুতা" },
-      { titleBn: "একশত বছরের নিরবতা", authorBn: "গাব্রিয়েল গার্সিয়া মার্কেজ" },
-      { titleBn: "উপনিবেশ", authorBn: "নারায়ণ গঙ্গোপাধ্যায়" },
-      { titleBn: "মবিডিক", authorBn: "হারমান মেলভিল" },
-      { titleBn: "কৌটিল্যের শ্লোক", authorBn: "কৌটিল্য" },
-      { titleBn: "সাহেব বিবি গোলাম", authorBn: "বিমল মিত্র" },
-      { titleBn: "অন্তর্জলী যাত্রা", authorBn: "কমলকুমার মজুমদার" },
-      { titleBn: "বিশ্ব ইতিহাস প্রসঙ্গ", authorBn: "জওহরলাল নেহেরু" },
-      { titleBn: "আমি জোরথুস্ত্র বলছি", authorBn: "ফ্রেডরিক নিটশে" },
-      { titleBn: "সেই সময়", authorBn: "সুনীল গঙ্গোপাধ্যায়" },
-      { titleBn: "আমার দেখা রাজনীতির পঞ্চাশ বছর", authorBn: "আবুল মনসুর আহমদ" }
+      { titleBn: "আরণ্যক", authorBn: "বিভূতিভূষণ বন্দ্যোপাধ্যায়" }
     ]
   };
 
-  const filteredCourses = courses40.filter(c => {
-    const matchesCat = courseCategory === 'all' || c.category === courseCategory;
-    const q = searchCourse.trim().toLowerCase();
-    const matchesQ = !q || c.titleBn.toLowerCase().includes(q) || c.titleEn.toLowerCase().includes(q);
-    return matchesCat && matchesQ;
+  // Filter courses & books
+  const allCourses = pageData.courses40 || pageData.courses || defaultAalorIshkoolData.courses40 || courses40;
+  const filteredCourses = allCourses.filter((c: any) => {
+    const matchCat = courseCategory === 'all' || c.category === courseCategory;
+    const matchSearch = !searchCourse || 
+      (c.titleBn && c.titleBn.toLowerCase().includes(searchCourse.toLowerCase())) ||
+      (c.titleEn && c.titleEn.toLowerCase().includes(searchCourse.toLowerCase()));
+    return matchCat && matchSearch;
   });
 
-  const currentYearBooks = booksByYear[activeYear] || [];
-  const filteredBooks = currentYearBooks.filter(b => {
-    const q = searchBook.trim().toLowerCase();
-    return !q || b.titleBn.toLowerCase().includes(q) || b.authorBn.toLowerCase().includes(q);
+  const allBooksByYear = pageData.booksByYear || defaultAalorIshkoolData.booksByYear || booksByYear;
+  const currentYearBooks = (allBooksByYear && allBooksByYear[activeYear]) || booksByYear[activeYear] || [];
+  const filteredBooks = currentYearBooks.filter((b: any) => {
+    if (!searchBook) return true;
+    return (b.titleBn && b.titleBn.toLowerCase().includes(searchBook.toLowerCase())) ||
+      (b.authorBn && b.authorBn.toLowerCase().includes(searchBook.toLowerCase())) ||
+      (b.titleEn && b.titleEn.toLowerCase().includes(searchBook.toLowerCase()));
   });
+
+  const pillarsList = pageData.pillars || defaultAalorIshkoolData.pillars;
+  const weeklyRulesList = pageData.weekly_rules || defaultAalorIshkoolData.weekly_rules;
+  const masterPathwaysList = pageData.master_pathways || defaultAalorIshkoolData.master_pathways;
+
+  if (pageData.enabled === false) {
+    return null;
+  }
 
   return (
-    <div className="space-y-10 w-full animate-fade-in text-left font-sans pb-12">
-      {/* 1. Official Header Banner (Brochure Style) */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900 text-amber-50 shadow-2xl border border-amber-800/40 p-6 sm:p-10 md:p-12">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-overlay"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&auto=format&fit=crop&q=80')` }}
-        />
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-widest px-3.5 py-1 rounded-full">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>{language === 'bn' ? (page?.badge_bn || 'আলোকিত মানুষ চাই') : (page?.badge_en || 'Seeking Enlightened Human Beings')}</span>
-            </div>
-
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-amber-100 tracking-tight leading-tight">
-              {language === 'bn' ? (page?.title_bn || 'আলোর ইশকুল') : (page?.title_en || 'Aalor Ishkool (Light School)')}
-            </h1>
-            <p className="font-serif text-lg sm:text-xl text-amber-300 italic font-medium">
-              {language === 'bn' ? (page?.subtitle_bn || '— চেতনার আলোকযাত্রা') : (page?.subtitle_en || '— Journey of Intellectual Awakening')}
-            </p>
-
-            <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed font-light pt-1">
-              {language === 'bn' 
-                ? (page?.hero_desc_bn || page?.sections?.[0]?.content?.[0] || 'আমাদের দেশে আজ বিপুল সংখ্যাতেই তো এমন মানুষ দরকার যাঁরা বিশ্বজ্ঞানের জগৎকে বিশদ ও সুপরিসরভাবে জানেন, সেইসব জলাশয়ের মতো মানুষ যাঁদের কাছ থেকে দেশ ও জাতি প্রয়োজনের মুহূর্তে তৃষ্ণার জল সংগ্রহ করতে পারবে; যাঁরা প্রতিনিয়ত নিজেদের মূল্যবান জ্ঞানভান্ডার, মূল্যবোধ, অভিজ্ঞতা ও দূরদৃষ্টি দিয়ে বিপর্যয়ের মুহূর্তে জাতির ত্রাণে সাহায্য করতে পারবেন।')
-                : (page?.hero_desc_en || page?.sections?.[0]?.content_en?.[0] || 'Our nation profoundly needs deeply knowledgeable, vision-driven individuals whose minds serve as reservoir-lakes of wisdom—capable of guiding and serving the nation in times of crisis.')}
-            </p>
-
-            <div className="p-3 bg-amber-950/60 rounded-2xl border border-amber-700/40 text-amber-200 text-xs font-serif italic">
-              ✨ {language === 'bn' ? '"মানুষ তার স্বপ্নের সমান বড়..." — ১৭ বছরের পরীক্ষা-নিরীক্ষার পর প্রণীত বিশ্বসাহিত্য কেন্দ্রের অনন্য উদ্যোগ।' : '"Human beings are as grand as their dreams..." — Formulated through 17 years of educational research.'}
-            </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      {/* Hero Section */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-950 via-stone-900 to-amber-900 text-white p-8 md:p-14 shadow-2xl border border-amber-800/40">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent"></div>
+        {pageData.hero_image && (
+          <div className="absolute inset-0 opacity-15 mix-blend-overlay">
+            <img src={pageData.hero_image} alt="Aalor Ishkool Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+        )}
+        <div className="relative z-10 max-w-3xl space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-semibold tracking-wide">
+            <GraduationCap className="w-4 h-4" />
+            <span>{language === 'bn' ? pageData.badge_bn : pageData.badge_en}</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full sm:w-auto">
-            <button 
-              onClick={() => setActiveTab('apply')}
-              className="px-6 py-3 bg-[#B8862A] hover:bg-[#9E7120] text-stone-950 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer whitespace-nowrap"
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>{language === 'bn' ? 'ভর্তি ও আবেদন ফরম' : 'Online Admission Form'}</span>
-            </button>
+          <h1 className="font-serif text-3xl md:text-5xl font-bold tracking-tight leading-tight text-amber-50">
+            {language === 'bn' ? pageData.hero_title_bn : pageData.hero_title_en}
+          </h1>
 
-            <button 
-              onClick={() => setActiveTab('courses')}
-              className="px-6 py-3 bg-stone-900/80 hover:bg-stone-800 text-amber-200 font-bold rounded-2xl border border-amber-700/50 transition-all text-xs md:text-sm text-center cursor-pointer whitespace-nowrap"
+          <p className="text-base md:text-lg text-amber-100/90 leading-relaxed font-sans">
+            {language === 'bn' ? pageData.hero_subtitle_bn : pageData.hero_subtitle_en}
+          </p>
+
+          <p className="text-sm text-stone-300 leading-relaxed font-sans">
+            {language === 'bn' ? pageData.hero_desc_bn : pageData.hero_desc_en}
+          </p>
+
+          {(pageData.hero_quote_bn || pageData.hero_quote_en) && (
+            <div className="p-4 rounded-2xl bg-amber-900/40 border border-amber-700/50 text-amber-200 text-xs italic">
+              {language === 'bn' ? pageData.hero_quote_bn : pageData.hero_quote_en}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-4 pt-2">
+            <button
+              onClick={() => setActiveTab('apply')}
+              className="px-6 py-3 rounded-xl bg-[#B8862A] hover:bg-[#966D22] text-white font-medium text-sm transition-all shadow-lg flex items-center gap-2 cursor-pointer"
             >
-              {language === 'bn' ? '৪০টি বিষয়ভিত্তিক কোর্স' : 'View 40 Subject Courses'}
+              <span>{language === 'bn' ? (pageData.apply_btn_label_bn || 'ভর্তি ও আবেদন ফরম') : (pageData.apply_btn_label_en || 'Online Admission Form')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setActiveTab('courses')}
+              className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>{language === 'bn' ? (pageData.courses_btn_label_bn || '৪০টি বিষয়ভিত্তিক কোর্স') : (pageData.courses_btn_label_en || 'View 40 Subject Courses')}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. Primary Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-[#E8DDD0] pb-3">
+      {/* Tabs Navigation */}
+      <div className="flex flex-wrap gap-2 border-b border-stone-200 pb-2">
         {[
-          { id: 'overview', bn: '📌 কার্যক্রমের মূল রূপরেখা', en: 'Overview & Highlights', icon: Lightbulb },
-          { id: 'methods', bn: '📖 পঠন নীতি ও ৩টি কৌশল', en: 'Reading Methods', icon: BookMarked },
-          { id: 'courses', bn: '🎓 ৪০টি বিষয়ভিত্তিক কোর্স', en: '40 Subjects Curriculum', icon: Layers },
-          { id: 'books', bn: '📚 বর্ষভিত্তিক বইয়ের তালিকা', en: 'Yearly Book Lists', icon: BookOpen },
-          { id: 'apply', bn: '📝 অনলাইন ভর্তি ও আবেদন', en: 'Apply Online', icon: GraduationCap }
-        ].map(tab => {
-          const Icon = tab.icon;
+          { id: 'overview', labelBn: 'এক নজরে ও মূল স্তম্ভ', labelEn: 'Overview & 5 Pillars', icon: Sparkles },
+          { id: 'methods', labelBn: 'পড়ার নিয়ম ও ৩ সুবর্ণ পথ', labelEn: 'Reading Protocol & 3 Paths', icon: BookMarked },
+          { id: 'courses', labelBn: '৪০টি বিষয়ভিত্তিক কোর্স', labelEn: '40 Special Courses', icon: GraduationCap },
+          { id: 'books', labelBn: '২০০ বইয়ের তালিকা', labelEn: '200 Master Books List', icon: BookOpen },
+          { id: 'apply', labelBn: 'ভর্তি ফরম ও নিয়মাবলী', labelEn: 'Admission & Guidelines', icon: FileText }
+        ].map((tab) => {
+          const TabIcon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-[#B8862A] text-white shadow-md'
-                  : 'bg-[#FAF7F2] text-stone-700 border border-[#E8DDD0] hover:bg-stone-200'
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-amber-900 text-white shadow-md'
+                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{language === 'bn' ? tab.bn : tab.en}</span>
+              <TabIcon className={`w-4 h-4 ${isActive ? 'text-amber-300' : 'text-stone-500'}`} />
+              <span>{language === 'bn' ? tab.labelBn : tab.labelEn}</span>
             </button>
           );
         })}
@@ -393,78 +392,46 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
       {/* TAB 1: OVERVIEW & 5 PILLARS */}
       {activeTab === 'overview' && (
         <div className="space-y-8 animate-fade-in">
-          {/* 5 Core Pillars from PDF Page 3 */}
-          <div className="space-y-3">
-            <h3 className="font-serif font-bold text-2xl text-stone-900">
-              {language === 'bn' ? 'কর্মসূচির প্রধান ৫টি মূল স্তম্ভ (৫ বছর মেয়াদি)' : '5 Core Pillars of the 5-Year Curriculum'}
-            </h3>
-            <p className="text-xs text-stone-600">
-              {language === 'bn' ? 'আলোর ইশকুলের সমবেত জ্ঞানচর্চার প্রক্রিয়াটি চলবে লঘু ও আনন্দময় চালে' : 'Interactive, joyful, and stress-free academic exploration'}
-            </p>
+          {/* 5 Core Pillars Grid */}
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+              <div>
+                <h3 className="font-serif font-bold text-2xl text-stone-900">
+                  {language === 'bn' ? (pageData.pillars_heading_bn || 'কর্মসূচির প্রধান ৫টি মূল স্তম্ভ (৫ বছর মেয়াদি)') : (pageData.pillars_heading_en || '5 Core Pillars of the 5-Year Curriculum')}
+                </h3>
+                <p className="text-xs text-stone-500">
+                  {language === 'bn' ? (pageData.pillars_subtitle_bn || 'আলোর ইশকুলের সমবেত জ্ঞানচর্চার প্রক্রিয়াটি চলবে লঘু ও আনন্দময় চালে') : (pageData.pillars_subtitle_en || 'Interactive, joyful, and stress-free academic exploration')}
+                </p>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
-              {[
-                {
-                  num: "১",
-                  titleBn: "২০০টি শ্রেষ্ঠ বই",
-                  titleEn: "200 Great Books",
-                  descBn: "বাংলা ভাষাসহ পৃথিবীর বিভিন্ন দেশ ও ভাষার অন্তত দু'শটি শ্রেষ্ঠ বইয়ের পঠন-পাঠন ও উষ্ণ আলোচনা।",
-                  descEn: "In-depth study and vibrant discussions on at least 200 immortal books across world literature.",
-                  icon: BookOpen,
-                  bg: "bg-amber-50 border-amber-200 text-amber-900"
-                },
-                {
-                  num: "২",
-                  titleBn: "৪০ শাখায় ২৫০ বক্তৃতা",
-                  titleEn: "250 Lectures in 40 Branches",
-                  descBn: "মানবজ্ঞানের ৪০টি গুরুত্বপূর্ণ শাখার ভেতর দিয়ে দেশের বিশিষ্ট গুণীজনদের ২৫০টি সমৃদ্ধ বক্তৃতা।",
-                  descEn: "250 enriching lectures delivered by eminent scholars covering 40 vital disciplines of human knowledge.",
-                  icon: Users,
-                  bg: "bg-emerald-50 border-emerald-200 text-emerald-900"
-                },
-                {
-                  num: "৩",
-                  titleBn: "সংগীত ও চলচ্চিত্র আস্বাদন",
-                  titleEn: "Music & Film Appreciation",
-                  descBn: "পৃথিবীর শ্রেষ্ঠ সংগীত, চলচ্চিত্র, প্রামাণ্যচিত্র, নাট্যানুষ্ঠান, শিল্প প্রদর্শনী ও আউটিং।",
-                  descEn: "Guided appreciation of world-class music, cinema, documentaries, drama, and art exhibitions.",
-                  icon: Music,
-                  bg: "bg-sky-50 border-sky-200 text-sky-900"
-                },
-                {
-                  num: "৪",
-                  titleBn: "অডিও-ভিজ্যুয়াল সংযোগ",
-                  titleEn: "Visual Documentaries",
-                  descBn: "প্রতিটি পঠন-পাঠন ও বক্তৃতার সাথে বিশ্বমানের চলচ্চিত্র ও প্রামাণ্যচিত্র প্রদর্শনী।",
-                  descEn: "Integrating high-definition visual documentaries alongside reading sessions and guest lectures.",
-                  icon: Film,
-                  bg: "bg-purple-50 border-purple-200 text-purple-900"
-                },
-                {
-                  num: "৫",
-                  titleBn: "সাপ্তাহিক রুটিন",
-                  titleEn: "Friday Weekly Sessions",
-                  descBn: "প্রতি সপ্তাহের শুধুমাত্র শুক্রবার সকাল থেকে অপরাহ্ণের মধ্যে নিয়মিত আমেজময় আসর।",
-                  descEn: "Relaxed weekly gatherings hosted every Friday morning through afternoon.",
-                  icon: Clock,
-                  bg: "bg-rose-50 border-rose-200 text-rose-900"
-                }
-              ].map((item, idx) => {
-                const ItemIcon = item.icon;
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {pillarsList.map((pillar: any, idx: number) => {
+                const colors = [
+                  'bg-amber-50 border-amber-200 text-amber-900',
+                  'bg-emerald-50 border-emerald-200 text-emerald-900',
+                  'bg-sky-50 border-sky-200 text-sky-900',
+                  'bg-purple-50 border-purple-200 text-purple-900',
+                  'bg-rose-50 border-rose-200 text-rose-900'
+                ];
+                const icons = [BookOpen, Award, Music, Film, Clock];
+                const PIcon = icons[idx % icons.length];
+                const bgStyle = colors[idx % colors.length];
+
                 return (
-                  <div key={idx} className={`p-5 rounded-2xl border ${item.bg} space-y-3 flex flex-col justify-between shadow-xs`}>
+                  <div key={idx} className={`p-5 rounded-2xl border ${bgStyle} space-y-3 flex flex-col justify-between shadow-xs`}>
                     <div className="flex justify-between items-center">
                       <span className="w-8 h-8 rounded-full bg-white/80 font-serif font-black flex items-center justify-center text-sm shadow-xs">
-                        {item.num}
+                        {pillar.num || (idx + 1)}
                       </span>
-                      <ItemIcon className="w-5 h-5 opacity-80" />
+                      <PIcon className="w-5 h-5 opacity-80" />
                     </div>
                     <div>
                       <h4 className="font-serif font-bold text-base mb-1">
-                        {language === 'bn' ? item.titleBn : item.titleEn}
+                        {language === 'bn' ? (pillar.titleBn || pillar.title_bn) : (pillar.titleEn || pillar.title_en || pillar.titleBn)}
                       </h4>
                       <p className="text-xs opacity-90 leading-relaxed font-sans">
-                        {language === 'bn' ? item.descBn : item.descEn}
+                        {language === 'bn' ? (pillar.descBn || pillar.desc_bn) : (pillar.descEn || pillar.desc_en || pillar.descBn)}
                       </p>
                     </div>
                   </div>
@@ -475,30 +442,30 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
 
           {/* Deep Philosophical Text from Page 3 */}
           <div className="p-6 md:p-8 bg-[#FAF7F2] border border-[#E8DDD0] rounded-3xl space-y-4">
-            <h3 className="font-serif font-bold text-xl text-stone-900 flex items-center gap-2">
-              <Compass className="w-5 h-5 text-[#B8862A]" />
-              <span>{language === 'bn' ? 'চৈতন্যের দীপ্ত বিকাশ ও আলোকিত মানুষ সৃষ্টি' : 'Higher Intellectual Growth & Enlightened Minds'}</span>
+            <h3 className="font-serif font-bold text-xl md:text-2xl text-[#6B4E26] flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#B8862A]" />
+              <span>{language === 'bn' ? (pageData.philosophy_heading_bn || 'চৈতন্যের দীপ্ত বিকাশ ও আলোকিত মানুষ সৃষ্টি') : (pageData.philosophy_heading_en || 'Higher Intellectual Growth & Enlightened Minds')}</span>
             </h3>
-            <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans font-light">
+            <p className="text-stone-700 leading-relaxed font-sans text-sm md:text-base">
               {language === 'bn' 
-                ? 'উচ্চযোগ্যতাসম্পন্ন, জ্ঞানঋদ্ধ ও বহুমাত্রিক মানুষই পারেন একটা জাতিকে এই সহযোগিতা দিয়ে সামনের দিকে এগিয়ে নিতে। এমনি সুযোগ্য ও আলোকিত মানুষ সৃষ্টির লক্ষ্যে শুরু হতে যাচ্ছে বিশ্বসাহিত্য কেন্দ্রের নতুন কার্যক্রম "আলোর ইশকুল"। এই পাঠ্যসূচি ও এর ফলপ্রসূতা নিয়ে ১৭ বছর ধরে পরীক্ষা-নিরীক্ষার পর কার্যক্রমটি শুরু হতে যাচ্ছে। আমরা বিশ্বাস করি এই কার্যক্রমে অংশ নিয়ে মেধাবী অংশগ্রহণকারীরা উঁচু মানের যোগ্যতা, মূল্যবোধ ও দূরদৃষ্টিসম্পন্ন মানুষ হিসেবে গড়ে উঠবেন।' 
-                : 'Only highly qualified, wisdom-rich, multidimensional human beings can steer a nation forward. Aalor Ishkool is crafted precisely to nurture such visionary citizens.'}
+                ? (pageData.philosophy_text_bn || 'উচ্চযোগ্যতাসম্পন্ন, জ্ঞানঋদ্ধ ও বহুমাত্রিক মানুষই পারেন একটা জাতিকে এই সহযোগিতা দিয়ে সামনের দিকে এগিয়ে নিতে...') 
+                : (pageData.philosophy_text_en || 'Only highly qualified, wisdom-rich, multidimensional human beings can steer a nation forward...')}
             </p>
           </div>
 
-          {/* Special English & Other Programs from PDF Page 6 */}
+          {/* Special English & Other Programs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-amber-950 text-amber-50 rounded-3xl space-y-3 border border-amber-800">
               <div className="inline-block px-3 py-1 bg-amber-800/60 rounded-lg text-[10px] uppercase font-bold text-amber-300">
                 {language === 'bn' ? 'বিশেষ প্রোগ্রাম' : 'Special Program'}
               </div>
               <h4 className="font-serif text-xl font-bold text-amber-100">
-                {language === 'bn' ? 'ইংরেজি শিক্ষা কর্মসূচি' : 'Special English Proficiency Track'}
+                {language === 'bn' ? (pageData.english_card_title_bn || 'ইংরেজি শিক্ষা কর্মসূচি') : (pageData.english_card_title_en || 'Special English Proficiency Track')}
               </h4>
               <p className="text-xs text-amber-200/90 leading-relaxed">
                 {language === 'bn' 
-                  ? 'সভ্যরা যাতে অল্প সময়ে ভালো মানের ইংরেজি শিখতে পারেন সেই লক্ষ্যে প্রতি তিন সপ্তাহে একটি করে ৪০ পৃষ্ঠার ছোট ইংরেজি বই পড়বেন। প্রতিটি বইয়ের কঠিন শব্দগুলোর পাশে বাংলা অর্থ ও উচ্চারণ দেওয়া থাকবে। ২০টি বই পড়ার পর সহজে ইংরেজি শেখা সম্ভব হবে। দ্বিতীয় পর্বে ৪,০০০ শব্দ সংবলিত বিশেষ বই অনুশীলনী দেওয়া হবে।' 
-                  : '3-week cycle reading 40-page English books with side-by-side Bengali translations and pronunciations, followed by an intensive 4,000-word vocabulary module.'}
+                  ? (pageData.english_card_desc_bn || 'সভ্যরা যাতে অল্প সময়ে ভালো মানের ইংরেজি শিখতে পারেন...') 
+                  : (pageData.english_card_desc_en || '3-week cycle reading 40-page English books with side-by-side Bengali translations...')}
               </p>
             </div>
 
@@ -507,12 +474,12 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
                 {language === 'bn' ? 'অনুষঙ্গ' : 'Cultural Activities'}
               </div>
               <h4 className="font-serif text-xl font-bold text-white">
-                {language === 'bn' ? 'সাহিত্য সংঘ ও সাংস্কৃতিক ফোরাম' : 'Literary Guild & Cultural Forum'}
+                {language === 'bn' ? (pageData.cultural_card_title_bn || 'সাহিত্য সংঘ ও সাংস্কৃতিক ফোরাম') : (pageData.cultural_card_title_en || 'Literary Guild & Cultural Forum')}
               </h4>
               <p className="text-xs text-stone-300 leading-relaxed">
                 {language === 'bn' 
-                  ? 'প্রতিমাসে নিয়মিত "সাহিত্য সংঘ" পরিচালিত হবে। এতে থাকবে কবিতা পাঠ, বিভিন্ন বইয়ের ওপর গান-আবৃত্তি, এবং আকর্ষণীয় সাহিত্য পর্ব। এছাড়াও বুদ্ধিজীবীর নোটবই ও বিশ্বইতিহাস প্রসঙ্গ সম্পর্কিত বিশেষ পারফর্মান্স থাকবে।' 
-                  : 'Monthly Literary Guild events including poetry recitation, musical adaptations, book discussions, and television broadcasts.'}
+                  ? (pageData.cultural_card_desc_bn || 'প্রতিমাসে নিয়মিত "সাহিত্য সংঘ" পরিচালিত হবে...') 
+                  : (pageData.cultural_card_desc_en || 'Monthly Literary Guild events including poetry recitation...')}
               </p>
             </div>
           </div>
@@ -526,116 +493,57 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="p-6 bg-amber-50 border border-amber-200 rounded-3xl space-y-2">
             <h3 className="font-serif font-bold text-2xl text-amber-950 flex items-center gap-2">
               <BookMarked className="w-6 h-6 text-[#B8862A]" />
-              <span>{language === 'bn' ? 'সাপ্তাহিক বই পড়া ও গভীর অনুশীলনী নীতি' : 'Weekly Reading Protocol & Guidelines'}</span>
+              <span>{language === 'bn' ? (pageData.rules_heading_bn || 'সাপ্তাহিক বই পড়া ও গভীর অনুশীলনী নীতি') : (pageData.rules_heading_en || 'Weekly Reading Protocol & Guidelines')}</span>
             </h3>
             <p className="text-xs text-amber-900/80">
-              {language === 'bn' ? 'ব্রোশারের পৃষ্ঠা ৪ ও ৫ অনুযায়ী বই আত্মস্থকরণের সুনির্দিষ্ট বৈজ্ঞানিক পদ্ধতি' : 'Exact structured reading rules from Page 4 & 5 of official brochure'}
+              {language === 'bn' ? (pageData.rules_subtitle_bn || 'ব্রোশারের পৃষ্ঠা ৪ ও ৫ অনুযায়ী বই আত্মস্থকরণের সুনির্দিষ্ট বৈজ্ঞানিক পদ্ধতি') : (pageData.rules_subtitle_en || 'Exact structured reading rules from Page 4 & 5 of official brochure')}
             </p>
           </div>
 
-          {/* 6 Weekly Rules from PDF Page 4 */}
+          {/* 6 Weekly Rules */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              {
-                step: "১",
-                titleBn: "সাপ্তাহিক বই আবর্তন",
-                descBn: "প্রথম সপ্তাহে নির্ধারিত বইটি উদ্বোধনের দিনেই ইস্যু করে নেবেন, সপ্তাহ ধরে সেটি পড়বেন এবং পরের সপ্তাহে তার ওপর উষ্ণ, তপ্ত ও মেধামুখর আলোচনায় অংশ নেবেন। আলোচনা শেষে বইটি ফিরিয়ে দিয়ে নতুন বই নেবেন।"
-              },
-              {
-                step: "২",
-                titleBn: "বক্তব্যের মূল্যায়ন",
-                descBn: "বই আলোচনায় অংশ নেবার সময় প্রত্যেকের বক্তব্য কতটা সুন্দর ও গুরুত্বপূর্ণ হলো তা নিয়মিত গুরুত্বের সাথে মূল্যায়ন করা হবে।"
-              },
-              {
-                step: "৩",
-                titleBn: "উপস্থিতি ও নোট খাতা সংরক্ষণ",
-                descBn: "প্রত্যেকে কতদিন বই আলোচনায় অংশ নিলেন তার হিসাব যত্নসহ রাখা হবে। এছাড়াও নোট খাতায় বই থেকে কোন মানের উদ্ধৃতি লিখলেন সেগুলোর মূল্যায়নের ব্যবস্থা থাকবে।"
-              },
-              {
-                step: "৪",
-                titleBn: "লেখক পরিচিতি উপস্থাপন",
-                descBn: "বই আলোচনার শুরুতে একজন সভ্য লেখকের জীবনীসহ বইটির ভূমিকা সংক্ষেপে উপস্থাপন করবেন।"
-              },
-              {
-                step: "৫",
-                titleBn: "সমালোচনা পাঠ",
-                descBn: "সাতটি বই পড়ার পর একটি বইয়ের তাত্ত্বিক উপলব্ধিকে মজবুত করার জন্য ঐ বইয়ের ওপর বিখ্যাত সমালোচকদের লেখা সমালোচনা পড়তে দেওয়া হবে।"
-              },
-              {
-                step: "৬",
-                titleBn: "কমে মূল্যে নিজস্ব লাইব্রেরি গঠন",
-                descBn: "সভ্যরা যাতে বইগুলো সহজে কিনতে পারেন সেজন্য কেন্দ্র থেকে সর্বোচ্চ কমিশনে (৪০% পর্যন্ত ছাড়) বই ক্রয়ের সহায়তা করা হয়।"
-              }
-            ].map(rule => (
-              <div key={rule.step} className="p-5 bg-white border border-[#E8DDD0] rounded-2xl flex gap-4 items-start shadow-xs">
+            {weeklyRulesList.map((rule: any, rIdx: number) => (
+              <div key={rIdx} className="p-5 bg-white border border-[#E8DDD0] rounded-2xl flex gap-4 items-start shadow-xs">
                 <span className="w-8 h-8 rounded-xl bg-[#B8862A] text-white font-bold flex items-center justify-center shrink-0 font-serif">
-                  {rule.step}
+                  {rule.step || (rIdx + 1)}
                 </span>
                 <div className="space-y-1">
                   <h4 className="font-serif font-bold text-stone-900 text-sm">
-                    {language === 'bn' ? rule.titleBn : rule.titleBn}
+                    {language === 'bn' ? (rule.titleBn || rule.title_bn) : (rule.titleEn || rule.title_en || rule.titleBn)}
                   </h4>
                   <p className="text-xs text-stone-600 leading-relaxed font-sans">
-                    {rule.descBn}
+                    {language === 'bn' ? (rule.descBn || rule.desc_bn) : (rule.descEn || rule.desc_en || rule.descBn)}
                   </p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* 3 Golden Techniques to Deeply Digest Books (Page 4-5) */}
+          {/* 3 Golden Techniques */}
           <div className="p-6 md:p-8 bg-[#1A1207] text-amber-50 rounded-3xl border border-amber-800 space-y-6">
             <div className="space-y-1">
               <span className="text-xs uppercase font-bold text-amber-400 tracking-wider">
                 ✨ {language === 'bn' ? 'ব্রোশারের ৩টি স্বর্ণালী পদ্ধতি' : '3 Master Pathways to Book Absorption'}
               </span>
               <h3 className="font-serif font-bold text-2xl text-amber-100">
-                {language === 'bn' ? 'একটি বইকে গভীরভাবে আত্মস্থ করার ৩টি নিয়ম' : 'How to Deeply Digest Any Great Book'}
+                {language === 'bn' ? (pageData.master_pathways_heading_bn || 'একটি বইকে গভীরভাবে আত্মস্থ করার ৩টি নিয়ম') : (pageData.master_pathways_heading_en || 'How to Deeply Digest Any Great Book')}
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-5 bg-stone-900/90 rounded-2xl border border-amber-900/50 space-y-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center">
-                  ক
+              {masterPathwaysList.map((mp: any, mIdx: number) => (
+                <div key={mIdx} className="p-5 bg-stone-900/90 rounded-2xl border border-amber-900/50 space-y-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center">
+                    {mp.key || (mIdx + 1)}
+                  </div>
+                  <h4 className="font-serif font-bold text-amber-200">
+                    {language === 'bn' ? (mp.titleBn || mp.title_bn) : (mp.titleEn || mp.title_en || mp.titleBn)}
+                  </h4>
+                  <p className="text-xs text-stone-300 leading-relaxed">
+                    {language === 'bn' ? (mp.descBn || mp.desc_bn) : (mp.descEn || mp.desc_en || mp.descBn)}
+                  </p>
                 </div>
-                <h4 className="font-serif font-bold text-amber-200">
-                  {language === 'bn' ? 'হাইলাইটার কলমের ব্যবহার' : 'Highlighter Method'}
-                </h4>
-                <p className="text-xs text-stone-300 leading-relaxed">
-                  {language === 'bn' 
-                    ? 'পড়ার সময় বইটির যে লাইনগুলো আনন্দময়, সৌন্দর্যময়, অনবদ্য বা গভীর মনে হবে সেগুলোর ওপর হাইলাইটার দিয়ে দাগ দিয়ে রাখতে হবে।' 
-                    : 'Mark insightful, elegant, and profound passages with a highlighter pen while reading.'}
-                </p>
-              </div>
-
-              <div className="p-5 bg-stone-900/90 rounded-2xl border border-amber-900/50 space-y-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center">
-                  খ
-                </div>
-                <h4 className="font-serif font-bold text-amber-200">
-                  {language === 'bn' ? 'রিভিশন (আবার পড়া পর্ব)' : 'Daily Revision Routine'}
-                </h4>
-                <p className="text-xs text-stone-300 leading-relaxed">
-                  {language === 'bn' 
-                    ? 'সপ্তাহের প্রতিদিন বইটি পড়ার পর অন্তত ৫ মিনিট দাগ দেওয়া অংশগুলো রিভিশন দেওয়া। এতে বইটি হৃদয়ে চিরস্থায়ীভাবে গাঢ় হয়।' 
-                    : 'Spend at least 5 minutes daily reviewing highlighted passages to consolidate the reading in memory.'}
-                </p>
-              </div>
-
-              <div className="p-5 bg-stone-900/90 rounded-2xl border border-amber-900/50 space-y-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center">
-                  গ
-                </div>
-                <h4 className="font-serif font-bold text-amber-200">
-                  {language === 'bn' ? 'সেরা ২০টি লাইন নোট করা' : '20-Line Quote Journal'}
-                </h4>
-                <p className="text-xs text-stone-300 leading-relaxed">
-                  {language === 'bn' 
-                    ? 'একটি নোট বই নিয়ে বসা এবং বইটি থেকে অন্তত ২০টি সেরা ও মননশীল লাইন খাতায় স্বহস্তে টুকে রাখা।' 
-                    : 'Maintain a dedicated journal and handwrite at least 20 unforgettable quotes from each book.'}
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -647,10 +555,10 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E8DDD0] pb-4">
             <div>
               <h3 className="font-serif font-bold text-2xl text-stone-900">
-                {language === 'bn' ? '৪০টি বিষয়ের উপর বক্তৃতাভিত্তিক কোর্স তালিকা' : '40 Lecture-based Subject Courses'}
+                {language === 'bn' ? (pageData.courses_heading_bn || '৪০টি বিষয়ের উপর বক্তৃতাভিত্তিক কোর্স তালিকা') : (pageData.courses_heading_en || '40 Lecture-based Subject Courses')}
               </h3>
               <p className="text-xs text-stone-600 mt-1">
-                {language === 'bn' ? 'আলোকিত মানুষ গড়ার লক্ষ্যে মানবজ্ঞানের ৪০টি গুরুত্বপূর্ণ শাখার পূর্ণাঙ্গ ক্যাটালগ' : 'Complete official catalogue of 40 broad academic disciplines'}
+                {language === 'bn' ? (pageData.courses_subtitle_bn || 'আলোকিত মানুষ গড়ার লক্ষ্যে মানবজ্ঞানের ৪০টি গুরুত্বপূর্ণ শাখার পূর্ণাঙ্গ ক্যাটালগ') : (pageData.courses_subtitle_en || 'Complete official catalogue of 40 broad academic disciplines')}
               </p>
             </div>
 
@@ -692,7 +600,7 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
 
           {/* 40 Courses Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCourses.map(course => (
+            {filteredCourses.map((course: any) => (
               <div 
                 key={course.id} 
                 className="p-4 bg-white rounded-2xl border border-[#E8DDD0] shadow-xs hover:border-[#B8862A] hover:shadow-md transition-all flex items-start gap-3.5"
@@ -702,11 +610,18 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
                 </div>
                 <div className="space-y-1 text-left">
                   <h4 className="font-serif font-bold text-stone-900 text-sm leading-snug">
-                    {language === 'bn' ? course.titleBn : course.titleEn}
+                    {language === 'bn' ? course.titleBn : (course.titleEn || course.titleBn)}
                   </h4>
-                  <span className="inline-block text-[10px] text-[#B8862A] font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/50">
-                    {course.category.toUpperCase()}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block text-[10px] text-[#B8862A] font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/50">
+                      {(course.category || 'general').toUpperCase()}
+                    </span>
+                    {course.feeBn && (
+                      <span className="text-[10px] text-stone-500 font-medium">
+                        {course.feeBn}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -720,10 +635,10 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E8DDD0] pb-4">
             <div>
               <h3 className="font-serif font-bold text-2xl text-stone-900">
-                {language === 'bn' ? 'আলোর ইশকুল নির্বাচিত বইয়ের তালিকা' : 'Curated Book Lists by Academic Year'}
+                {language === 'bn' ? (pageData.books_heading_bn || 'আলোর ইশকুল নির্বাচিত বইয়ের তালিকা') : (pageData.books_heading_en || 'Curated Book Lists by Academic Year')}
               </h3>
               <p className="text-xs text-stone-600 mt-1">
-                {language === 'bn' ? 'বিশ্বসাহিত্যের দু\'শটি অনবদ্য ধ্রুপদী বইয়ের তালিকা (ব্রোশার থেকে সংগৃহীত)' : 'Official reading list from 1st Year to Advanced Level'}
+                {language === 'bn' ? (pageData.books_subtitle_bn || 'বিশ্বসাহিত্যের দু\'শটি অনবদ্য ধ্রুপদী বইয়ের তালিকা (ব্রোশার থেকে সংগৃহীত)') : (pageData.books_subtitle_en || 'Official reading list from 1st Year to Advanced Level')}
               </p>
             </div>
 
@@ -764,7 +679,7 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
 
           {/* Book List Table Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredBooks.map((book, bIdx) => (
+            {filteredBooks.map((book: any, bIdx: number) => (
               <div 
                 key={bIdx} 
                 className="p-3.5 bg-white rounded-xl border border-[#E8DDD0] flex items-center gap-3 shadow-2xs hover:border-[#B8862A] transition-all"
@@ -774,10 +689,10 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
                 </div>
                 <div className="space-y-0.5 text-left overflow-hidden">
                   <h5 className="font-serif font-bold text-stone-900 text-xs truncate">
-                    {book.titleBn}
+                    {language === 'bn' ? book.titleBn : (book.titleEn || book.titleBn)}
                   </h5>
                   <p className="text-[11px] text-stone-500 truncate">
-                    ✍️ {book.authorBn}
+                    ✍️ {language === 'bn' ? book.authorBn : (book.authorEn || book.authorBn)}
                   </p>
                 </div>
               </div>
@@ -793,27 +708,45 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="lg:col-span-5 bg-amber-950 text-amber-50 p-6 md:p-8 rounded-3xl border border-amber-800 shadow-xl space-y-6">
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                📌 {language === 'bn' ? 'ভর্তির নিয়মাবলি ও আমানত' : 'Admission Rules & Fees'}
+                📌 {language === 'bn' ? (pageData.admission_info_badge_bn || 'ভর্তির নিয়মাবলি ও আমানত') : (pageData.admission_info_badge_en || 'Admission Rules & Fees')}
               </span>
               <h3 className="font-serif font-bold text-2xl text-amber-100">
-                {language === 'bn' ? 'আলোর ইশকুল সদস্যপদ' : 'Membership Guidelines'}
+                {language === 'bn' ? (pageData.admission_info_title_bn || 'আলোর ইশকুল সদস্যপদ') : (pageData.admission_info_title_en || 'Membership Guidelines')}
               </h3>
             </div>
 
             <div className="space-y-4 text-xs text-amber-200/90 leading-relaxed font-sans">
               <div className="p-3.5 bg-amber-900/50 rounded-2xl border border-amber-700/50 space-y-1">
-                <span className="font-bold text-amber-300">১. জামানত ও চাঁদা:</span>
-                <p>বইয়ের নিরাপত্তা অর্থ বাবদ ৫০০/- টাকা জমা রাখতে হবে (কার্যক্রম শেষে বই অক্ষত ফেরতে অফেরতযোগ্য নিরাপত্তা অর্থ ফেরত দেওয়া হবে) এবং সাংস্কৃতিক চাঁদা হিসেবে ৫০০/- টাকা নির্ধারণ করা হয়েছে।</p>
+                <span className="font-bold text-amber-300">
+                  {language === 'bn' ? (pageData.admission_fee_title_bn || '১. জামানত ও চাঁদা:') : (pageData.admission_fee_title_en || '1. Security Deposit & Fee:')}
+                </span>
+                <p>
+                  {language === 'bn' 
+                    ? (pageData.admission_fee_desc_bn || 'বইয়ের নিরাপত্তা অর্থ বাবদ ৫০০/- টাকা জমা রাখতে হবে (কার্যক্রম শেষে বই অক্ষত ফেরতে অফেরতযোগ্য নিরাপত্তা অর্থ ফেরত দেওয়া হবে) এবং সাংস্কৃতিক চাঁদা হিসেবে ৫০০/- টাকা নির্ধারণ করা হয়েছে।') 
+                    : (pageData.admission_fee_desc_en || 'A refundable security deposit of BDT 500 is required for books, alongside a BDT 500 cultural contribution.')}
+                </p>
               </div>
 
               <div className="p-3.5 bg-amber-900/50 rounded-2xl border border-amber-700/50 space-y-1">
-                <span className="font-bold text-amber-300">২. ক্লাসের সময়সূচী:</span>
-                <p>প্রতি সপ্তাহের শুধুমাত্র শুক্রবার সকালে বা অপরাহ্ণে বিশ্বসাহিত্য কেন্দ্র ভবনে আসর অনুষ্ঠিত হয়।</p>
+                <span className="font-bold text-amber-300">
+                  {language === 'bn' ? (pageData.admission_schedule_title_bn || '২. ক্লাসের সময়সূচী:') : (pageData.admission_schedule_title_en || '2. Class Schedule:')}
+                </span>
+                <p>
+                  {language === 'bn' 
+                    ? (pageData.admission_schedule_desc_bn || 'প্রতি সপ্তাহের শুধুমাত্র শুক্রবার সকালে বা অপরাহ্ণে বিশ্বসাহিত্য কেন্দ্র ভবনে আসর অনুষ্ঠিত হয়।') 
+                    : (pageData.admission_schedule_desc_en || 'Sessions are held every Friday morning or afternoon at the Bishwo Shahitto Kendro building.')}
+                </p>
               </div>
 
               <div className="p-3.5 bg-amber-900/50 rounded-2xl border border-amber-700/50 space-y-1">
-                <span className="font-bold text-amber-300">৩. যোগাযোগ ঠিকানা:</span>
-                <p>বিশ্বসাহিত্য কেন্দ্র, ১৭ ময়মনসিং রোড, বাংলামোটর, ঢাকা-১০০০। ফোন: ২২৩৩৬০৮১২, ৫৮৬১২৩৭৪।</p>
+                <span className="font-bold text-amber-300">
+                  {language === 'bn' ? (pageData.admission_contact_title_bn || '৩. যোগাযোগ ঠিকানা:') : (pageData.admission_contact_title_en || '3. Contact Address:')}
+                </span>
+                <p>
+                  {language === 'bn' 
+                    ? (pageData.admission_contact_desc_bn || 'বিশ্বসাহিত্য কেন্দ্র, ১৭ ময়মনসিং রোড, বাংলামোটর, ঢাকা-১০০০। ফোন: ২২৩৩৬০৮১২, ৫৮৬১২৩৭৪।') 
+                    : (pageData.admission_contact_desc_en || 'Bishwo Shahitto Kendro, 17 Mymensingh Road, Banglamotor, Dhaka-1000. Phone: 223360812, 58612374.')}
+                </p>
               </div>
             </div>
           </div>
@@ -821,12 +754,12 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           {/* Right Form Column */}
           <div className="lg:col-span-7 bg-white border border-[#E8DDD0] rounded-3xl p-6 md:p-8 shadow-sm">
             <h3 className="font-serif font-bold text-xl text-stone-900 mb-2 text-left">
-              {language === 'bn' ? 'অনলাইন ভর্তি ও আসন বুকিং ফর্ম' : 'Online Admission Application'}
+              {language === 'bn' ? (pageData.admission_form_title_bn || 'অনলাইন ভর্তি ও আসন বুকিং ফর্ম') : (pageData.admission_form_title_en || 'Online Admission Application')}
             </h3>
             <p className="text-xs text-stone-500 mb-5 text-left">
               {language === 'bn' 
-                ? 'আপনার তথ্য দিয়ে নিচের ফর্মটি জমা দিন। আমাদের ভর্তি সেল থেকে অতিসত্বর যোগাযোগ করা হবে।' 
-                : 'Fill in your details below to lock your pre-registration seat.'}
+                ? (pageData.admission_form_subtitle_bn || 'আপনার তথ্য দিয়ে নিচের ফর্মটি জমা দিন। আমাদের ভর্তি সেল থেকে অতিসত্বর যোগাযোগ করা হবে।') 
+                : (pageData.admission_form_subtitle_en || 'Fill in your details below to lock your pre-registration seat.')}
             </p>
 
             {submitted ? (
@@ -930,7 +863,7 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
                   className="w-full py-3 bg-[#B8862A] hover:bg-[#9E7120] text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{submitting ? (language === 'bn' ? 'জমা হচ্ছে...' : 'Submitting...') : (language === 'bn' ? 'ভর্তি আবেদন জমা দিন' : 'Submit Application')}</span>
+                  <span>{submitting ? (language === 'bn' ? 'জমা হচ্ছে...' : 'Submitting...') : (language === 'bn' ? (pageData.admission_submit_btn_bn || 'ভর্তি আবেদন জমা দিন') : (pageData.admission_submit_btn_en || 'Submit Application'))}</span>
                 </button>
               </form>
             )}

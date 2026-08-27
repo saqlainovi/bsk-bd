@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Coffee, Utensils, Clock, MapPin, CheckCircle2, 
   Image as ImageIcon, Eye, X
@@ -6,6 +6,8 @@ import {
 import { AnimatePresence } from 'motion/react';
 import { ParsedPage, Language } from '../types';
 import { normalizeImageUrl } from './imageUtils';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultCafeData } from '../data/specializedPagesDefaults';
 
 interface CafePageProps {
   page: ParsedPage;
@@ -17,6 +19,7 @@ interface CafePageProps {
 }
 
 export const CafePage: React.FC<CafePageProps> = ({
+  page,
   language,
   setActivePhoto,
   setActivePhotoIndex,
@@ -25,8 +28,31 @@ export const CafePage: React.FC<CafePageProps> = ({
   const isBn = language === 'bn';
   const [activeImageModal, setActiveImageModal] = useState<string | null>(null);
 
-  // Cafeteria Photo Gallery
-  const cafeGallery = [
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'cafe');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultCafeData, ...page, ...dbPageData };
+
+  // Default Cafeteria Photo Gallery
+  const defaultCafeGallery = [
     {
       url: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
       captionBn: "বিশ্বসাহিত্য কেন্দ্র ভবনের ছাদ সংলগ্ন উন্মুক্ত ক্যাফেটেরিয়া",
@@ -49,6 +75,14 @@ export const CafePage: React.FC<CafePageProps> = ({
     }
   ];
 
+  const cafeGallery = (page?.gallery && page.gallery.length > 0)
+    ? page.gallery.map((g: any) => ({
+        url: g.image || g.url,
+        captionBn: g.caption_bn || g.captionBn || 'ক্যাফেটেরিয়ার ছবি',
+        captionEn: g.caption_en || g.captionEn || 'Cafeteria Photo'
+      }))
+    : defaultCafeGallery;
+
   const openImageModal = (url: string, index: number) => {
     if (setActivePhoto && setActiveAlbumPhotos) {
       setActiveAlbumPhotos(cafeGallery.map(g => g.url));
@@ -67,17 +101,17 @@ export const CafePage: React.FC<CafePageProps> = ({
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B8862A]/20 border border-[#D4A84B]/40 text-[#F0CC7A] text-xs font-semibold">
             <Coffee className="w-3.5 h-3.5 text-[#F0CC7A]" />
-            <span>{isBn ? 'বিশ্বসাহিত্য কেন্দ্র ভবন • ১০ম তলা (রুফটপ)' : 'BSK Building • 10th Floor Rooftop'}</span>
+            <span>{isBn ? (page?.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র ভবন • ১০ম তলা (রুফটপ)') : (page?.badge_en || 'BSK Building • 10th Floor Rooftop')}</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#FAF7F2] font-serif tracking-tight">
-            {isBn ? 'ক্যাফেটেরিয়া' : 'BSK Cafeteria'}
+            {isBn ? (page?.title_bn || 'ক্যাফেটেরিয়া') : (page?.title_en || 'BSK Cafeteria')}
           </h1>
 
           <p className="text-sm sm:text-base text-[#E8DDD0] leading-relaxed text-justify max-w-3xl">
             {isBn 
-              ? 'বিশ্বসাহিত্য কেন্দ্র ভবনের ১০ম তলায় অবস্থিত মনোরম ক্যাফেটেরিয়া ও ছাদবাগান। বইয়ের সবুজ জগতে বা সংস্কৃতিচর্চার ফাঁকে কিছুটা সময় প্রশান্তিতে কাটানোর জন্য এটি এক অপূর্ব পরিবেশ। প্রকাশ্য মনোরম বাতাস, দৃষ্টিনন্দন ছাদবাগান এবং ঢাকার আকাশ উপভোগের চমৎকার সুবিধার সাথে এখানে পাওয়া যায় উন্নতমানের স্বাস্থ্যকর হালকা নাশতা, চা ও কফি।'
-              : 'Located on the 10th floor rooftop of BSK complex. An open-air cafeteria adorned with lush greenery, providing readers and visitors a serene environment for tea, coffee, light refreshments and cultural conversations.'}
+              ? (page?.subtitle_bn || page?.sections?.[0]?.content?.[0] || 'বিশ্বসাহিত্য কেন্দ্র ভবনের ১০ম তলায় অবস্থিত মনোরম ক্যাফেটেরিয়া ও ছাদবাগান। বইয়ের সবুজ জগতে বা সংস্কৃতিচর্চার ফাঁকে কিছুটা সময় প্রশান্তিতে কাটানোর জন্য এটি এক অপূর্ব পরিবেশ। প্রকাশ্য মনোরম বাতাস, দৃষ্টিনন্দন ছাদবাগান এবং ঢাকার আকাশ উপভোগের চমৎকার সুবিধার সাথে এখানে পাওয়া যায় উন্নতমানের স্বাস্থ্যকর হালকা নাশতা, চা ও কফি।')
+              : (page?.subtitle_en || page?.sections?.[0]?.content_en?.[0] || 'Located on the 10th floor rooftop of BSK complex. An open-air cafeteria adorned with lush greenery, providing readers and visitors a serene environment for tea, coffee, light refreshments and cultural conversations.')}
           </p>
         </div>
       </div>
@@ -215,11 +249,17 @@ export const CafePage: React.FC<CafePageProps> = ({
       {/* LIGHTBOX MODAL */}
       <AnimatePresence>
         {activeImageModal && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-            <div className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden p-2">
+          <div 
+            onClick={() => setActiveImageModal(null)}
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden p-2 shadow-2xl cursor-default"
+            >
               <button
                 onClick={() => setActiveImageModal(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black cursor-pointer"
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black cursor-pointer z-10"
               >
                 <X className="w-5 h-5" />
               </button>

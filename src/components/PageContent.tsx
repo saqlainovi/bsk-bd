@@ -4,7 +4,7 @@ import {
   MapPin, CheckCircle, HelpCircle, ArrowRight, ShieldAlert, Library, BookOpenCheck,
   Bell, Calendar, ArrowUpRight, Award, BookOpen, Truck, Sparkles, ChevronRight, Music, Image as ImageIcon, Compass, GraduationCap,
   Briefcase, Paperclip, Upload, X, LayoutGrid, List, History, Search, Download, ExternalLink, ChevronLeft, Eye,
-  Clock, Info, Users, Coins, Coffee, Utensils
+  Clock, Info, Users, Coins, Coffee, Utensils, Building2
 } from 'lucide-react';
 import { 
   Tabs as AriaTabs, 
@@ -14,11 +14,9 @@ import {
 } from 'react-aria-components';
 import { motion, AnimatePresence } from 'motion/react';
 import React from 'react';
-import { 
-  db, handleFirestoreError, OperationType, collection, doc, setDoc, serverTimestamp, query, onSnapshot 
-} from '../firebase';
+import { cpanelApi } from '../services/cpanelApi';
 import { safeCacheData } from './cacheUtils';
-import { newsItems as defaultNews, events as defaultEvents, notices as defaultNotices, defaultBlogPosts } from '../data/notices_data';
+import { newsItems as defaultNews, events as defaultEvents, notices as defaultNotices, defaultBlogPosts, defaultCirculars } from '../data/notices_data';
 import { fallbackPress, photoAlbums } from '../data/press_data';
 import { GoogleMapSection } from './GoogleMapSection';
 import { NationwideExcellencePage } from './NationwideExcellencePage';
@@ -29,19 +27,24 @@ import { CafePage } from './CafePage';
 import { AuditoriumPage } from './AuditoriumPage';
 import { BuildingPage } from './BuildingPage';
 import { BookShopPage } from './BookShopPage';
+import { PrimaryTeacherPage } from './PrimaryTeacherPage';
+import { BangalirChintaPage } from './BangalirChintaPage';
+import OfficialJobApplicationModal from './OfficialJobApplicationModal';
+import { defaultPublicationStats, defaultPublicationSeriesList, defaultPublicationCatalogs, defaultPublicationGallery } from '../data/publicationDefaults';
 
 interface PageContentProps {
   page: ParsedPage;
   language: Language;
-  onNavigate: (tab: string) => void;
+  onNavigate: (tab: string, extraData?: any) => void;
 }
 
 export default function PageContent({ page, language, onNavigate }: PageContentProps) {
   const [dbNotices, setDbNotices] = React.useState<any[]>([]);
   const [dbEvents, setDbEvents] = React.useState<any[]>([]);
   const [dbNewsItems, setDbNewsItems] = React.useState<any[]>([]);
-  const [dbCirculars, setDbCirculars] = React.useState<any[]>([]);
+  const [dbCirculars, setDbCirculars] = React.useState<any[]>(defaultCirculars);
   const [activeApplyCircular, setActiveApplyCircular] = React.useState<any | null>(null);
+  const [activeModalCircular, setActiveModalCircular] = React.useState<any | null>(null);
   const [activeChintaSubject, setActiveChintaSubject] = React.useState<number>(0);
 
   // Library custom interactive states
@@ -94,23 +97,19 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     setAlorInquiryError('');
 
     try {
-      const inquiriesCol = collection(db, 'inquiries');
-      const newInquiryDoc = doc(inquiriesCol);
-      const payload = {
-        id: newInquiryDoc.id,
+      await cpanelApi.addDoc('inquiries', {
         name: alorInquiryForm.name.trim(),
         phone: alorInquiryForm.phone.trim(),
         email: alorInquiryForm.email.trim(),
         message: alorInquiryForm.message.trim(),
         occupation: alorInquiryForm.occupation.trim(),
         type: 'aalor-ishkool',
-        createdAt: serverTimestamp()
-      };
-      await setDoc(newInquiryDoc, payload);
+        createdAt: new Date().toISOString()
+      });
       setAlorInquirySubmitted(true);
     } catch (err: any) {
       console.error("Error submitting Alor Ishkul inquiry:", err);
-      setAlorInquiryError(language === 'bn' ? 'ফায়ারবেস সার্ভার ত্রুটি! আবার চেষ্টা করুন।' : 'Firebase server error! Please try again.');
+      setAlorInquiryError(language === 'bn' ? 'সার্ভার ত্রুটি! আবার চেষ্টা করুন।' : 'Server error! Please try again.');
     } finally {
       setAlorInquirySubmitting(false);
     }
@@ -159,17 +158,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     setPubInquirySubmitting(true);
     setPubInquiryError('');
     try {
-      const inquiriesCol = collection(db, 'inquiries');
-      const newInquiryDoc = doc(inquiriesCol);
-      await setDoc(newInquiryDoc, {
-        id: newInquiryDoc.id,
+      await cpanelApi.addDoc('inquiries', {
         name: pubInquiryForm.name.trim(),
         phone: pubInquiryForm.phone.trim(),
         email: pubInquiryForm.email.trim(),
         subject: pubInquiryForm.subject.trim() || 'Publications Inquiry',
         message: pubInquiryForm.message.trim(),
         type: 'publication',
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       });
       setPubInquirySubmitted(true);
       setPubInquiryForm({
@@ -181,7 +177,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
       });
     } catch (err: any) {
       console.error("Error submitting publication inquiry:", err);
-      setPubInquiryError(language === 'bn' ? 'ফায়ারবেস সার্ভার ত্রুটি! আবার চেষ্টা করুন।' : 'Firebase server error! Please try again.');
+      setPubInquiryError(language === 'bn' ? 'সার্ভার ত্রুটি! আবার চেষ্টা করুন।' : 'Server error! Please try again.');
     } finally {
       setPubInquirySubmitting(false);
     }
@@ -238,12 +234,9 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     setMembershipSubmitting(true);
     setMembershipError('');
     try {
-      const appCol = collection(db, 'library_applications');
-      const newAppDoc = doc(appCol);
-      await setDoc(newAppDoc, {
-        id: newAppDoc.id,
+      await cpanelApi.addDoc('library_applications', {
         ...membershipForm,
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
         status: 'pending'
       });
       setMembershipSubmitted(true);
@@ -294,6 +287,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   // Blog states
   const [dbBlogPosts, setDbBlogPosts] = React.useState<any[]>([]);
   const [dbBlogReviews, setDbBlogReviews] = React.useState<any[]>([]);
+  const [dbBlogSettings, setDbBlogSettings] = React.useState<any>(null);
   const [activeModalBlogPost, setActiveModalBlogPost] = React.useState<any | null>(null);
   const [blogCategoryFilter, setBlogCategoryFilter] = React.useState<string>('all');
   const [blogSearchQuery, setBlogSearchQuery] = React.useState<string>('');
@@ -314,175 +308,117 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   React.useEffect(() => {
     if (page.id !== 'recruitment' && page.id !== 'notice') return;
 
-    // Load initial cached data from localStorage
-    try {
-      const cachedCirc = localStorage.getItem('cached_recruitment_circulars');
-      if (cachedCirc) {
-        setDbCirculars(JSON.parse(cachedCirc));
+    const loadRecruitment = async () => {
+      if (page.id !== 'recruitment' && page.id !== 'notice') return;
+      try {
+        const list = await cpanelApi.getCollection('recruitment_circulars');
+        if (list && list.length > 0) {
+          setDbCirculars(list);
+          safeCacheData('cached_recruitment_circulars', list);
+        } else {
+          setDbCirculars(defaultCirculars);
+        }
+      } catch (err) {
+        console.warn("cPanel Database recruitment_circulars error:", err);
       }
-    } catch (e) {
-      console.warn("Error loading cached recruitment_circulars in PageContent:", e);
-    }
-
-    const qCirc = query(collection(db, 'recruitment_circulars'));
-    const unsubCirculars = onSnapshot(qCirc, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbCirculars(list);
-      safeCacheData('cached_recruitment_circulars', list);
-    }, (err) => {
-      console.warn("Firestore recruitment_circulars snapshot error:", err);
-    });
-
-    return () => {
-      unsubCirculars();
     };
+    loadRecruitment();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'recruitment_circulars') {
+        loadRecruitment();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
   }, [page.id]);
 
   React.useEffect(() => {
-    if (page.id !== 'press') return;
+    const loadPressAndAlbums = async () => {
+      if (page.id !== 'press') return;
+      try {
+        const pressList = await cpanelApi.getCollection('press');
+        pressList.sort((a, b) => {
+          const dateA = a.publishedDate ? new Date(a.publishedDate).getTime() : 0;
+          const dateB = b.publishedDate ? new Date(b.publishedDate).getTime() : 0;
+          return dateB - dateA;
+        });
+        setDbPress(pressList);
+        safeCacheData('cached_press', pressList);
 
-    // Load initial cached data from localStorage
-    try {
-      const cachedPress = localStorage.getItem('cached_press');
-      if (cachedPress) {
-        setDbPress(JSON.parse(cachedPress));
+        const albumsList = await cpanelApi.getCollection('photo_albums');
+        setDbAlbums(albumsList);
+        safeCacheData('cached_photo_albums', albumsList);
+      } catch (err) {
+        console.warn("cPanel Database press fetch error:", err);
       }
-      const cachedAlbums = localStorage.getItem('cached_photo_albums');
-      if (cachedAlbums) {
-        setDbAlbums(JSON.parse(cachedAlbums));
-      }
-    } catch (e) {
-      console.warn("Error loading cached press/albums in PageContent:", e);
-    }
-
-    const qPress = query(collection(db, 'press'));
-    const unsubPress = onSnapshot(qPress, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      list.sort((a, b) => {
-        const dateA = a.publishedDate ? new Date(a.publishedDate).getTime() : 0;
-        const dateB = b.publishedDate ? new Date(b.publishedDate).getTime() : 0;
-        if (dateA !== dateB) return dateB - dateA;
-        const createA = a.createdAt?.seconds || 0;
-        const createB = b.createdAt?.seconds || 0;
-        return createB - createA;
-      });
-      setDbPress(list);
-      safeCacheData('cached_press', list);
-    }, (err) => {
-      console.warn("Firestore press snapshot error:", err);
-    });
-
-    const qAlbums = query(collection(db, 'photo_albums'));
-    const unsubAlbums = onSnapshot(qAlbums, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbAlbums(list);
-      safeCacheData('cached_photo_albums', list);
-    }, (err) => {
-      console.warn("Firestore photo_albums snapshot error:", err);
-    });
-
-    return () => {
-      unsubPress();
-      unsubAlbums();
     };
+    loadPressAndAlbums();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || ['press', 'photo_albums'].includes(e.detail.collection)) {
+        loadPressAndAlbums();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
   }, [page.id]);
 
   React.useEffect(() => {
-    if (page.id !== 'blog') return;
+    const loadBlogData = async () => {
+      if (page.id !== 'blog') return;
+      try {
+        const settings = await cpanelApi.getDoc('blog_settings', 'header');
+        if (settings) {
+          setDbBlogSettings(settings);
+          safeCacheData('cached_blog_settings', settings);
+        }
 
-    try {
-      const cachedBlog = localStorage.getItem('cached_blog_posts');
-      if (cachedBlog) {
-        setDbBlogPosts(JSON.parse(cachedBlog));
+        const posts = await cpanelApi.getCollection('blog_posts');
+        setDbBlogPosts(posts);
+        safeCacheData('cached_blog_posts', posts);
+
+        const reviews = await cpanelApi.getCollection('blog_reviews');
+        setDbBlogReviews(reviews);
+        safeCacheData('cached_blog_reviews', reviews);
+      } catch (err) {
+        console.warn("cPanel Database blog fetch error:", err);
       }
-      const cachedReviews = localStorage.getItem('cached_blog_reviews');
-      if (cachedReviews) {
-        setDbBlogReviews(JSON.parse(cachedReviews));
-      }
-    } catch (e) {
-      console.warn("Error loading cached_blog_posts/reviews in PageContent:", e);
-    }
-
-    const qBlog = query(collection(db, 'blog_posts'));
-    const unsubBlog = onSnapshot(qBlog, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbBlogPosts(list);
-      safeCacheData('cached_blog_posts', list);
-    }, (err) => {
-      console.warn("Firestore blog_posts snapshot error:", err);
-    });
-
-    const qReviews = query(collection(db, 'blog_reviews'));
-    const unsubReviews = onSnapshot(qReviews, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbBlogReviews(list);
-      safeCacheData('cached_blog_reviews', list);
-    }, (err) => {
-      console.warn("Firestore blog_reviews snapshot error:", err);
-    });
-
-    return () => {
-      unsubBlog();
-      unsubReviews();
     };
+    loadBlogData();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || ['blog_posts', 'blog_reviews', 'blog_settings'].includes(e.detail.collection)) {
+        loadBlogData();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
   }, [page.id]);
 
   React.useEffect(() => {
-    if (page.id !== 'notice') return;
-
-    const qNotices = query(collection(db, 'notices'));
-    const unsubNotices = onSnapshot(qNotices, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbNotices(list);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'notices');
-    });
-
-    const qEvents = query(collection(db, 'events'));
-    const unsubEvents = onSnapshot(qEvents, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbEvents(list);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'events');
-    });
-
-    const qNews = query(collection(db, 'news_items'));
-    const unsubNews = onSnapshot(qNews, (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ ...doc.data(), id: doc.id });
-      });
-      setDbNewsItems(list);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'news_items');
-    });
-
-    return () => {
-      unsubNotices();
-      unsubEvents();
-      unsubNews();
+    const loadNoticesData = async () => {
+      if (page.id !== 'notice') return;
+      try {
+        const nList = await cpanelApi.getCollection('notices');
+        setDbNotices(nList);
+        const eList = await cpanelApi.getCollection('events');
+        setDbEvents(eList);
+        const nwList = await cpanelApi.getCollection('news_items');
+        setDbNewsItems(nwList);
+      } catch (err) {
+        console.warn("cPanel Database notices fetch error:", err);
+      }
     };
+    loadNoticesData();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || ['notices', 'events', 'news_items'].includes(e.detail.collection)) {
+        loadNoticesData();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
   }, [page.id]);
 
   const notices = dbNotices.length > 0 ? dbNotices : defaultNotices;
@@ -509,30 +445,33 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   const [activeModalNotice, setActiveModalNotice] = React.useState<any | null>(null);
   const [contactBlock, setContactBlock] = React.useState<any>(null);
   const [mediaContactBlock, setMediaContactBlock] = React.useState<any>(null);
+  const [pressSettingsBlock, setPressSettingsBlock] = React.useState<any>(null);
+  const [pressDownloadsBlock, setPressDownloadsBlock] = React.useState<any>(null);
 
   React.useEffect(() => {
-    if (page.id !== 'contact') return;
-    const unsub = onSnapshot(doc(db, 'homepage_blocks', 'contact_info'), (docSnap) => {
-      if (docSnap.exists()) {
-        setContactBlock(docSnap.data());
-      }
-    }, (error) => {
-      console.warn("Error reading contact_info from Firestore:", error);
-    });
-    return () => unsub();
-  }, [page.id]);
+    const loadBlocks = async () => {
+      const contactData = await cpanelApi.getDoc('homepage_blocks', 'contact_info');
+      if (contactData) setContactBlock(contactData);
 
-  React.useEffect(() => {
-    if (page.id !== 'press') return;
-    const unsub = onSnapshot(doc(db, 'homepage_blocks', 'media_contact'), (docSnap) => {
-      if (docSnap.exists()) {
-        setMediaContactBlock(docSnap.data());
+      const mediaData = await cpanelApi.getDoc('homepage_blocks', 'media_contact');
+      if (mediaData) setMediaContactBlock(mediaData);
+
+      const pressSetData = await cpanelApi.getDoc('homepage_blocks', 'press_settings');
+      if (pressSetData) setPressSettingsBlock(pressSetData);
+
+      const pressDownData = await cpanelApi.getDoc('homepage_blocks', 'press_downloads');
+      if (pressDownData) setPressDownloadsBlock(pressDownData);
+    };
+    loadBlocks();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'homepage_blocks') {
+        loadBlocks();
       }
-    }, (error) => {
-      console.warn("Error reading media_contact from Firestore:", error);
-    });
-    return () => unsub();
-  }, [page.id]);
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -541,23 +480,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     setIsSubmitting(true);
     setErrorText('');
 
-    const collectionPath = 'inquiries';
-
     try {
-      const inquiriesCol = collection(db, collectionPath);
-      const newInquiryDoc = doc(inquiriesCol);
-      const inquiryId = newInquiryDoc.id;
-
-      const payload = {
-        id: inquiryId,
+      await cpanelApi.addDoc('inquiries', {
         name: formData.name.trim(),
         email: formData.email.trim(),
         message: formData.message.trim(),
         type: formData.type,
-        createdAt: serverTimestamp(),
-      };
-
-      await setDoc(newInquiryDoc, payload);
+        createdAt: new Date().toISOString()
+      });
 
       setFormSubmitted(true);
       setFormData({ 
@@ -571,18 +501,11 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
         setFormSubmitted(false);
       }, 7000);
     } catch (err) {
-      console.error('Error submitting inquiry to Firestore:', err);
-      
+      console.error('Error submitting inquiry to cPanel Database:', err);
       const friendlyError = language === 'bn'
         ? 'দুঃখিত, আপনার বার্তাটি পাঠানো সম্ভব হয়নি। দয়া করে আবার চেষ্টা করুন।'
         : 'Could not send message. Please verify your connection or try again.';
       setErrorText(friendlyError);
-
-      try {
-        handleFirestoreError(err, OperationType.CREATE, `${collectionPath}/draft_inquiry`);
-      } catch (innerErr) {
-        // Log locally to keep flow robust
-      }
     } finally {
       setIsSubmitting(false);
     }
@@ -609,12 +532,24 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     note_en: "Special holiday press briefings scheduled virtually upon email notification."
   };
 
-  const mediaContact = mediaContactBlock || defaultMediaContact;
+  const mediaContact = React.useMemo(() => {
+    const merged: Record<string, any> = {
+      ...defaultMediaContact,
+      ...(page.mediaContactData || {}),
+      ...(mediaContactBlock || {})
+    };
+    Object.keys(defaultMediaContact).forEach((key) => {
+      if (!merged[key] || (typeof merged[key] === 'string' && !merged[key].trim())) {
+        merged[key] = (defaultMediaContact as any)[key];
+      }
+    });
+    return merged;
+  }, [page.mediaContactData, mediaContactBlock]);
 
   return (
     <div className="space-y-8 animate-fade-in text-[#1A1207]">
       {/* Page Header banner */}
-      {page.id !== 'press' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && page.id !== 'bookshop' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'cafe' && page.id !== 'building' && page.id !== 'publication' && (
+      {page.id !== 'press' && page.id !== 'blog' && page.id !== 'central-library' && page.id !== 'mobile-library' && page.id !== 'reading-habit' && page.id !== 'aalor-ishkool' && page.id !== 'nationwide-excellence' && page.id !== 'book-fair' && page.id !== 'bookshop' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'cafe' && page.id !== 'building' && page.id !== 'publication' && page.id !== 'bangalir_chinta' && page.id !== 'bangalir-chinta' && page.id !== 'trustees' && (
         <div className="border-b border-[#B8862A]/20 pb-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between">
             <div className="space-y-1">
@@ -922,17 +857,17 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                         <div className="text-stone-800 text-sm md:text-base leading-relaxed space-y-3 font-sans">
                           <p>
                             {language === 'bn'
-                              ? page.sections[0]?.content[0] || "অনেক ত্যাগ-তিতিক্ষা ও আত্মদানের ভিতর দিয়ে জন্ম নিয়েছে বাংলাদেশ। আজ তার নির্মাণের পর্ব। এই নির্মাণকে অর্থময় করার জন্যে আজ দেশে চাই অনেক সম্পন্ন মানুষ; সেইসব মানুষ যারা উচ্চ-মূল্যবোধসম্পন্ন, আলোকিত, উদার, শক্তিমান ও কার্যকর- যারা জাতীয়-জীবনের বিভিন্ন অঙ্গনে নেতৃত্ব দিয়ে এই জাতিকে সমৃদ্ধির পথে এগিয়ে নিতে পারবে। তাদের আজ পেতে হবে আমাদের বিপুল সংখ্যায়- সারা দেশে, সবখানে। এককে-দশকে নয়; সহস্রে, লক্ষে।"
+                              ? page.sections?.[0]?.content?.[0] || "অনেক ত্যাগ-তিতিক্ষা ও আত্মদানের ভিতর দিয়ে জন্ম নিয়েছে বাংলাদেশ। আজ তার নির্মাণের পর্ব। এই নির্মাণকে অর্থময় করার জন্যে আজ দেশে চাই অনেক সম্পন্ন মানুষ; সেইসব মানুষ যারা উচ্চ-মূল্যবোধসম্পন্ন, আলোকিত, উদার, শক্তিমান ও কার্যকর- যারা জাতীয়-জীবনের বিভিন্ন অঙ্গনে নেতৃত্ব দিয়ে এই জাতিকে সমৃদ্ধির পথে এগিয়ে নিতে পারবে। তাদের আজ পেতে হবে আমাদের বিপুল সংখ্যায়- সারা দেশে, সবখানে। এককে-দশকে নয়; সহস্রে, লক্ষে।"
                               : "Bangladesh was born through immense sacrifice, and now is the era of active nation-building. To make this achievement meaningful, we need enlightened, values-driven, and active human beings across all sectors who can lead our country towards prosperity in immense numbers."
                             }
                           </p>
                           <p className="border-l-2 border-[#B8862A]/30 pl-4 italic text-stone-700 font-serif">
                             {language === 'bn'
-                              ? page.sections[0]?.content[1] || "“সারা দেশের সবখানে পর্যাপ্ত সংখ্যায় এইসব আলোকিত, কার্যকর ও উচ্চমূল্যবোধ সম্পন্ন মানুষ গড়ে তোলার সুযোগ সৃষ্টি করা, জাতীয় শক্তি হিশেবে তাদের সংঘবদ্ধ ও সমুন্নত করা এবং এরই পাশাপাশি দেশের মানুষের চিত্তের সামগ্রিক আলোকায়ন ঘটানো বিশ্বসাহিত্য কেন্দ্রের মূল লক্ষ্য।”"
+                              ? page.sections?.[0]?.content?.[1] || "“সারা দেশের সবখানে পর্যাপ্ত সংখ্যায় এইসব আলোকিত, কার্যকর ও উচ্চমূল্যবোধ সম্পন্ন মানুষ গড়ে তোলার সুযোগ সৃষ্টি করা, জাতীয় শক্তি হিশেবে তাদের সংঘবদ্ধ ও সমুন্নত করা এবং এরই পাশাপাশি দেশের মানুষের চিত্তের সামগ্রিক আলোকায়ন ঘটানো বিশ্বসাহিত্য কেন্দ্রের মূল লক্ষ্য।”"
                               : "“To build enlightened, effective, and values-driven human beings across our country, unifying them as a strong national resource, is the ultimate goal of Bishwo Shahitto Kendro.”"
                             }
                           </p>
-                          {page.sections[0]?.content.slice(2).map((paraText, pIdx) => (
+                          {(page.sections?.[0]?.content || []).slice(2).map((paraText, pIdx) => (
                             <p key={pIdx}>{paraText}</p>
                           ))}
                         </div>
@@ -962,7 +897,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             </div>
                           )}
                           <div className="flex-1 text-stone-800 text-sm md:text-base leading-relaxed space-y-3 font-sans">
-                            {page.sections[1]?.content && page.sections[1].content.map((paraText, pIdx) => (
+                            {(page.sections?.[1]?.content || []).map((paraText, pIdx) => (
                               <p key={pIdx}>{paraText}</p>
                             ))}
                           </div>
@@ -995,7 +930,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           <div className="flex-1 text-stone-800 text-sm md:text-base leading-relaxed space-y-3 font-sans">
                             <p>
                               {language === 'bn'
-                                ? page.sections[2]?.content[0] || "গত ৪ দশকের অধিক সময় ধরে বিশ্বসাহিত্য কেন্দ্র স্কুল ও কলেজের প্রায় ৯০,০০,০০০ (নব্বই লক্ষ) ছাত্রছাত্রী ও সাধারণ পাঠককে সমৃদ্ধ এবং আলোকিত মননশীল কর্মকাণ্ডে সম্পৃক্ত করেছে। বিশ্বসাহিত্য কেন্দ্র ও এর প্রতিষ্ঠাতা অধ্যাপক আবদুল্লাহ আবু সায়ীদ বিভিন্ন মহৎ কর্মের স্বীকৃতিস্বরূপ জাতীয় ও আন্তর্জাতিক পর্যায়ে একাধিক বিরল সম্মানে ভূষিত হয়েছেন।"
+                                ? page.sections?.[2]?.content?.[0] || "গত ৪ দশকের অধিক সময় ধরে বিশ্বসাহিত্য কেন্দ্র স্কুল ও কলেজের প্রায় ৯০,০০,০০০ (নব্বই লক্ষ) ছাত্রছাত্রী ও সাধারণ পাঠককে সমৃদ্ধ এবং আলোকিত মননশীল কর্মকাণ্ডে সম্পৃক্ত করেছে। বিশ্বসাহিত্য কেন্দ্র ও এর প্রতিষ্ঠাতা অধ্যাপক আবদুল্লাহ আবু সায়ীদ বিভিন্ন মহৎ কর্মের স্বীকৃতিস্বরূপ জাতীয় ও আন্তর্জাতিক পর্যায়ে একাধিক বিরল সম্মানে ভূষিত হয়েছেন।"
                                 : "For over 40 years, over 9 million active students and citizens have engaged in our enrichment activities. BSK and its founder Prof. Abdullah Abu Sayeed have been honored with numerous prestigious national and global certifications, including:"
                               }
                             </p>
@@ -1024,7 +959,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                                 </p>
                               </div>
                             </div>
-                            {page.sections[2]?.content.slice(1).map((paraText, pIdx) => (
+                            {(page.sections?.[2]?.content || []).slice(1).map((paraText, pIdx) => (
                               <p key={pIdx} className="text-stone-700 text-xs mt-2">{paraText}</p>
                             ))}
                           </div>
@@ -1229,13 +1164,148 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             </div>
           )}
 
+          {/* ────── WHO WE ARE SECTION (আমরা কারা ও পরিচিতি) ────── */}
+          <div className="pt-6 space-y-6 text-left">
+            <div className="border-b border-[#B8862A]/15 pb-2 text-left">
+              <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
+                <span className="w-1.5 h-6 bg-[#B8862A] rounded-full inline-block" />
+                <span>
+                  {language === 'bn' 
+                    ? (page.who_we_are_title_bn || 'আমরা কারা') 
+                    : (page.who_we_are_title_en || 'Who We Are')}
+                </span>
+              </h3>
+              <p className="text-xs text-[#6B5135] mt-1 font-serif">
+                {language === 'bn' 
+                  ? (page.who_we_are_subtitle_bn || 'আলোকিত মানুষ ও উন্নত সমাজ বিনির্মাণের মহতী জাতীয় আন্দোলন') 
+                  : (page.who_we_are_subtitle_en || 'A transformative nation-building movement cultivating enlightened minds and noble human values')}
+              </p>
+            </div>
+
+            {/* Main Narrative Card */}
+            <div className="bg-white border border-[#E8DDD0] rounded-2xl p-6 md:p-8 shadow-xs relative overflow-hidden text-left space-y-6">
+              {/* Subtle decorative watermark/accent in background */}
+              <div className="absolute -right-6 -bottom-6 w-40 h-40 bg-[#B8862A]/5 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Tag / Motto Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FAF7F2] border border-[#B8862A]/30 text-[#8B621B] text-xs font-serif font-bold">
+                  <Sparkles className="h-3.5 w-3.5 text-[#B8862A]" />
+                  <span>{language === 'bn' ? 'মূল ব্রত: “আলোকিত মানুষ চাই”' : 'Core Creed: “We Want Enlightened Humans”'}</span>
+                </div>
+                <span className="text-[11px] font-sans text-stone-500 font-medium">
+                  {language === 'bn' ? 'প্রতিষ্ঠা: ১৭ ডিসেম্বর ১৯৭৮' : 'Established: December 17, 1978'}
+                </span>
+              </div>
+
+              {/* Paragraphs */}
+              <div className="space-y-4 font-serif text-stone-800 text-sm md:text-base leading-relaxed">
+                {(() => {
+                  const paragraphs = (language === 'bn' ? page.who_we_are_paragraphs_bn : page.who_we_are_paragraphs_en) || [
+                    language === 'bn'
+                      ? "বিশ্বসাহিত্য কেন্দ্র বাংলাদেশের একটি অগ্রণী সামাজিক, শিক্ষামূলক ও সাংস্কৃতিক প্রতিষ্ঠান। ১৯৭৮ সালের ১৭ ডিসেম্বর অধ্যাপক আবদুল্লাহ আবু সায়ীদের হাত ধরে মাত্র ১৫ জন সদস্যের একটি ছোট্ট পাঠচক্র থেকে এই মহতী উদ্যোগের সূচনা হয়। গত ৪৬ বছরেরও বেশি সময় ধরে এটি সমগ্র বাংলাদেশে কোটি মানুষের জীবনে আলো জ্বালিয়ে চলেছে।"
+                      : "Bishwo Shahitto Kendro (World Literature Centre) is a pioneering non-profit educational and cultural movement in Bangladesh. Founded on December 17, 1978, under the visionary leadership of Professor Abdullah Abu Sayeed, it originated from a small study circle of 15 members and has flourished over four decades into an indelible national institution.",
+                    language === 'bn'
+                      ? "আমাদের মূল ব্রত— “আলোকিত মানুষ চাই”। আমরা বিশ্বাস করি, বৈষয়িক প্রবৃদ্ধির পাশাপাশি একটি জাতির শ্রেষ্ঠ সম্পদ হলো তার উচ্চ মানবিক গুণসম্পন্ন, রুচিমান ও মুক্তচিন্তার মানুষ। দেশব্যাপী বইপড়া কর্মসূচি, ভ্রাম্যমাণ লাইব্রেরি, পাঠচক্র, সাহিত্য ও সংস্কৃতি চর্চার মধ্য দিয়ে কেন্দ্র নতুন প্রজন্মকে পরিপূর্ণ মানুষ হিসেবে গড়ে তুলতে অঙ্গীকারবদ্ধ।"
+                      : "Guided by our defining creed “We Want Enlightened Humans”, we believe true national progress stems from broad-minded, intellectually enriched, and deeply empathetic souls. Through nationwide reading programs, mobile libraries, literary circles, and creative arts, the Centre remains dedicated to awakening higher human values across generations."
+                  ];
+                  return paragraphs.map((pText, pIdx) => (
+                    <p key={pIdx} className="text-stone-700 font-sans md:font-serif leading-relaxed">
+                      {pText}
+                    </p>
+                  ));
+                })()}
+              </div>
+
+              {/* 4 Feature / Pillar Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                {(() => {
+                  const defaultFeatures = [
+                    {
+                      icon: "BookOpen",
+                      title_bn: "দেশব্যাপী বইপড়া কর্মসূচি",
+                      title_en: "Nationwide Reading Program",
+                      desc_bn: "স্কুল ও কলেজের লক্ষ লক্ষ ছাত্রছাত্রীকে উন্নত মনন ও গভীর বোধের সমৃদ্ধ বই পড়ার ধারায় সম্পৃক্ত রাখা।",
+                      desc_en: "Engaging millions of school and college students in cultivating lifelong reading habits and critical thought."
+                    },
+                    {
+                      icon: "Library",
+                      title_bn: "ভ্রাম্যমাণ লাইব্রেরি সেবা",
+                      title_en: "Mobile Library Fleet",
+                      desc_bn: "দেশের ৬৪টি জেলার প্রত্যন্ত অঞ্চলে সাধারণ পাঠকদের ঘরের দোরগোড়ায় বিশ্বসাহিত্যের সেরা গ্রন্থ পৌঁছে দেওয়া।",
+                      desc_en: "Bringing curated treasures of world literature directly to community doorsteps across all 64 districts."
+                    },
+                    {
+                      icon: "Users",
+                      title_bn: "পাঠচক্র ও উন্মুক্ত আলোচনা",
+                      title_en: "Study Circles & Discourse",
+                      desc_bn: "দর্শন, সাহিত্য, শিল্পকলা ও বিজ্ঞান ভাবনার গভীর পর্যালোচনায় মুক্তবুদ্ধি ও উচ্চতর রুচি বিকাশ।",
+                      desc_en: "Nurturing expansive worldviews, philosophical inquiry, and progressive dialogue through intimate forums."
+                    },
+                    {
+                      icon: "Sparkles",
+                      title_bn: "সাংস্কৃতিক উৎকর্ষ ও নেতৃত্ব",
+                      title_en: "Cultural Excellence & Leadership",
+                      desc_bn: "চলচ্চিত্র, সংগীত ও শিল্পচর্চার মাধ্যমে জাতির আগামীর মননশীল, দায়িত্ববান ও মানবিক নেতৃত্ব তৈরি।",
+                      desc_en: "Fostering aesthetic sensibility and compassionate leadership to steer the nation toward enlightenment."
+                    }
+                  ];
+                  const features = page.who_we_are_features && page.who_we_are_features.length > 0
+                    ? page.who_we_are_features
+                    : defaultFeatures;
+
+                  const getIconComponent = (iconName?: string) => {
+                    switch (iconName) {
+                      case 'BookOpen': return <BookOpen className="h-5 w-5 text-[#B8862A]" />;
+                      case 'Library': return <Library className="h-5 w-5 text-[#B8862A]" />;
+                      case 'Users': return <Users className="h-5 w-5 text-[#B8862A]" />;
+                      case 'Sparkles': return <Sparkles className="h-5 w-5 text-[#B8862A]" />;
+                      case 'Award': return <Award className="h-5 w-5 text-[#B8862A]" />;
+                      case 'GraduationCap': return <GraduationCap className="h-5 w-5 text-[#B8862A]" />;
+                      default: return <Compass className="h-5 w-5 text-[#B8862A]" />;
+                    }
+                  };
+
+                  return features.map((feat, fIdx) => (
+                    <div 
+                      key={fIdx} 
+                      className="bg-[#FAF7F2]/60 hover:bg-[#FAF7F2] border border-[#E8DDD0] hover:border-[#B8862A]/40 rounded-xl p-4 transition-all duration-200 flex flex-col justify-between space-y-2.5 shadow-2xs"
+                    >
+                      <div className="space-y-2">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-[#B8862A]/30 flex items-center justify-center shadow-2xs">
+                          {getIconComponent(feat.icon)}
+                        </div>
+                        <h4 className="font-serif font-bold text-xs md:text-sm text-[#1A1207] leading-snug">
+                          {language === 'bn' ? feat.title_bn : feat.title_en}
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+                        {language === 'bn' ? feat.desc_bn : feat.desc_en}
+                      </p>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          </div>
+
           {/* ────── OTHER DESCRIPTION INFORMATION (Section 3 in home - Founder Quote) ────── */}
           <div className="pt-6">
             <div className="bg-[#1A1207] text-[#FAF7F2] rounded-2xl p-8 relative overflow-hidden bg-grain shadow-xl border border-[#B8862A]/20 text-center max-w-4xl mx-auto">
               <div className="absolute top-4 left-6 text-6xl text-[#B8862A]/15 font-serif select-none pointer-events-none">“</div>
               
               <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-                <p className="font-serif text-base md:text-lg leading-relaxed text-stone-200 italic font-medium">
+                {/* Founder Photo Avatar */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-[#B8862A] mx-auto shadow-md bg-stone-900 flex items-center justify-center shrink-0">
+                  <img 
+                    src={page.founder_avatar || page.sections?.[3]?.image || "/assets/IMGS/ABOUT_PAGE_FOUNDER/p_abu_sayed.jpg"} 
+                    alt={language === 'bn' ? (page.founder_name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') : (page.founder_name_en || 'Professor Abdullah Abu Sayeed')} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+
+                <p className="font-serif text-base md:text-lg leading-relaxed !text-white italic font-medium">
                   {language === 'bn' 
                     ? page.sections?.[3]?.content?.[0] || "“বিশ্বসাহিত্য কেন্দ্র আজ আর শুধুমাত্র একটি প্রতিষ্ঠান নয়। এটি আজ একটি দেশব্যাপী আন্দোলন। আলোকিত জাতীয় চিত্তের একটি বিনীত নিশ্চয়তা। মানবজ্ঞানের সামগ্রিক চর্চা এবং অনুশীলনের পাশাপাশি হৃদয়ের উৎকর্ষ ও জীবনের বহুবিচিত্র কর্মকাণ্ডের মধ্য দিয়ে উচ্চতর শক্তি ও মনুষ্যত্বে বিকশিত হবার একটি সপ্রাণ পৃথিবী।”"
                     : page.sections?.[3]?.content?.[1] || "“Bishwo Shahitto Kendro is no longer just an institution today. It is now a countrywide movement. An humble guarantee of an enlightened national mind. A living world to grow into higher power and humanity through the practice and exercise of human knowledge, excellence of heart, and diverse walks of life.”"
@@ -1244,10 +1314,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 
                 <div className="pt-2 border-t border-[#B8862A]/25 inline-block">
                   <span className="font-serif text-xs md:text-sm font-bold text-[#F0CC7A] block">
-                    {language === 'bn' ? 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ' : 'Professor Abdullah Abu Sayeed'}
+                    {language === 'bn' 
+                      ? (page.founder_name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') 
+                      : (page.founder_name_en || 'Professor Abdullah Abu Sayeed')}
                   </span>
-                  <span className="text-[10px] text-stone-400 font-sans block mt-0.5">
-                    {language === 'bn' ? 'প্রতিষ্ঠাতা ও সভাপতি, বিশ্বসাহিত্য কেন্দ্র' : 'Founder & President, Bishwo Shahitto Kendro'}
+                  <span className="text-[10px] !text-white/80 font-sans block mt-0.5">
+                    {language === 'bn' 
+                      ? (page.founder_title_bn || 'প্রতিষ্ঠাতা ও সভাপতি, বিশ্বসাহিত্য কেন্দ্র') 
+                      : (page.founder_title_en || 'Founder & President, Bishwo Shahitto Kendro')}
                   </span>
                 </div>
               </div>
@@ -1270,7 +1344,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 </h1>
                 
                 {page.sections[0] && (
-                  <div className="text-stone-200 leading-relaxed text-sm md:text-base font-serif italic space-y-3">
+                  <div className="!text-white leading-relaxed text-sm md:text-base font-serif italic space-y-3">
                     {page.sections[0].content
                       .filter(p => p.trim().length > 0 && 
                         (!p.includes(' - ') && 
@@ -1293,7 +1367,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
             {/* Trustees Section Container */}
             {(() => {
-              const allTrusteeSecs = page.sections.filter((sec, idx) => idx > 0 && sec.title && sec.title !== page.title_bn);
+              const allTrusteeSecs = Array.isArray(page.sections) ? page.sections.filter((sec, idx) => idx > 0 && sec.title && sec.title !== page.title_bn) : [];
               const currentTrustees = allTrusteeSecs.filter(sec => !sec.is_former);
               const formerTrustees = allTrusteeSecs.filter(sec => sec.is_former === true);
 
@@ -1795,564 +1869,55 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                               'dept-reading': {
                                 titleBn: 'দেশভিত্তিক উৎকর্ষ কার্যক্রম',
                                 titleEn: 'National Reading Excellence Program',
-                                detailsBn: 'স্কুল, কলেজ ও পিটিআই শিক্ষকদের জন্য দেশব্যাপী বই পড়া কার্যক্রম পরিচালনা। প্রতিবছর কয়েক লক্ষ শিক্ষার্থী ও প্রশিক্ষণার্থী এই কর্মসূচির অধীনে বইপাঠ ও মূল্যায়নে অংশগ্রহণ করে।',
-                                detailsEn: 'Operates student reading programs and teacher workshops at thousands of schools, colleges and PTI centers throughout the country, promoting literary awareness and active thinking.'
+                                detailsBn: 'স্কুল, কলেজ ও পিটিআই শিক্ষকদের জন্য দেশব্যাপী বই পড়া কার্যক্রম পরিচালনা। প্রতিবছর কয়েক লক্ষ শিক্ষার্থী ও প্রশিক্ষণার্থী এই কর্মসূচির অধীনে আলোকিত জীবনের সন্ধান পায়।',
+                                detailsEn: 'Nationwide book reading program for schools, colleges, and teachers training institutes reaching hundreds of thousands of active students every year.'
                               },
                               'dept-mobile': {
                                 titleBn: 'ভ্রাম্যমাণ লাইব্রেরি কার্যক্রম',
                                 titleEn: 'Mobile Library Program',
-                                detailsBn: 'বিশেষায়িত লাইব্রেরি বাস দিয়ে প্রত্যন্ত ও জেলা পর্যায়ের সাধারণ মানুষের দোরগোড়ায় বই পোঁছে দেয়া। বর্তমানে কয়েকশ রুটে এই ভ্রাম্যমাণ বাস কার্যক্রম চলমান।',
-                                detailsEn: 'Custom library buses routing daily across cities and remote towns, enabling instant book-borrowing facilities for over a lakh subscribers.'
+                                detailsBn: 'বিশেষভাবে নির্মিত লাইব্রেরি গাড়ির মাধ্যমে দেশের বিভিন্ন জেলা ও প্রত্যন্ত অঞ্চলে সরাসরি মানুষের দোরগোড়ায় বই পৌঁছে দেওয়ার অনন্য কর্মসূচি।',
+                                detailsEn: 'Doorstep library service operating specially equipped library vehicles across districts and upazilas throughout Bangladesh.'
                               },
                               'dept-pub': {
                                 titleBn: 'প্রকাশনা ও বিক্রয় সেল',
-                                titleEn: 'Publications & Sales',
-                                detailsBn: 'বিশ্বসাহিত্যের ধ্রুপদী বই অনুবাদ, নিজস্ব প্রকাশনী থেকে নিখুঁত বই মুদ্রণ ও কেন্দ্রে স্থাপিত বিপণন কেন্দ্র বা বিভিন্ন মেলায় সাশ্রয়ী মূল্যে তা পাঠকদের নিকট সরবরাহ করা।',
-                                detailsEn: 'Translates and publishes standard, high-quality, masterpieces of world literature and ensures their affordable distribution to readers through bookshops and fairs.'
+                                titleEn: 'Publications & Sales Cell',
+                                detailsBn: 'বাঙালির চিন্তা কর্মসূচি এবং বিশ্বসাহিত্যের চিরায়ত শ্রেষ্ঠ গ্রন্থসমূহের অনুবাদ ও প্রকাশনা এবং দেশব্যাপী ছড়িয়ে দেওয়ার দায়িত্ব পালন করে।',
+                                detailsEn: 'Publishing monumental works, classics, translations, and managing distribution channels and bookstore networks across Bangladesh.'
                               },
                               'dept-admin': {
-                                titleBn: 'সাধারণ প্রশাসন ও মানবসম্পদ (HR & Admin)',
+                                titleBn: 'সাধারণ প্রশাসন ও মানবসম্পদ বিভাগ',
                                 titleEn: 'General Administration & HR',
-                                detailsBn: 'কর্মকর্তা-কর্মচারীদের নিরাপত্তা, ভবনের শৃঙ্খলা রক্ষা, দাপ্তরিক কাজ পরিচালনা এবং নতুন দক্ষ কর্মী নিয়োগ প্রদান করা এই বিভাগের অন্যতম উদ্দেশ্য।',
-                                detailsEn: 'Maintains organizational decorum, conducts standard hiring procedures, takes care of BSK headquarters and manages human capital welfare.'
+                                detailsBn: 'কেন্দ্রের দৈনন্দিন দাপ্তরিক কার্যক্রম, কর্মী নিয়োগ ও ব্যবস্থাপনা, লজিস্টিক সাপোর্ট এবং বিভিন্ন কেন্দ্র ভবনের সার্বিক নিরাপত্তা ও রক্ষণাবেক্ষণ।',
+                                detailsEn: 'Overseeing organizational workflow, logistics, human resources, facilities maintenance, and inter-department operational support.'
                               },
                               'dept-finance': {
                                 titleBn: 'অর্থ ও হিসাব বিভাগ',
-                                titleEn: 'Finance & Accounts',
-                                detailsBn: 'বার্ষিক হিসাব প্রস্তুতকরণ, অভ্যন্তরীণ নিয়ন্ত্রণ ও নিরপেক্ষ থার্ড-পার্টি ফার্ম দিয়ে নিয়মিত অডিট সম্পাদন করে আর্থিক স্বচ্ছতা শতভাগ বজায় রাখা এই বিভাগের প্রধান কাজ।',
-                                detailsEn: 'Ensures absolute financial integrity, coordinates internal checks, prepares annual audits with globally reputed advisory firms, and monitors expenditures.'
+                                titleEn: 'Finance & Accounts Department',
+                                detailsBn: 'বার্ষিক বাজেট প্রণয়ন, আয়-ব্যয় অডিট, ব্যাংক লেনদেন, প্রকল্পভিত্তিক আর্থিক হিসাবরক্ষণ ও ট্রাস্টি বোর্ডের আর্থিক প্রতিবেদন তৈরি।',
+                                detailsEn: 'Managing financial budgeting, donor accounting, audits, payroll, banking transactions, and quarterly trustee compliance reporting.'
                               }
                             };
-                            
-                            const match = deptMap[selectedOrgNode];
-                            if (!match) return null;
+                            const deptInfo = deptMap[selectedOrgNode];
+                            if (!deptInfo) return null;
                             return (
                               <div className="space-y-2">
                                 <h4 className="font-serif font-extrabold text-[#1A1207] text-sm flex items-center gap-2">
-                                  <CheckCircle className="h-4 w-4 text-[#B8862A]" />
-                                  <span>{language === 'bn' ? match.titleBn : match.titleEn}</span>
+                                  <Building2 className="h-4 w-4 text-[#B8862A]" />
+                                  <span>{language === 'bn' ? deptInfo.titleBn : deptInfo.titleEn}</span>
                                 </h4>
                                 <p className="text-xs text-stone-700 leading-relaxed font-sans">
-                                  {language === 'bn' ? match.detailsBn : match.detailsEn}
+                                  {language === 'bn' ? deptInfo.detailsBn : deptInfo.detailsEn}
                                 </p>
                               </div>
                             );
                           })()}
-                          
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
                 </motion.div>
               )}
-
-              {organogramTab === 'leadership' && (
-                <motion.div
-                  key="leadership-pane"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {page.sections
-                      .filter((sec, idx) => idx > 0 && !sec.title.startsWith('বিভাগ'))
-                      .map((sec, idx) => {
-                        const leaderName = sec.title.split(' - ')[0] || sec.title;
-                        const designation = sec.title.split(' - ')[1] || '';
-                        let leaderImg = sec.image || '';
-                        if (!leaderImg && (leaderName.includes('আবদুল্লাহ') || leaderName.includes('সায়ীদ'))) {
-                          leaderImg = "/assets/IMGS/ABOUT_PAGE_FOUNDER/p_abu_sayed.jpg";
-                        }
-                        const initialLetter = leaderName.trim().charAt(0) || 'L';
-                        
-                        return (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.3, delay: idx * 0.05 }}
-                            className="bg-white rounded-2xl border border-[#E8DDD0] shadow-md shadow-[#3D2B14]/5 overflow-hidden flex flex-col md:flex-row transition-all hover:shadow-lg hover:border-[#B8862A]/30 duration-300"
-                          >
-                            {/* Leader Image sidebar */}
-                            <div className="md:w-56 shrink-0 bg-[#FAF7F2]/40 border-b md:border-b-0 md:border-r border-[#E8DDD0] p-6 flex flex-col items-center justify-center text-center">
-                              <div className="relative">
-                                {leaderImg ? (
-                                  <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-[#B8862A] p-1 bg-white shadow-md flex items-center justify-center select-none">
-                                    <img 
-                                      src={leaderImg} 
-                                      alt={leaderName} 
-                                      className="w-full h-full object-cover rounded-full"
-                                      referrerPolicy="no-referrer"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="w-28 h-28 rounded-full bg-[#1A1207] border-2 border-[#B8862A]/60 flex items-center justify-center text-[#F0CC7A] shadow-md select-none">
-                                    <div className="text-3xl font-serif font-extrabold tracking-wider">
-                                      {initialLetter}
-                                    </div>
-                                  </div>
-                                )}
-                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-[#B8862A] text-stone-950 border border-[#FAF7F2] shadow-xs">
-                                    {language === 'bn' ? 'নেতৃত্ব' : 'Leadership'}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="mt-4 space-y-1">
-                                <h4 className="font-serif font-extrabold text-[#1A1207] text-sm md:text-base leading-snug">
-                                  {leaderName}
-                                </h4>
-                                {designation && (
-                                  <p className="text-[10px] text-[#B8862A] font-bold font-serif leading-tight">
-                                    {designation}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Bio details right side */}
-                            <div className="p-6 md:p-8 flex-1 flex flex-col justify-center bg-white space-y-3 text-left">
-                              {sec.content.map((pText, pIdx) => (
-                                <p 
-                                  key={pIdx} 
-                                  className="text-stone-800 leading-relaxed text-xs md:text-sm font-sans"
-                                >
-                                  {pText}
-                                </p>
-                              ))}
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                  </div>
-                </motion.div>
-              )}
-
-              {organogramTab === 'departments' && (
-                <motion.div
-                  key="departments-pane"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {page.sections
-                      .filter((sec, idx) => idx > 0 && sec.title.startsWith('বিভাগ'))
-                      .map((sec, idx) => {
-                        const deptTitle = sec.title.replace('বিভাগ: ', '').replace('Department: ', '');
-                        
-                        // Select an elegant icon and color scheme based on department type
-                        let Icon = BookOpenCheck;
-                        let colorBg = 'bg-emerald-50/40 border-emerald-100 text-emerald-900';
-                        let iconColor = 'text-emerald-700 bg-emerald-50';
-                        
-                        if (deptTitle.includes('ভ্রাম্যমাণ') || deptTitle.includes('Mobile')) {
-                          Icon = Truck;
-                          colorBg = 'bg-indigo-50/40 border-indigo-100 text-indigo-900';
-                          iconColor = 'text-indigo-700 bg-indigo-50';
-                        } else if (deptTitle.includes('প্রকাশনা') || deptTitle.includes('Publications')) {
-                          Icon = BookOpen;
-                          colorBg = 'bg-amber-50/40 border-amber-100 text-amber-900';
-                          iconColor = 'text-amber-700 bg-amber-50';
-                        } else if (deptTitle.includes('প্রশাসন') || deptTitle.includes('Admin')) {
-                          Icon = HeartHandshake;
-                          colorBg = 'bg-rose-50/40 border-rose-100 text-rose-900';
-                          iconColor = 'text-rose-700 bg-rose-50';
-                        } else if (deptTitle.includes('অর্থ') || deptTitle.includes('Finance')) {
-                          Icon = Landmark;
-                          colorBg = 'bg-sky-50/40 border-sky-100 text-sky-900';
-                          iconColor = 'text-sky-700 bg-sky-50';
-                        }
-
-                        // Parse the paragraphs.
-                        return (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.3, delay: idx * 0.05 }}
-                            className={`p-6 rounded-2xl border shadow-md shadow-[#3D2B14]/3 overflow-hidden flex flex-col justify-between transition-all hover:shadow-lg duration-300 bg-white border-[#E8DDD0] hover:border-[#B8862A]/30`}
-                          >
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-xl inline-block ${iconColor} border border-stone-100`}>
-                                  <Icon className="h-5 w-5" />
-                                </div>
-                                <h4 className="font-serif font-extrabold text-base text-[#1A1207] text-left">
-                                  {deptTitle}
-                                </h4>
-                              </div>
-
-                              <div className="space-y-4 text-left">
-                                {sec.content.map((pText, pIdx) => {
-                                  const isResponsibilities = pText.includes('দায়িত্বসমূহ:') || pText.includes('দায়িত্বসমূহ:') || pText.includes('Responsibilities:');
-                                  
-                                  if (isResponsibilities) {
-                                    // Split on colon to get the header and the points
-                                    const parts = pText.split(':');
-                                    const titlePart = parts[0] + ':';
-                                    const pointsPart = parts.slice(1).join(':');
-                                    
-                                    // Split on commas/semicolons to represent as nice clean list items
-                                    const bullets = pointsPart.split(/[,|;]/).map(b => b.trim()).filter(b => b.length > 0);
-                                    
-                                    return (
-                                      <div key={pIdx} className="space-y-2.5 pt-1.5">
-                                        <h5 className="font-serif font-bold text-xs text-[#1A1207] flex items-center gap-1.5">
-                                          <span className="w-1 h-3.5 bg-[#B8862A] rounded-full inline-block" />
-                                          <span>{titlePart}</span>
-                                        </h5>
-                                        <ul className="grid grid-cols-1 gap-2 pl-1">
-                                          {bullets.map((bullet, bIdx) => (
-                                            <li key={bIdx} className="flex items-start gap-2 text-xs text-stone-700 font-sans leading-relaxed">
-                                              <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                                              <span>{bullet}</span>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    );
-                                  }
-
-                                  return (
-                                    <p key={pIdx} className="text-stone-800 leading-relaxed text-xs md:text-sm font-sans">
-                                      {pText}
-                                    </p>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                  </div>
-                </motion.div>
-              )}
             </AnimatePresence>
-          </div>
-        ) : page.id === 'bangalir_chinta' ? (
-          <div className="space-y-8 w-full">
-            {/* Hero / Vision */}
-            <div className="bg-[#1A1207] text-[#FAF7F2] rounded-2xl p-8 relative overflow-hidden bg-grain shadow-xl border border-[#B8862A]/20">
-              <div className="absolute top-0 right-0 p-8 opacity-10">
-                <BookOpen className="w-32 h-32 text-[#B8862A]" />
-              </div>
-              <div className="relative z-10 space-y-4 max-w-3xl">
-                <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[#F0CC7A]">
-                  {language === 'bn' ? 'বাঙালির চিন্তামূলক রচনা সংগ্রহ' : 'Bengali Thoughtful Writings Collection'}
-                </h2>
-                <p className="text-stone-300 leading-relaxed text-sm md:text-base font-serif italic border-l-2 border-[#B8862A] pl-4">
-                  {language === 'bn'
-                    ? 'বাঙালি মনীষীদের চিন্তাশীল রচনাগুলো বিষয়ভিত্তিকভাবে সংগ্রহ ও সম্পাদনা করে প্রকাশ করছে বিশ্বসাহিত্য কেন্দ্র। বাঙালির চিন্তা-মহাসমুদ্রের দুশ বছরের কল্লোল দুশোর অধিক খণ্ডে ধারণ করে রাখা থাকছে, যা সমকালীন এবং ভবিষ্যতের অনুসন্ধিৎসু অভিনিবিষ্ট পাঠক ও গবেষকদের জন্য এক অমূল্য আকরিক গ্রন্থ হিসেবে ব্যবহৃত হবে।'
-                    : 'Bishwo Shahitto Kendro is publishing a thematic collection of thoughtful writings by Bengali intellectuals. The two-hundred-year roar of the vast ocean of Bengali thought is being captured in over two hundred volumes, which will serve as an invaluable resource for present and future researchers.'}
-                </p>
-                
-                <div className="flex flex-wrap gap-4 pt-4">
-                  <div className="bg-[#3D2B14] border border-[#B8862A]/30 rounded-lg px-4 py-2 flex items-center space-x-3">
-                    <Library className="h-5 w-5 text-[#B8862A]" />
-                    <div>
-                      <div className="text-[10px] text-stone-400 uppercase tracking-wider">{language === 'bn' ? 'মোট খণ্ড' : 'Total Volumes'}</div>
-                      <div className="font-bold text-[#F0CC7A]">২০৯ {language === 'bn' ? 'টি' : ''}</div>
-                    </div>
-                  </div>
-                  <div className="bg-[#3D2B14] border border-[#B8862A]/30 rounded-lg px-4 py-2 flex items-center space-x-3">
-                    <List className="h-5 w-5 text-[#B8862A]" />
-                    <div>
-                      <div className="text-[10px] text-stone-400 uppercase tracking-wider">{language === 'bn' ? 'বিষয়সমূহ' : 'Subjects'}</div>
-                      <div className="font-bold text-[#F0CC7A]">১৬ {language === 'bn' ? 'টি' : ''}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Subjects Grid & Central Showcase */}
-            <div className="space-y-6">
-
-              {/* Responsive Layout container */}
-              {(() => {
-                const chintaSubjects = [
-                  {
-                    title: 'অর্থনীতিচিন্তা',
-                    en: 'Economics',
-                    vols: '৮ খণ্ড',
-                    volsEn: '8 Volumes',
-                    editor: 'হারাধন গাঙ্গুলী',
-                    editorEn: 'Haradhan Ganguly',
-                    desc: 'প্রাচীন বাংলা থেকে আজকের বাংলাদেশের অর্থনীতির একটা সামগ্রিক চিত্র ফুটিয়ে তোলার অনবদ্য আয়োজন এই ‘বাঙালির অর্থনীতিচিন্তা’। আট খণ্ডে সম্পাদক হারাধন গাঙ্গুলী প্রয়াস পেয়েছেন বাংলা ভাষায় লিখিত বাঙালির অর্থনৈতিক চিন্তাগুলোকে একটি বিষয়-ভাবনার সূত্রে একত্রিত করতে। প্রাচীন বাংলা বিশেষ করে পঞ্চম থেকে ত্রয়োদশ শতাব্দী পর্যন্ত এবং সেখান থেকে বর্তমান বিশ্বায়নের প্রেক্ষাপটে অর্থনীতির বহুমাত্রিকতা, গতিপ্রকৃতি, তার দেশীয় ও বহির্দেশীয় নানা ঘাত-প্রতিঘাতের ইঙ্গিত দেওয়াই আমাদের লক্ষ্য।',
-                    descEn: 'A masterpiece showcasing the comprehensive picture of Bengali economic thought from ancient Bengal to modern Bangladesh. In 8 volumes, editor Haradhan Ganguly compiles economic thoughts written in Bengali under a unified thematic thread.',
-                    coverColor: 'from-[#4E2F1D] to-[#3D2517]',
-                    accentColor: '#B8862A'
-                  },
-                  {
-                    title: 'ইতিহাসচিন্তা',
-                    en: 'History',
-                    vols: '১৮ খণ্ড',
-                    volsEn: '18 Volumes',
-                    editor: 'মো. মোফাখ্খারুল ইসলাম',
-                    editorEn: 'Md. Mofakharul Islam',
-                    desc: 'বঙ্কিমচন্দ্র আক্ষেপ করে লিখেছিলেন, ‘বাঙ্গালার ইতিহাস নাই।’ গঙ্গারামের মহারাষ্ট্রপুরাণ, বরেন্দ্রীর সন্ধ্যাকর নন্দী রচিত সংস্কৃত রামচরিত দিয়ে সেই আক্ষেপ ঘোচে না। বাংলাভাষায় রচিত ইতিহাসের শ্রেষ্ঠ নিদর্শনগুলো ১৮ খণ্ডে গ্রন্থিত করে হাজির করেছেন সম্পাদক মো. মোফাখ্খারুল ইসলাম। ব্রিটিশ আমল, পাকিস্তান আমল, বাংলাদেশ আমলের ইতিহাসচর্চার একটা সামগ্রিক চিত্র ধরা থাকল এই ১৮ খণ্ডে যা পাঠক ও গবেষকদের জন্য এক অমূল্য আকরিক গ্রন্থ হিসেবে ব্যবহৃত হবে।',
-                    descEn: 'The finest examples of history written in the Bengali language are presented in 18 volumes by editor Md. Mofakharul Islam. It captures a comprehensive picture of history-writing during the British, Pakistan, and Bangladesh eras.',
-                    coverColor: 'from-[#2F4F4F] to-[#1C3030]',
-                    accentColor: '#4A7A7A'
-                  },
-                  {
-                    title: 'চলচ্চিত্রচিন্তা',
-                    en: 'Film',
-                    vols: '১০ খণ্ড',
-                    volsEn: '10 Volumes',
-                    editor: 'সাজেদুল আউয়াল',
-                    editorEn: 'Sajedul Awal',
-                    desc: '১৮৯৫ সালে প্যারিসে চলচ্চিত্র প্রদর্শনের মাত্র এক বছরের মাথায় বোম্বাই ও কলিকাতায় আর তিন বছরের মধ্যে ঢাকায় প্রদর্শনী হয় চলচ্চিত্রের। তখন থেকেই বাঙালি লেখক-চিন্তকরা চলচ্চিত্র বিষয়ে বিচিত্র প্রবন্ধ-নিবন্ধ-রচনা প্রকাশ করতে থাকেন। চলচ্চিত্রকলার উদ্ভব ও বিকাশ, কালরূপ, প্রকাশশৈলী, বাংলা চলচ্চিত্রের পূর্বাপর, স্রষ্টাবৃন্দ, বাংলা চলচ্চিত্র বীক্ষণ, বিশ্ব-চলচ্চিত্র, চলচ্চিত্রকার ও চলচ্চিত্রধারা - ১০টি খণ্ড মোটামুটিভাবে এই ১০ ভাবনাকে ধারণ করার প্রয়াস উজ্জ্বলভাবে প্রতিভাত।',
-                    descEn: 'Origin, development, styles, creators, world cinema, and cinematic movements in Bengal. These 10 volumes encapsulate 10 brilliant cinematic concepts curated by Sajedul Awal.',
-                    coverColor: 'from-[#3A1E1E] to-[#251313]',
-                    accentColor: '#8E3E3E'
-                  },
-                  {
-                    title: 'দর্শনচিন্তা',
-                    en: 'Philosophy',
-                    vols: '২০ খণ্ড',
-                    volsEn: '20 Volumes',
-                    editor: 'ড. প্রদীপ কুমার রায়',
-                    editorEn: 'Dr. Pradip Kumar Roy',
-                    desc: 'বাঙালির দর্শনচিন্তা ওতপ্রোতভাবে জড়িত তার জীবনচর্চা এবং জীবনচর্যার সঙ্গে। বাঙালির দর্শনচিন্তা তার যুগচেতনারও প্রতিফলন। এই দর্শনে আছে আবেগ, বিশ্বাস, পারলৌকিকতা এবং বস্তুতান্ত্রিকতা। আছে কল্যাণকামিতা। রামমোহন রায়, অক্ষয়কুমার দত্ত, রামকৃষ্ণ, বঙ্কিমচন্দ্র, রবীন্দ্রনাথ থেকে শুরু করে দেওয়ান মোহাম্মদ আজরফ, দেবীপ্রসাদ চট্টোপাধ্যায়, সাইদুর রহমান প্রমুখের রচনা স্থান পেয়েছে ২০ খণ্ডের বাঙালির দর্শনচিন্তায়।',
-                    descEn: 'Bengali philosophy is deeply intertwined with daily life and values, reflecting the consciousness of different eras. These 20 volumes feature works from Ram Mohan Roy, Bankimchandra, Rabindranath to Dewan Mohammad Azraf.',
-                    coverColor: 'from-[#1A365D] to-[#10223D]',
-                    accentColor: '#3182CE'
-                  },
-                  {
-                    title: 'ধর্মচিন্তা',
-                    en: 'Religion',
-                    vols: '২০ খণ্ড',
-                    volsEn: '20 Volumes',
-                    editor: 'মোহাম্মদ আবদুল হাই',
-                    editorEn: 'Mohammad Abdul Hai',
-                    desc: 'অন্তরের উপলব্ধি ও অনুভূতির আলোকে উদ্ভাসিত ধর্ম মানুষের এক চূড়ান্ত বিশ্বাসের বিষয়। বর্তমান সংকলনে উঠে এসেছে এই জনপদে আচরিত বাঙালির প্রধান চারটি ধর্ম- ইসলাম, হিন্দু, বৌদ্ধ, খ্রিষ্টানসহ বৈষ্ণব, ব্রাহ্ম, লোকধর্মদর্শনের শ্রেষ্ঠ মনীষীদের চিন্তার সারাৎসার। প্রবন্ধসমূহে ধর্মের ইতিহাস, তুলনামূলক ধর্মচিন্তা, ধর্মের নান্দনিকতা ও সম্পীতিচেতনাসহ চিন্তার প্রায় সকল দিগন্ত উপস্থাপনের প্রয়াস রয়েছে এই ২০ খণ্ডে।',
-                    descEn: 'A compilation of the essence of thoughts from top intellectuals across major religions (Islam, Hinduism, Buddhism, Christianity, Vaishnavism, Brahmo, Folk religions). It covers history, comparative religion, and aesthetics.',
-                    coverColor: 'from-[#1B4D3E] to-[#103026]',
-                    accentColor: '#2E8B57'
-                  },
-                  {
-                    title: 'নারীচিন্তা',
-                    en: 'Women',
-                    vols: '৪ খণ্ড',
-                    volsEn: '4 Volumes',
-                    editor: 'আকিমুন রহমান',
-                    editorEn: 'Akimun Rahman',
-                    desc: 'বাঙালির নারীবিষয়ক বিপুল রচনারাজির সূত্রপাত বিপন্নপ্রাণ নারীর প্রাণ ও জীবন নিশ্চিত করার জন্য সমাজ-সংস্কার ধর্ম-সংস্কার আন্দোলনের অংশ হিসেবে-রামমোহন রায়, ঈশ্বরচন্দ্র বিদ্যাসাগরের মতো সহৃদয় কর্মবীরগণের হাতে। উনিশ শতকের মধ্যভাগ থেকে বিশ শতকের প্রথম ভাগেই নারীর নিজস্ব কণ্ঠস্বরও স্পষ্ট হয়ে যায়। বাঙালির নারীচিন্তার একটি ধারাবাহিক এবং পরিপূর্ণ ছবি ধরা থাকল এই খণ্ডগুলোতে, আকিমুন রহমানের হাতে সুসম্পাদিত হয়ে।',
-                    descEn: 'The origins of Bengali writings on women began as a part of social and religious reform movements to secure lives of endangered women. These 4 volumes paint a continuous and complete picture of feminist thought.',
-                    coverColor: 'from-[#4D1B3E] to-[#301026]',
-                    accentColor: '#9F2B68'
-                  },
-                  {
-                    title: 'পরিবেশচিন্তা',
-                    en: 'Environment',
-                    vols: '৫ খণ্ড',
-                    volsEn: '5 Volumes',
-                    editor: 'মুশফিকুর রহমান',
-                    editorEn: 'Mushfiqur Rahman',
-                    desc: 'প্রাচীনকাল থেকেই বাঙালির পরিবেশভাবনা সজীব এবং সচল ছিল। বিশ্বব্যাপী পরিবেশদূষণের সংকট, জলবায়ুর পরিবর্তন ইত্যাদি কারণে সাম্প্রতিককালে পরিবেশ নিয়ে বাঙালি চিন্তাবিদেরা ব্যাপকভাবে লিখে চলেছেন। গ্রিন হাউস প্রতিক্রিয়া থেকে চিংড়িচাষ, নদীপ্রকৃতি থেকে বর্জ্যব্যবস্থাপনা ও পরিবেশনীতি-বিষয়বৈচিত্রের দিক থেকে এই গ্রন্থরাজির দিগন্ত বহুদূর বিস্তৃত। ৫টি খণ্ডে সাজিয়ে দিয়েছেন এই বিষয়ের বিশেষজ্ঞ মুশফিকুর রহমান।',
-                    descEn: 'From green-house effect to shrimp farming, pesticide problems to Bengal river networks, waste management to environmental policies, these 5 volumes present a wide array of environmental topics.',
-                    coverColor: 'from-[#1F4A38] to-[#132E22]',
-                    accentColor: '#3EB489'
-                  },
-                  {
-                    title: 'বিজ্ঞানচিন্তা',
-                    en: 'Science',
-                    vols: '৮ খণ্ড',
-                    volsEn: '8 Volumes',
-                    editor: 'জাকির তালুকদার',
-                    editorEn: 'Zakir Talukdar',
-                    desc: 'এই উপমহাদেশে বিজ্ঞানচিন্তা, সাধনা, আবিষ্কার, প্রযুক্তির ব্যবহারের ইতিহাস সুপ্রাচীন হলেও বাংলাভাষায় বিজ্ঞানচিন্তা চর্চার ইতিহাস সুপ্রাচীন নয়। ধীরে ধীরে নানা সাময়িক পত্রপত্রিকায় বিজ্ঞান-সম্পর্কিত বাঙালির চিন্তাধারা প্রকাশিত হয়। আদি চিন্তকগণ থেকে শুরু করে স্বাধীন বাংলাদেশে আবদুল্লাহ আল-মুতী, জহুরুল হক, দ্বিজেন শর্মা, মুহম্মদ ইব্রাহীমের মতো লেখকদের রচনায় পুষ্ট হয়েছে বাঙালির বিজ্ঞানচিন্তাচর্চা যা ৮ খণ্ডে সংকলিত হল।',
-                    descEn: 'Scientific thought, achievements, and technology usage in Bengal from classical authors to modern icons like Abdullah Al-Muti and Dwijen Sharma are brilliantly captured in these 8 volumes.',
-                    coverColor: 'from-[#2D3748] to-[#1A202C]',
-                    accentColor: '#4A5568'
-                  },
-                  {
-                    title: 'ভাষাচিন্তা',
-                    en: 'Language',
-                    vols: '১০ খণ্ড',
-                    volsEn: '10 Volumes',
-                    editor: 'সাখাওয়াত আনসারী',
-                    editorEn: 'Sakhawat Ansari',
-                    desc: 'মানুষ চিন্তা করে ভাষা দিয়ে, চিন্তা প্রকাশ করে ভাষা দিয়ে, আবার ভাষা নিয়েও মানুষের চিন্তার বিরাম নেই। বাঙালির ভাষাচিন্তাবিষয়ক রচনাসমূহকে ১০টি খণ্ডে সুবিন্যস্ত করবার গুরুদায়িত্ব সুচারুরূপে পালন করেছেন সাখাওয়াত আনসারী। বাংলাভাষার ইতিহাস, ধ্বনিতত্ত্ব, রূপতত্ত্ব, বাক্যতত্ত্ব, বাগর্থবিজ্ঞান ও অভিধানবিজ্ঞান, উপভাষাতত্ত্ব, ভাষা পরিকল্পনা ও লেখনরীতিচর্চা স্থান পেয়েছে এই সংকলনে।',
-                    descEn: 'Covering history of Bengali language, phonetics, syntax, semantics, lexicography, dialects, and language planning. Beautifully compiled across 10 volumes.',
-                    coverColor: 'from-[#3D3A20] to-[#262414]',
-                    accentColor: '#8C862C'
-                  },
-                  {
-                    title: 'রাজনীতিচিন্তা',
-                    en: 'Politics',
-                    vols: '২৩ খণ্ড',
-                    volsEn: '23 Volumes',
-                    editor: 'खोন্দকার মোকাদ্দেম হোসেন',
-                    editorEn: 'Khondkar Mokaiddem Hossain',
-                    desc: 'সংবাদপত্রের তাৎক্ষণিক রচনা থেকে শুরু করে সুবিশাল গবেষণাগ্রন্থ প্রকাশিত হতে লাগল। প্রাচীন ভারত, প্রাচীন বাংলার রাজনৈতিক সামাজিক অর্থনৈতিক ইতিহাস, বিপ্লবের ইতিহাস, স্বরাজ, স্বাজাত্য, জাতীয়তাবাদ, বাংলাদেশের মুক্তি ও স্বাধীনতার সংগ্রাম, মুক্তিযুদ্ধোত্তর পরিস্থিতি ও আদর্শ বিচার। বাঙালির রাজনীতিচিন্তা বিষয়বৈচিত্র্যে সমুদ্রের মতোই বিশাল। সেই বিশালত্বের প্রতিনিধিত্বশীল নমুনাগুলোকে ২৩টি খণ্ডে সুবিন্যস্ত করেছেন তিনি।',
-                    descEn: 'Tracing political, social, and economic histories, nationalism, internationalism, liberation struggle, and post-war politics in Bengal, systematically arranged in 23 volumes.',
-                    coverColor: 'from-[#4C1C1C] to-[#2E1010]',
-                    accentColor: '#D32F2F'
-                  },
-                  {
-                    title: 'শিক্ষাচিন্তা',
-                    en: 'Education',
-                    vols: '১০ খণ্ড',
-                    volsEn: '10 Volumes',
-                    editor: 'শোয়াইব জিবরান, কুদরত-ই-হুদা ও মাসুদুজ্জামান',
-                    editorEn: 'Shoaib Gibran, Kudrat-e-Huda & Masuduzzaman',
-                    desc: 'একটি আধুনিক ও অগ্রসর জাতি গঠনের মূল ভিত্তি হলো শিক্ষা। বাঙালির শিক্ষাচিন্তার বিকাশ, বিভিন্ন শিক্ষা কমিশনের রিপোর্ট, ঔপনিবেশিক শিক্ষা ব্যবস্থার স্বরূপ ও তার প্রভাব, এবং বাঙালি মণীষীদের শিক্ষা দর্শন নিয়ে ১০টি মূল্যবান খণ্ডে সংকলিত হয়েছে শিক্ষাচিন্তা। এটি যেকোনো শিক্ষা গবেষক ও মননশীল পাঠকের জন্য অত্যন্ত প্রয়োজনীয় এক সংকলন।',
-                    descEn: 'A foundational component of progress. Compiled across 10 volumes, this subject covers historical educational developments, commission reports, colonial impacts, and philosophies of eminent reformers.',
-                    coverColor: 'from-[#0F5A47] to-[#0A3B2E]',
-                    accentColor: '#10B981'
-                  }
-                ];
-
-                const activeSubject = chintaSubjects[activeChintaSubject] || chintaSubjects[0];
-
-                return (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                    {/* Left: Active Subject Showcase (Book Mockup & Details) */}
-                    <div className="lg:col-span-5 bg-white border border-[#E8DDD0] rounded-2xl p-6 flex flex-col justify-between space-y-6 shadow-xs">
-                      <div className="space-y-5">
-                        {/* 3D-like Book Cover Container */}
-                        <div className="flex justify-center py-4">
-                          <div className="relative group perspective">
-                            {/* Book shadow */}
-                            <div className="absolute -inset-1 bg-black/10 rounded-r-lg blur-md group-hover:blur-lg transition-all duration-300 transform -rotate-2 translate-x-2 translate-y-1" />
-                            {/* Actual Book */}
-                            <div className={`relative w-44 h-64 rounded-r-lg bg-gradient-to-br ${activeSubject.coverColor} text-white p-5 flex flex-col justify-between border-l-4 border-black/30 shadow-md transform transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-102`}>
-                              {/* Book Spine reflection */}
-                              <div className="absolute top-0 left-0 bottom-0 w-2 bg-gradient-to-r from-white/10 to-transparent" />
-                              
-                              <div className="space-y-1.5 text-center pt-2">
-                                <span className="text-[9px] font-bold text-[#F0CC7A]/80 tracking-widest uppercase block border-b border-white/10 pb-1.5 font-sans">
-                                  {language === 'bn' ? 'বাঙালির চিন্তামূলক রচনা' : 'Bengali Thoughtful Writings'}
-                                </span>
-                              </div>
-
-                              <div className="text-center py-4 space-y-1 flex-1 flex flex-col justify-center">
-                                <h4 className="font-serif font-extrabold text-lg tracking-wide text-white leading-snug">
-                                  {activeSubject.title}
-                                </h4>
-                                <span className="text-[10px] font-mono text-stone-300 tracking-wider block">
-                                  {activeSubject.en}
-                                </span>
-                              </div>
-
-                              <div className="space-y-1 text-center pb-2">
-                                <div className="text-[10px] text-[#F0CC7A] font-bold">
-                                  {language === 'bn' ? activeSubject.vols : activeSubject.volsEn}
-                                </div>
-                                <div className="text-[8px] text-stone-300 leading-tight">
-                                  {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র' : 'Bishwo Shahitto Kendro'}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Subject Details */}
-                        <div className="space-y-3 text-left">
-                          <div className="flex items-center justify-between">
-                            <span className="inline-block px-2.5 py-1 bg-[#B8862A]/10 text-[#B8862A] text-[11px] font-bold rounded-md uppercase tracking-wider border border-[#B8862A]/20">
-                              {language === 'bn' ? activeSubject.vols : activeSubject.volsEn}
-                            </span>
-                            <span className="text-xs font-mono font-bold text-stone-400">
-                              SUBJECT {activeChintaSubject + 1} OF {chintaSubjects.length}
-                            </span>
-                          </div>
-                          
-                          <h3 className="font-serif font-extrabold text-xl text-[#1A1207] border-b border-stone-100 pb-2">
-                            {language === 'bn' ? activeSubject.title : `${activeSubject.en} Thought`}
-                          </h3>
-                          
-                          <div className="space-y-1 bg-[#FAF8F3] border border-[#E8DDD0]/50 rounded-xl p-3 text-xs">
-                            <div className="text-[#B8862A] font-bold">{language === 'bn' ? 'সম্পাদনা ও সংকলন' : 'Edited & Compiled By'}</div>
-                            <div className="font-serif font-bold text-stone-800 text-sm">{language === 'bn' ? activeSubject.editor : activeSubject.editorEn}</div>
-                          </div>
-
-                          <p className="text-stone-700 leading-relaxed text-xs md:text-sm font-sans pt-1">
-                            {language === 'bn' ? activeSubject.desc : activeSubject.descEn}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right: Grid of Subjects */}
-                    <div className="lg:col-span-7 bg-white border border-[#E8DDD0] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
-                      <div className="space-y-4">
-                        <div className="border-b border-stone-100 pb-2">
-                          <h4 className="font-serif font-extrabold text-stone-900 text-sm md:text-base flex items-center gap-2">
-                            <Library className="w-4 h-4 text-[#B8862A]" />
-                            <span>{language === 'bn' ? 'বিষয়ভিত্তিক সংগ্রহমালা ব্রাউজ করুন' : 'Browse Thematic Collection'}</span>
-                          </h4>
-                          <p className="text-[11px] text-stone-500 font-sans mt-0.5">
-                            {language === 'bn' ? 'যেকোনো বিষয়ে ক্লিক করে তার বিস্তারিত বিবরণ ও সংকলক পরিচিতি জানুন' : 'Click any subject tile to see volume details and editorial summary'}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                          {chintaSubjects.map((sub, idx) => {
-                            const isActive = activeChintaSubject === idx;
-                            return (
-                              <button
-                                key={'sub-grid-' + idx}
-                                onClick={() => setActiveChintaSubject(idx)}
-                                className={`p-3 rounded-xl text-left transition-all border outline-none cursor-pointer flex flex-col justify-between h-[100px] group ${
-                                  isActive
-                                    ? 'bg-[#B8862A] text-white border-[#B8862A] shadow-md scale-[1.02]'
-                                    : 'bg-[#FAF8F3] text-[#1A1207] border-[#E8DDD0] hover:bg-stone-50 hover:border-[#B8862A]/40'
-                                }`}
-                              >
-                                <div className="space-y-0.5">
-                                  <div className={`font-serif font-extrabold text-xs sm:text-sm leading-snug ${isActive ? 'text-white' : 'text-[#1A1207] group-hover:text-[#B8862A]'}`}>
-                                    {language === 'bn' ? sub.title : sub.en}
-                                  </div>
-                                  <div className={`text-[9px] font-sans ${isActive ? 'text-stone-200' : 'text-stone-500'}`}>
-                                    {language === 'bn' ? sub.en : sub.title}
-                                  </div>
-                                </div>
-                                
-                                <div className={`text-[10px] font-mono font-bold self-end ${isActive ? 'text-[#FAF8F3]' : 'text-[#B8862A]'}`}>
-                                  {language === 'bn' ? sub.vols : sub.volsEn}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Collection Info */}
-            <div className="bg-[#F9F6F0] border border-[#E8DDD0] rounded-xl p-6 text-center space-y-4">
-              <h3 className="font-serif text-lg font-bold text-[#1A1207]">
-                {language === 'bn' ? 'সংগ্রহের বিস্তারিত তথ্য' : 'Collection Details'}
-              </h3>
-              <p className="text-sm text-stone-700 max-w-2xl mx-auto leading-relaxed">
-                {language === 'bn' 
-                  ? 'সম্পূর্ণ সেট, ২০৯ খণ্ড একত্রে অথবা বিষয়ভিত্তিক সেট সংগ্রহ করা যাবে। ১৬টি বিষয় নিয়ে এই সংকলনটির এখন পাওয়া যাচ্ছে বিশেষ ছাড়ে। ১৬টি বিষয়, একত্রে ২০৯ খণ্ডের মূল্য ১,৯০,০০০ টাকা। বিশ্বসাহিত্য কেন্দ্রের প্রকাশনা ও বিক্রয় সেল থেকে এই সেট সংগ্রহ করা যাবে।'
-                  : 'The complete set of 209 volumes or thematic sets can be collected. Available now at a special discount for 190,000 BDT. Can be collected from BSK Publication and Sales cell.'}
-              </p>
-              <a 
-                href="https://bcrs.bskbd.org" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center space-x-2 bg-[#B8862A] text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-[#9A6D1F] transition-colors"
-              >
-                <span>{language === 'bn' ? 'বিস্তারিত ওয়েবসাইট ভিজিট করুন' : 'Visit Official Website'}</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
           </div>
         ) : page.id === 'publication' ? (
           <div className="space-y-8 w-full animate-fade-in text-left">
@@ -2361,22 +1926,22 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               {/* Cover Image Background with Rich Warm Overlay */}
               <div 
                 className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-25"
-                style={{ backgroundImage: "url('/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg')" }}
+                style={{ backgroundImage: `url('${page.hero_image || '/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg'}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-amber-950 via-amber-900/90 to-transparent" />
               
               <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 max-w-2xl">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 font-sans uppercase tracking-widest">
-                    {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র প্রকাশনী' : 'Bishwo Shahitto Kendro Publications'}
+                    {language === 'bn' ? (page.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র প্রকাশনী') : (page.badge_en || 'Bishwo Shahitto Kendro Publications')}
                   </span>
                   <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#F0CC7A] leading-tight">
-                    {language === 'bn' ? 'প্রকাশনা কার্যক্রম' : 'Publications Program'}
+                    {language === 'bn' ? (page.title_bn || 'প্রকাশনা কার্যক্রম') : (page.title_en || 'Publications Program')}
                   </h1>
                   <p className="text-stone-200 leading-relaxed text-sm md:text-base font-serif italic border-l-2 border-[#B8862A] pl-4">
                     {language === 'bn' 
-                      ? 'জাতীয় চিত্তকে দীপায়িত করার লক্ষ্যে কেন্দ্রের আরও একটি কার্যক্রম রয়েছে। এটি হল প্রকাশনা কার্যক্রম। এই কর্মসূচির ভেতর দিয়ে ভাষাসহ পৃথিবীর বিভিন্ন দেশ ও ভাষার শ্রেষ্ঠ বইগুলো প্রকাশ করে ঘরে ঘরে পৌঁছে দেওয়ার পদক্ষেপ নেওয়া হয়েছে।'
-                      : 'To enlighten the national mind, the center has established an active publication wing. This program translates and publishes the world’s outstanding literary and intellectual classics, making them affordable and accessible to readers across the country.'}
+                      ? (page.hero_desc_bn || page.subtitle_bn || 'জাতীয় চিত্তকে দীপায়িত করার লক্ষ্যে কেন্দ্রের আরও একটি কার্যক্রম রয়েছে। এটি হল প্রকাশনা কার্যক্রম। এই কর্মসূচির ভেতর দিয়ে ভাষাসহ পৃথিবীর বিভিন্ন দেশ ও ভাষার শ্রেষ্ঠ বইগুলো প্রকাশ করে ঘরে ঘরে পৌঁছে দেওয়ার পদক্ষেপ নেওয়া হয়েছে।')
+                      : (page.hero_desc_en || page.subtitle_en || 'To enlighten the national mind, the center has established an active publication wing. This program translates and publishes the world’s outstanding literary and intellectual classics, making them affordable and accessible to readers across the country.')}
                   </p>
                 </div>
                 
@@ -2390,7 +1955,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     <span>{language === 'bn' ? 'বই বিক্রয় কেন্দ্র' : 'Visit Book Shop'}</span>
                   </button>
                   <a 
-                    href="/assets/IMGS/PURNIMA SONDHA/bcrs.jpg"
+                    href={page.catalog_url || '/assets/IMGS/PURNIMA SONDHA/bcrs.jpg'}
                     download
                     className="w-full flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-3 rounded-xl font-bold active:scale-95 transition-all text-sm"
                   >
@@ -2403,42 +1968,13 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
             {/* Quick Stats Bento Blocks */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { 
-                  bnVal: '১০০০+', 
-                  enVal: '1000+', 
-                  bnLbl: 'মোট প্রকাশিত গ্রন্থ', 
-                  enLbl: 'Books Published', 
-                  color: 'border-emerald-100 bg-emerald-50/50 text-emerald-800' 
-                },
-                { 
-                  bnVal: '২৫ বছর', 
-                  enVal: '25 Years', 
-                  bnLbl: 'অনুবাদ প্রকল্পের মেয়াদ', 
-                  enLbl: 'Translation Scheme', 
-                  color: 'border-amber-100 bg-amber-50/50 text-amber-800' 
-                },
-                { 
-                  bnVal: '৭৫০টি', 
-                  enVal: '750 Classics', 
-                  bnLbl: 'অনূদিত বিশ্বসেরা বই', 
-                  enLbl: 'Target World Masterpieces', 
-                  color: 'border-rose-100 bg-rose-50/50 text-rose-800' 
-                },
-                { 
-                  bnVal: '২০৯ খণ্ড', 
-                  enVal: '209 Vols', 
-                  bnLbl: 'বাঙালির চিন্তা সংগ্রহ', 
-                  enLbl: 'Bengali Thought Project', 
-                  color: 'border-blue-100 bg-blue-50/50 text-blue-800' 
-                }
-              ].map((stat, sIdx) => (
-                <div key={sIdx} className={`p-5 rounded-2xl border ${stat.color} shadow-xs text-center flex flex-col justify-center space-y-1`}>
+              {(page.stats && page.stats.length > 0 ? page.stats : defaultPublicationStats).map((stat: any, sIdx: number) => (
+                <div key={sIdx} className={`p-5 rounded-2xl border ${stat.color || 'border-amber-100 bg-amber-50/50 text-amber-800'} shadow-xs text-center flex flex-col justify-center space-y-1`}>
                   <div className="font-serif text-2xl md:text-3xl font-extrabold tracking-tight">
-                    {language === 'bn' ? stat.bnVal : stat.enVal}
+                    {language === 'bn' ? (stat.bnVal || stat.value_bn) : (stat.enVal || stat.value_en)}
                   </div>
                   <div className="text-xs md:text-sm font-medium opacity-80 font-sans text-stone-600">
-                    {language === 'bn' ? stat.bnLbl : stat.enLbl}
+                    {language === 'bn' ? (stat.bnLbl || stat.label_bn) : (stat.enLbl || stat.label_en)}
                   </div>
                 </div>
               ))}
@@ -2450,10 +1986,10 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 <div>
                   <h2 className="font-serif text-lg md:text-2xl font-bold text-[#1A1207] flex items-center space-x-2">
                     <span className="w-2 h-6 bg-[#B8862A] rounded-full inline-block" />
-                    <span>{language === 'bn' ? 'আমাদের প্রকাশনা সিরিজসমূহ' : 'Our Publication Series'}</span>
+                    <span>{language === 'bn' ? (page.series_section_title_bn || 'আমাদের প্রকাশনা সিরিজসমূহ') : (page.series_section_title_en || 'Our Publication Series')}</span>
                   </h2>
                   <p className="text-xs md:text-sm text-stone-500 mt-1">
-                    {language === 'bn' ? 'সিরিজ নির্বাচন করে বর্ণনা এবং বইয়ের তাক দেখুন' : 'Select a series to explore details and specific bookshelves'}
+                    {language === 'bn' ? (page.series_section_desc_bn || 'সিরিজ নির্বাচন করে বর্ণনা এবং বইয়ের তাক দেখুন') : (page.series_section_desc_en || 'Select a series to explore details and specific bookshelves')}
                   </p>
                 </div>
                 
@@ -2480,245 +2016,32 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
               {/* Series Tabs */}
               {(() => {
-                const pubSeriesList = [
-                  {
-                    titleBn: 'বিশ্বের চিরায়ত গ্রন্থমালা',
-                    titleEn: 'World Classics Translation',
-                    tagBn: 'অনূদিত ক্লাসিক',
-                    tagEn: 'Classics',
-                    descBn: 'আমাদের দেশে ইংরেজি ভাষায় পঠনপাঠন প্রায় তিরিশ বছরে বেশ কমে গেছে। অথচ পৃথিবীর শ্রেষ্ঠ বইগুলো আজও বাংলাভাষায় অনূদিত হয়নি। ফলে মানবসভ্যতার উচ্চতর জ্ঞানজগতে প্রবেশ ও পঠনপাঠনের পথ আমাদের জন্য প্রায় রুদ্ধ হয়ে রয়েছে এবং বিশ্বসংস্কৃতির সঙ্গে আমাদের কার্যকর যোগাযোগ হারিয়ে গেছে। এই পরিস্থিতি মোকাবিলার উদ্দেশ্যে ‘বিশ্বের চিরায়ত গ্রন্থমালা’-র আওতায় বিশ্বের শ্রেষ্ঠ গ্রন্থাবলি ও রচনা-সম্পাদকে বাংলায় অনুবাদ করে প্রকাশ করার উদ্যোগ নিয়েছে কেন্দ্র। এরই মধ্যে এ-ধরনের বেশকিছু অনুবাদগ্রন্থ প্রকাশিতও হয়েছে। ২০১৪ সাল থেকে ব্যাপক কর্মসূচির আওতায় পৃথিবীর শ্রেষ্ঠ ৭৫০টি বই অনুবাদ ও প্রকাশের ২৫ বছর মেয়াদী একটি কর্মসূচি হাতে নেওয়া হয়েছে। এরই সঙ্গে ইতিপূর্বে বাংলাভাষায় বিচ্ছিন্নভাবে প্রকাশিত বিশ্বের শ্রেষ্ঠ অনুবাদ-গ্রন্থগুলোকে এই প্রকল্পের আওতায় প্রকাশ করে জনসাধারণের কাছে সুলভ করার কাজও চলছে।',
-                    descEn: 'English proficiency in our country has decreased over the last thirty years. However, the world’s outstanding masterpieces have still not been translated into Bengali. BSK has initiated this ambitious program to bring translated world classics into every home. A 25-year plan to translate 750 global masterpieces is currently underway.',
-                    books: [
-                      {
-                        id: 'divine-comedy',
-                        titleBn: 'দিভাইন কমেডি',
-                        titleEn: 'The Divine Comedy',
-                        authorBn: 'দান্তে আলিগিয়েরি',
-                        authorEn: 'Dante Alighieri',
-                        descBn: 'দান্তের এই অমর মহাকাব্য পরকাল, নরক, ও স্বর্গের বর্ণনার মধ্য দিয়ে মধ্যযুগীয় বিশ্বদর্শনকে তুলে ধরে।',
-                        descEn: "Dante's masterpiece describing the soul's journey through Hell, Purgatory, and Heaven.",
-                        pages: 420,
-                        coverBg: 'bg-emerald-800'
-                      },
-                      {
-                        id: 'don-quixote',
-                        titleBn: 'ডন কিহোতে',
-                        titleEn: 'Don Quixote',
-                        authorBn: 'মিগেল দে থের্ভান্তেস',
-                        authorEn: 'Miguel de Cervantes',
-                        descBn: 'স্পেনীয় সাহিত্যের এক কালজয়ী উপন্যাস, যা বীরত্ব ও বাস্তবতার অদ্ভুত লড়াইকে হাস্যরসের মাধ্যমে উপস্থাপন করে।',
-                        descEn: 'A timeless Spanish novel detailing the chivalric adventures of an eccentric noble.',
-                        pages: 580,
-                        coverBg: 'bg-amber-900'
-                      },
-                      {
-                        id: 'republic',
-                        titleBn: 'রিপাবলিক',
-                        titleEn: 'The Republic',
-                        authorBn: 'প্লেটো',
-                        authorEn: 'Plato',
-                        descBn: 'আদর্শ রাষ্ট্র, জাস্টিস বা ন্যায়বিচার এবং মানব সমাজের নৈতিক ভিত্তি নিয়ে প্লেটোর বিখ্যাত দার্শনিক কথোপকথন।',
-                        descEn: "Socrates' dialogue concerning justice, order, and the character of the just city-state.",
-                        pages: 390,
-                        coverBg: 'bg-rose-950'
-                      },
-                      {
-                        id: 'crime-punishment',
-                        titleBn: 'ক্রাইম অ্যান্ড পানিশমেন্ট',
-                        titleEn: 'Crime and Punishment',
-                        authorBn: 'ফিওদোর দস্তয়েভস্কি',
-                        authorEn: 'Fyodor Dostoevsky',
-                        descBn: 'অপরাধের মনস্তত্ত্ব এবং পাপমোচনের এক অনন্য ও গভীর জীবনদর্শনধর্মী সাহিত্য।',
-                        descEn: "A deep psychological novel focusing on the mental anguish and moral dilemmas of Raskolnikov.",
-                        pages: 620,
-                        coverBg: 'bg-slate-900'
-                      }
-                    ]
-                  },
-                  {
-                    titleBn: 'চিরায়ত বাংলা গ্রন্থমালা',
-                    titleEn: 'Classical Bengali Series',
-                    tagBn: 'বাঙালির ঐতিহ্য',
-                    tagEn: 'Bengali Heritage',
-                    descBn: '‘চিরায়ত বাংলা গ্রন্থমালা’-র আওতায় এযাবৎ প্রকাশ করা হয়েছে বাংলা ভাষার শ্রেষ্ঠ রচনাগুলো-এই ভাষার সেরা লেখকদের সবচেয়ে সুন্দর, রক্তিম ও অনবদ্য বই এবং রচনাসম্ভার। শুধু প্রাচীনকালের বিদগ্ধ পাঠকদের জন্য এগুলো বের করা হচ্ছে না। বের করা হচ্ছে সেইসব নতুন ও প্রাথমিক পাঠকদের কথা ভেবে যাঁরা জানার আনন্দময় জগতে নতুন পা রেখেছেন। আমাদের আশা, বাংলাভাষার অনন্যসাধারণ লেখকদের সবচেয়ে সজীব, রক্তিম ও উষ্ণ বইগুলো পড়ার মাধ্যমে তাঁরা শিল্প-সাহিত্য, জ্ঞান-বিজ্ঞানের আনন্দে অনুপ্রাণিত হয়ে উঠবেন। আসলে চিরায়ত বাংলা সাহিত্যের নতুন পাঠকসমাজ গড়ে তোলা এ-সিরিজটির মূল উদ্দেশ্য। তবে অগ্রসর পাঠকেরাও এগুলোর দ্বারা একইভাবে উপকৃত হবেন।',
-                    descEn: 'This series presents the absolute best literature written in Bengali. It gathers the most vibrant, warm, and beautiful creations by master Bengali authors. The collection aims to build a modern reader-base that appreciates classical Bengali thought, literature, and art.',
-                    books: [
-                      {
-                        id: 'gitanjali',
-                        titleBn: 'গীতাঞ্জলি',
-                        titleEn: 'Gitanjali',
-                        authorBn: 'রবীন্দ্রনাথ ঠাকুর',
-                        authorEn: 'Rabindranath Tagore',
-                        descBn: 'কবিগুরুর নোবেলজয়ী ভক্তি ও আধ্যাত্মিক গীতি-সংকলন, যা বিশ্ব দরবারে বাংলা সাহিত্যকে অনন্য উচ্চতায় নিয়ে যায়।',
-                        descEn: "Tagore's Nobel Prize-winning collection of devotional and soulful lyrics.",
-                        pages: 180,
-                        coverBg: 'bg-amber-700'
-                      },
-                      {
-                        id: 'kapalkundala',
-                        titleBn: 'কপালকুণ্ডলা',
-                        titleEn: 'Kapalkundala',
-                        authorBn: 'বঙ্কিমচন্দ্র চট্টোপাধ্যায়',
-                        authorEn: 'Bankim Chandra Chattopadhyay',
-                        descBn: 'বাংলা সাহিত্যের প্রথম রোমান্টিক এবং রহস্যময় উপন্যাস, যার অমর সংলাপ এখনও পাঠকের চিত্ত আলোড়িত করে।',
-                        descEn: 'One of the earliest romantic novels in Bengali literature, filled with mystery and tragic romance.',
-                        pages: 150,
-                        coverBg: 'bg-blue-900'
-                      },
-                      {
-                        id: 'lalsalu',
-                        titleBn: 'লালসালু',
-                        titleEn: 'Lalsalu',
-                        authorBn: 'সৈয়দ ওয়ালীউল্লাহ্',
-                        authorEn: 'Syed Waliullah',
-                        descBn: 'গ্রামীণ সমাজব্যবস্থায় ধর্মীয় কুসংস্কার, অন্ধবিশ্বাস এবং শোষণের বিরুদ্ধে এক ধারালো সামাজিক উপন্যাস।',
-                        descEn: 'A classic social novel critiquing religious dogma, superstition, and social hypocrisy in rural Bengal.',
-                        pages: 165,
-                        coverBg: 'bg-red-800'
-                      },
-                      {
-                        id: 'padma-nadji',
-                        titleBn: 'পদ্মা নদীর মাঝি',
-                        titleEn: 'Padma Nadir Majhi',
-                        authorBn: 'মানিক বন্দ্যোপাধ্যায়',
-                        authorEn: 'Manik Bandyopadhyay',
-                        descBn: 'পদ্মাপাড়ের জেলে সম্প্রদায়ের জীবনসংগ্রাম, প্রেম ও প্রকৃতির এক জীবন্ত ক্যানভাস।',
-                        descEn: "A realistic portrayal of the lives, struggles, and hopes of fishermen living on the banks of the Padma river.",
-                        pages: 210,
-                        coverBg: 'bg-teal-900'
-                      }
-                    ]
-                  },
-                  {
-                    titleBn: 'কিশোর সাহিত্য গ্রন্থমালা',
-                    titleEn: 'Juvenile Classics Series',
-                    tagBn: 'কিশোর ক্লাসিক',
-                    tagEn: 'Juvenile',
-                    descBn: '‘কিশোর সাহিত্য গ্রন্থমালা’-র আওতায় বাংলাভাষাসহ পৃথিবীর বিভিন্ন দেশ ও ভাষার কিশোরসাহিত্যের শ্রেষ্ঠ বইগুলো প্রকাশ করা হচ্ছে। এ ছাড়াও বাংলাভাষার শ্রেষ্ঠ লেখকদের ইংরেজি ও অন্যান্য ভাষায় অনুবাদ করে প্রকাশ করার লক্ষ্যে একটি কর্মসূচি সম্প্রতি হাতে নেওয়া হয়েছে। এ-পর্যন্ত প্রকাশনা কার্যক্রমের আওতায় প্রকাশিত হয়েছে প্রায় ৪০০ বই। ২০১৪ সাল থেকে প্রকাশনা কার্যক্রমকে ব্যাপকভিত্তিতে সম্প্রসারিত করার পদক্ষেপ নেওয়া হয়েছে।',
-                    descEn: 'Gathering the world’s outstanding children and adolescent books. Over 400 books have been printed under this banner, including exciting adventures, mysteries, fairy tales, and translated science fiction classics.',
-                    books: [
-                      {
-                        id: 'robinson-crusoe',
-                        titleBn: 'রবিনসন ক্রুসো',
-                        titleEn: 'Robinson Crusoe',
-                        authorBn: 'ড্যানিয়েল ডেফো',
-                        authorEn: 'Daniel Defoe',
-                        descBn: 'এক নির্জন দ্বীপে আটকা পড়া এক মানুষের অসমসাহসী টিকে থাকার ও বুদ্ধিদীপ্ত অভিযানের কালজয়ী রোমাঞ্চ।',
-                        descEn: "The classic tale of survival, endurance, and adventure of a castaway on a remote desert island.",
-                        pages: 280,
-                        coverBg: 'bg-green-950'
-                      },
-                      {
-                        id: 'treasure-island',
-                        titleBn: 'ট্রেজার আইল্যান্ড',
-                        titleEn: 'Treasure Island',
-                        authorBn: 'রবার্ট লুই স্টিভেনসন',
-                        authorEn: 'Robert Louis Stevenson',
-                        descBn: 'জলদস্যু, গুপ্তধনের মানচিত্র এবং রোমাঞ্চকর সমুদ্রযাত্রার এক শিহরণ জাগানো অ্যাডভেঞ্চার কাহিনী।',
-                        descEn: "The definitive pirate adventure story of Jim Hawkins and the infamous Long John Silver.",
-                        pages: 250,
-                        coverBg: 'bg-indigo-950'
-                      },
-                      {
-                        id: 'tom-sawyer',
-                        titleBn: 'টম সয়ারের অ্যাডভেঞ্চার',
-                        titleEn: 'Tom Sawyer',
-                        authorBn: 'মার্ক টোয়েন',
-                        authorEn: 'Mark Twain',
-                        descBn: 'মিসিসিপি নদীর তীরে ডানপিটে টম ও তার বন্ধুদের দুরন্ত শৈশব, দুষ্টুমি ও রোমাঞ্চকর অভিযানের গল্প।',
-                        descEn: "The delightful adventures of a mischievous young boy growing up along the Mississippi River.",
-                        pages: 230,
-                        coverBg: 'bg-sky-950'
-                      },
-                      {
-                        id: 'gulliver-travels',
-                        titleBn: 'গালিভারের ভ্রমণকাহিনী',
-                        titleEn: 'Gulliver\'s Travels',
-                        authorBn: 'জোনাথন সুইফট',
-                        authorEn: 'Jonathan Swift',
-                        descBn: 'লিলিপুটদের বামন দেশ এবং দানবদের দেশে গালিভারের বিচিত্র ও কালজয়ী কল্পকাহিনী ও ব্যঙ্গাত্মক ভ্রমণবৃত্তান্ত।',
-                        descEn: "A brilliant satire describing Lemuel Gulliver's fantastic voyages to Lilliput and Brobdingnag.",
-                        pages: 310,
-                        coverBg: 'bg-purple-950'
-                      }
-                    ]
-                  },
-                  {
-                    titleBn: 'বাঙালির চিন্তা কর্মসূচি',
-                    titleEn: 'Bengali Thought Project',
-                    tagBn: 'মনীষীদের রচনা',
-                    tagEn: 'Intellectual Thought',
-                    descBn: 'বিশ্বসাহিত্য কেন্দ্রের প্রকাশনার একটি অত্যন্ত গুরুত্বপূর্ণ প্রকল্প হল বাঙালির চিন্তা কর্মসূচি। এই কর্মসূচির আওতায় গত দুশো বছর ধরে বাঙালি জাতির শ্রেষ্ঠ মনীষীরা শিক্ষা, ধর্ম, বিজ্ঞান, সংস্কৃতি, দর্শন, শিল্প, সাহিত্য, রাজনীতি, সমাজ ইত্যাদি ১৬টি বিষয়ে যেসব মৌলিক চিন্তা করেছেন সেগুলোকে ব্যাপকভাবে সংগ্রহ ও বাছাই করে প্রতিটি বিষয়ের শ্রেষ্ঠ রচনাসম্ভারকে বহু খণ্ডে প্রকাশ করার আয়োজন শেষ হয়েছে। ২০০ খণ্ডে প্রায় ৬৮,০০০ পৃষ্ঠার এই মহাসংগ্রহ কিছুকালের মধ্যেই প্রকাশিত হবে।',
-                    descEn: 'A pioneering archival initiative editing and sorting the monumental contributions of Bengali thinkers over the last 200 years. Spanning across 16 main domains including Science, Philosophy, Religion, Politics, and Arts, totaling 209 volumes.',
-                    books: [
-                      {
-                        id: 'science-thought',
-                        titleBn: 'বাঙালির বিজ্ঞানচিন্তা',
-                        titleEn: 'Bengali Science Thought',
-                        authorBn: 'বিজ্ঞানচিন্তা ও সম্পাদনা পর্ষদ',
-                        authorEn: 'Science Editorial Panel',
-                        descBn: 'বাংলা ভাষায় বিজ্ঞানচর্চা ও বিজ্ঞানচিন্তার বিকাশ ও আদি বিজ্ঞানীদের চিন্তাধারার এক অনন্য দলিল।',
-                        descEn: 'The evolution of scientific thought and philosophy written in Bengali over the last two centuries.',
-                        pages: 350,
-                        coverBg: 'bg-stone-800'
-                      },
-                      {
-                        id: 'philosophy-thought',
-                        titleBn: 'বাঙালির দর্শনচিন্তা',
-                        titleEn: 'Bengali Philosophical Thought',
-                        authorBn: 'দর্শনচিন্তা ও সম্পাদনা পর্ষদ',
-                        authorEn: 'Philosophy Editorial Panel',
-                        descBn: 'প্রাচীন ও আধুনিক ভারতীয় এবং বাঙালি দার্শনিকদের তত্ত্ব ও ভাবনার গভীর সংকলন।',
-                        descEn: 'A comprehensive anthology of philosophical ideas, systems, and debates of Bengali intellectuals.',
-                        pages: 480,
-                        coverBg: 'bg-red-950'
-                      },
-                      {
-                        id: 'society-thought',
-                        titleBn: 'বাঙালির সমাজচিন্তা',
-                        titleEn: 'Bengali Social Thought',
-                        authorBn: 'সমাজচিন্তা ও সম্পাদনা পর্ষদ',
-                        authorEn: 'Social Thought Editorial Panel',
-                        descBn: 'বাঙালির সামাজিক বিবর্তন, সংস্কার আন্দোলন এবং সমাজ সংস্কারকদের চিন্তাশীল রচনার সংগ্রহ।',
-                        descEn: 'A collection of critical reflections on society, caste, reform, and cultural identity in Bengal.',
-                        pages: 410,
-                        coverBg: 'bg-amber-950'
-                      },
-                      {
-                        id: 'history-thought',
-                        titleBn: 'বাঙালির ইতিহাসচিন্তা',
-                        titleEn: 'Bengali Historical Thought',
-                        authorBn: 'ইতিহাসচিন্তা ও সম্পাদনা পর্ষদ',
-                        authorEn: 'History Editorial Panel',
-                        descBn: 'ব্রিটিশ, পাকিস্তান ও বাংলাদেশ আমলের ইতিহাসচর্চার সামগ্রিক ও বহুমাত্রিক সংকলন।',
-                        descEn: 'The historiographical perspectives and historical research methodologies written in Bengali.',
-                        pages: 440,
-                        coverBg: 'bg-emerald-950'
-                      }
-                    ]
-                  }
-                ];
+                const pubSeriesList: any[] = (page.publication_series && page.publication_series.length > 0)
+                  ? page.publication_series
+                  : defaultPublicationSeriesList;
+
+                const currentTabIdx = Math.min(pubActiveTab, Math.max(0, pubSeriesList.length - 1));
+                const activeSeries = pubSeriesList[currentTabIdx] || pubSeriesList[0];
 
                 // Dynamically compile books matching search across all series
                 let displayedBooks: any[] = [];
-                let activeSeries = pubSeriesList[pubActiveTab];
                 
                 if (pubBookSearchQuery.trim()) {
                   // If searching, compile from all series
                   pubSeriesList.forEach((ser, sIdx) => {
-                    ser.books.forEach(b => {
+                    (ser.books || []).forEach((b: any) => {
                       if (
-                        b.titleBn.toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
-                        b.titleEn.toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
-                        b.authorBn.toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
-                        b.authorEn.toLowerCase().includes(pubBookSearchQuery.toLowerCase())
+                        (b.titleBn || '').toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
+                        (b.titleEn || '').toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
+                        (b.authorBn || '').toLowerCase().includes(pubBookSearchQuery.toLowerCase()) ||
+                        (b.authorEn || '').toLowerCase().includes(pubBookSearchQuery.toLowerCase())
                       ) {
                         displayedBooks.push({ ...b, seriesIdx: sIdx, seriesTitle: language === 'bn' ? ser.titleBn : ser.titleEn });
                       }
                     });
                   });
-                } else {
-                  displayedBooks = activeSeries.books.map(b => ({ ...b, seriesIdx: pubActiveTab, seriesTitle: language === 'bn' ? activeSeries.titleBn : activeSeries.titleEn }));
+                } else if (activeSeries && activeSeries.books) {
+                  displayedBooks = activeSeries.books.map((b: any) => ({ ...b, seriesIdx: currentTabIdx, seriesTitle: language === 'bn' ? activeSeries.titleBn : activeSeries.titleEn }));
                 }
 
                 return (
@@ -2731,7 +2054,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             key={idx}
                             onClick={() => setPubActiveTab(idx)}
                             className={`px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all ${
-                              pubActiveTab === idx
+                              currentTabIdx === idx
                                 ? 'bg-[#1A1207] text-[#F0CC7A] shadow-md border border-[#1A1207]'
                                 : 'bg-[#FAF7F2] text-stone-600 hover:bg-stone-100 border border-[#E8DDD0]'
                             }`}
@@ -2747,7 +2070,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     {/* Series Detail & Book list wrapper */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                       {/* Left: Series description (unless searching) */}
-                      {!pubBookSearchQuery && (
+                      {!pubBookSearchQuery && activeSeries && (
                         <div className="lg:col-span-5 space-y-4">
                           <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8DDD0]/80 space-y-4">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#B8862A]/10 text-[#B8862A] border border-[#B8862A]/20">
@@ -2761,7 +2084,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             </p>
                             
                             {/* Special Link for Bengali Thought Project */}
-                            {pubActiveTab === 3 && (
+                            {(activeSeries.id === 'bangalir-chinta' || currentTabIdx === 3) && (
                               <button
                                 onClick={() => onNavigate('bangalir_chinta')}
                                 className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#B8862A] hover:text-[#9A6D1F] transition-colors pt-2 group"
@@ -2775,14 +2098,16 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           {/* Real Photo Embed alongside description */}
                           <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-xs relative aspect-video bg-stone-100 group">
                             <img 
-                              src="/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg"
+                              src={activeSeries.image || page.hero_image || "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg"}
                               alt="Publications display"
                               className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                               referrerPolicy="no-referrer"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
                               <p className="text-white text-xs font-serif leading-relaxed drop-shadow-md text-left">
-                                {language === 'bn' ? 'কেন্দ্র আয়োজিত গ্রন্থমেলায় বইয়ের সমাহার' : 'A selection of books displayed at our bookstore and exhibitions.'}
+                                {language === 'bn' 
+                                  ? (activeSeries.imageCaptionBn || 'কেন্দ্র আয়োজিত গ্রন্থমেলায় বইয়ের সমাহার') 
+                                  : (activeSeries.imageCaptionEn || 'A selection of books displayed at our bookstore and exhibitions.')}
                               </p>
                             </div>
                           </div>
@@ -2829,7 +2154,16 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                                 <div className="relative w-28 h-40 md:w-32 md:h-44 rounded-r-md shadow-md transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl overflow-hidden flex flex-col justify-between p-3 text-left">
                                   {/* Absolute book spine and cover elements */}
                                   <div className="absolute inset-0 bg-stone-900/10 mix-blend-multiply" />
-                                  <div className={`absolute inset-0 ${book.coverBg}`} />
+                                  {(book.coverImage || book.image || book.img) ? (
+                                    <img 
+                                      src={book.coverImage || book.image || book.img} 
+                                      alt={book.titleBn || 'Book cover'} 
+                                      className="absolute inset-0 w-full h-full object-cover rounded-r-md" 
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  ) : (
+                                    <div className={`absolute inset-0 ${book.coverBg || 'bg-amber-900'}`} />
+                                  )}
                                   {/* Highlight spine texture on left */}
                                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-black/20" />
                                   <div className="absolute left-1.5 top-0 bottom-0 w-0.5 bg-white/10" />
@@ -2870,39 +2204,65 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               })()}
             </div>
 
+            {/* Photo Gallery & Exhibition (if present) */}
+            {page.gallery && page.gallery.length > 0 && (
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-[#E8DDD0] shadow-xs space-y-6">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                  <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
+                    <ImageIcon className="w-5 h-5 text-[#B8862A]" />
+                    <span>{language === 'bn' ? 'ছবি ও প্রকাশনা প্রদর্শনী' : 'Photo Gallery & Exhibitions'}</span>
+                  </h3>
+                  <span className="text-xs text-stone-500">
+                    {page.gallery.length} {language === 'bn' ? 'টি ছবি' : 'Photos'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {page.gallery.map((imgItem: any, gIdx: number) => {
+                    const imgSrc = typeof imgItem === 'string' ? imgItem : imgItem.image || imgItem.url;
+                    const imgCaption = typeof imgItem === 'object' 
+                      ? (language === 'bn' ? (imgItem.caption_bn || imgItem.caption) : (imgItem.caption_en || imgItem.caption))
+                      : '';
+                    return (
+                      <div 
+                        key={gIdx}
+                        onClick={() => {
+                          const allGalleryUrls = page.gallery!.map((g: any) => typeof g === 'string' ? g : g.image || g.url);
+                          setActiveAlbumPhotos(allGalleryUrls);
+                          setActivePhoto(imgSrc);
+                          setActivePhotoIndex(gIdx);
+                        }}
+                        className="group relative aspect-4/3 rounded-xl overflow-hidden border border-stone-200 cursor-pointer shadow-xs hover:shadow-md transition-all"
+                      >
+                        <img 
+                          src={imgSrc} 
+                          alt={imgCaption || `Gallery item ${gIdx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                          <p className="text-white text-xs font-serif line-clamp-2">{imgCaption}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Book Catalog Downloads and Links Block */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column: List of Catalogs */}
               <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8DDD0] space-y-4">
                 <h3 className="font-serif text-lg font-bold text-[#1A1207] border-b border-[#B8862A]/20 pb-2 mb-3 flex items-center space-x-2">
                   <Download className="w-5 h-5 text-[#B8862A]" />
-                  <span>{language === 'bn' ? 'প্রকাশনী ক্যাটালগ ও বইয়ের তালিকা' : 'Catalogs & Book Lists'}</span>
+                  <span>{language === 'bn' ? (page.catalogs_title_bn || 'প্রকাশনী ক্যাটালগ ও বইয়ের তালিকা') : (page.catalogs_title_en || 'Catalogs & Book Lists')}</span>
                 </h3>
                 
                 <div className="space-y-3 text-left">
-                  {[
-                    {
-                      titleBn: 'বিশ্বসাহিত্য কেন্দ্র প্রকাশনীর বইয়ের তালিকা (ক্যাটালগ-২০২৩)',
-                      titleEn: 'Bishwo Shahitto Kendro Publications Catalog (2023)',
-                      size: '4.2 MB',
-                      url: '/assets/IMGS/PURNIMA SONDHA/bcrs.jpg'
-                    },
-                    {
-                      titleBn: 'ভারতীয় বিভিন্ন প্রকাশনার সেরা বইয়ের মজুদ তালিকা (২০২১)',
-                      titleEn: 'Selected Indian Publications Stock List (2021)',
-                      size: '2.8 MB',
-                      url: '/assets/IMGS/PURNIMA SONDHA/alor.jpg'
-                    },
-                    {
-                      titleBn: 'বাংলাদেশের বিভিন্ন প্রকাশনার বইয়ের বিশেষ ছাড় তালিকা (২০২৩)',
-                      titleEn: 'Special Discount Stock List of Bangladeshi Publishers (2023)',
-                      size: '3.5 MB',
-                      url: '/assets/IMGS/PURNIMA SONDHA/bcrs.jpg'
-                    }
-                  ].map((cat, cIdx) => (
+                  {(page.catalogs && page.catalogs.length > 0 ? page.catalogs : defaultPublicationCatalogs).map((cat: any, cIdx: number) => (
                     <a
                       key={cIdx}
-                      href={cat.url}
+                      href={cat.url || page.catalog_url || '/assets/IMGS/PURNIMA SONDHA/bcrs.jpg'}
                       download
                       className="flex items-center justify-between p-3 bg-white rounded-xl border border-stone-200 hover:border-[#B8862A] hover:shadow-xs transition-all group"
                     >
@@ -2914,7 +2274,9 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           <div className="text-xs md:text-sm font-bold text-stone-800 truncate group-hover:text-[#B8862A] transition-colors">
                             {language === 'bn' ? cat.titleBn : cat.titleEn}
                           </div>
-                          <div className="text-[10px] text-stone-500">{cat.size} • PDF format</div>
+                          <div className="text-[10px] text-stone-500">
+                            {language === 'bn' ? (cat.fileSizeBn || cat.size || '৪.২ মেগাবাইট • পিডিএফ') : (cat.fileSizeEn || cat.size || '4.2 MB • PDF')}
+                          </div>
                         </div>
                       </div>
                       <Download className="w-4 h-4 text-stone-400 group-hover:text-[#B8862A] transition-colors flex-shrink-0 ml-2" />
@@ -2927,7 +2289,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               <div className="bg-white p-6 rounded-2xl border border-[#E8DDD0] space-y-4">
                 <h3 className="font-serif text-lg font-bold text-[#1A1207] border-b border-[#B8862A]/20 pb-2 mb-3 flex items-center space-x-2">
                   <PhoneCall className="w-5 h-5 text-[#B8862A]" />
-                  <span>{language === 'bn' ? 'প্রকাশনা বিভাগের সঙ্গে যোগাযোগ' : 'Contact Publications Department'}</span>
+                  <span>{language === 'bn' ? (page.contact_title_bn || 'প্রকাশনা বিভাগের সঙ্গে যোগাযোগ') : (page.contact_title_en || 'Contact Publications Department')}</span>
                 </h3>
                 
                 <div className="space-y-4 text-sm text-stone-700">
@@ -2935,12 +2297,12 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     <MapPin className="w-5 h-5 text-[#B8862A] mt-0.5 flex-shrink-0" />
                     <div>
                       <strong className="font-serif text-[#1A1207] block">
-                        {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র' : 'Bishwo Shahitto Kendro'}
+                        {language === 'bn' ? (page.contact_org_bn || 'বিশ্বসাহিত্য কেন্দ্র') : (page.contact_org_en || 'Bishwo Shahitto Kendro')}
                       </strong>
                       <span className="font-sans block text-stone-600">
                         {language === 'bn' 
-                          ? '১৭ ময়মনসিংহ রোড, বাংলামটর, ঢাকা ১০০০' 
-                          : '17 Mymensingh Road, Banglamotor, Dhaka 1000'}
+                          ? (page.contact_address_bn || '১৭ ময়মনসিংহ রোড, বাংলামটর, ঢাকা ১০০০') 
+                          : (page.contact_address_en || '17 Mymensingh Road, Banglamotor, Dhaka 1000')}
                       </span>
                     </div>
                   </div>
@@ -2950,14 +2312,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       <PhoneCall className="w-4 h-4 text-stone-400 flex-shrink-0" />
                       <div>
                         <div className="text-[10px] text-stone-400 uppercase">{language === 'bn' ? 'ফোন' : 'Telephone'}</div>
-                        <div className="text-xs md:text-sm font-bold text-stone-800">৯৬৬০৮১২, ৫৮৬১১৯৪০</div>
+                        <div className="text-xs md:text-sm font-bold text-stone-800">{page.contact_phones || '৯৬৬০৮১২, ৫৮৬১১৯৪০'}</div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <PhoneCall className="w-4 h-4 text-stone-400 flex-shrink-0" />
                       <div>
                         <div className="text-[10px] text-stone-400 uppercase">{language === 'bn' ? 'মোবাইল' : 'Mobile'}</div>
-                        <div className="text-xs md:text-sm font-bold text-stone-800">০১৮৩৯৯০৬৭৫৪, ০১৭১২৫৪১২৬৩</div>
+                        <div className="text-xs md:text-sm font-bold text-stone-800">{page.contact_mobiles || '০১৮৩৯৯০৬৭৫৪, ০১৭১২৫৪১২৬৩'}</div>
                       </div>
                     </div>
                   </div>
@@ -2966,8 +2328,8 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     <Mail className="w-4 h-4 text-stone-400 flex-shrink-0" />
                     <div>
                       <div className="text-[10px] text-stone-400 uppercase">{language === 'bn' ? 'ই-মেইল' : 'Email Address'}</div>
-                      <a href="mailto:bskprokashona@gmail.com" className="text-xs md:text-sm font-bold text-[#B8862A] hover:underline">
-                        bskprokashona@gmail.com
+                      <a href={`mailto:${page.contact_email || 'bskprokashona@gmail.com'}`} className="text-xs md:text-sm font-bold text-[#B8862A] hover:underline">
+                        {page.contact_email || 'bskprokashona@gmail.com'}
                       </a>
                     </div>
                   </div>
@@ -2980,12 +2342,12 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               <div className="max-w-2xl mx-auto space-y-6">
                 <div className="text-center space-y-1">
                   <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207]">
-                    {language === 'bn' ? 'প্রকাশনা বা বই সংক্রান্ত জিজ্ঞাসা' : 'Publications & Book Inquiry'}
+                    {language === 'bn' ? (page.inquiry_title_bn || 'প্রকাশনা বা বই সংক্রান্ত জিজ্ঞাসা') : (page.inquiry_title_en || 'Publications & Book Inquiry')}
                   </h3>
                   <p className="text-xs md:text-sm text-stone-500">
                     {language === 'bn' 
-                      ? 'যেকোনো বইয়ের প্রাপ্তি বা প্রকাশনা বিষয়ক জিজ্ঞাসার জন্য সরাসরি আমাদের জানান' 
-                      : 'Send us your queries regarding book availability, orders, or translations.'}
+                      ? (page.inquiry_desc_bn || 'যেকোনো বইয়ের প্রাপ্তি বা প্রকাশনা বিষয়ক জিজ্ঞাসার জন্য সরাসরি আমাদের জানান') 
+                      : (page.inquiry_desc_en || 'Send us your queries regarding book availability, orders, or translations.')}
                   </p>
                 </div>
 
@@ -3091,12 +2453,16 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             {/* Individual Book Detail Dialog Modal */}
             <AnimatePresence>
               {pubSelectedBook && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                <div 
+                  onClick={() => setPubSelectedBook(null)}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs cursor-pointer"
+                >
                   <motion.div
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
-                    className="relative w-full max-w-lg bg-[#FAF7F2] rounded-2xl border border-[#E8DDD0] overflow-hidden shadow-2xl p-6 md:p-8 space-y-6 text-left"
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative w-full max-w-lg bg-[#FAF7F2] rounded-2xl border border-[#E8DDD0] overflow-hidden shadow-2xl p-6 md:p-8 space-y-6 text-left cursor-default"
                   >
                     <button
                       onClick={() => setPubSelectedBook(null)}
@@ -3222,15 +2588,17 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               
               let parsedStats = defaultStats;
               if (hasSec1 && sections[1].content && sections[1].content.length > 0) {
-                parsedStats = sections[1].content.map((item, idx) => {
-                  const parts = item.split('|').map(s => s.trim());
-                  return {
-                    val: getTranslatedText(parts[0] || '', language) || (defaultStats[idx]?.val || ''),
-                    lbl: getTranslatedText(parts[1] || '', language) || (defaultStats[idx]?.lbl || ''),
-                    sub: getTranslatedText(parts[2] || '', language) || (defaultStats[idx]?.sub || ''),
-                    icon: defaultStats[idx]?.icon || BookOpen
-                  };
-                });
+                if (Array.isArray(sections[1].content)) {
+                  parsedStats = sections[1].content.map((item, idx) => {
+                    const parts = item.split('|').map(s => s.trim());
+                    return {
+                      val: getTranslatedText(parts[0] || '', language) || (defaultStats[idx]?.val || ''),
+                      lbl: getTranslatedText(parts[1] || '', language) || (defaultStats[idx]?.lbl || ''),
+                      sub: getTranslatedText(parts[2] || '', language) || (defaultStats[idx]?.sub || ''),
+                      icon: defaultStats[idx]?.icon || BookOpen
+                    };
+                  });
+                }
               }
 
               // 3. Key Features (Section 3)
@@ -3311,18 +2679,29 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               ];
 
               let galleryServices = defaultServices;
-              if (hasSec3 && sections[3].content && sections[3].content.length > 0) {
-                galleryServices = sections[3].content.map((item, idx) => {
-                  const parts = item.split('|').map(s => s.trim());
-                  return {
-                    title_bn: getTranslatedText(parts[0] || '', 'bn') || (defaultServices[idx]?.title_bn || ''),
-                    title_en: getTranslatedText(parts[0] || '', 'en') || (defaultServices[idx]?.title_en || ''),
-                    img: parts[1] || (defaultServices[idx]?.img || ''),
-                    desc_bn: getTranslatedText(parts[2] || '', 'bn') || (defaultServices[idx]?.desc_bn || ''),
-                    desc_en: getTranslatedText(parts[2] || '', 'en') || (defaultServices[idx]?.desc_en || ''),
-                    icon: defaultServices[idx]?.icon || BookOpen
-                  };
-                });
+              if (page.gallery && Array.isArray(page.gallery) && page.gallery.length > 0) {
+                galleryServices = page.gallery.map((g: any, idx: number) => ({
+                  title_bn: g.caption_bn || g.title_bn || g.title || defaultServices[idx]?.title_bn || `সেবা #${idx + 1}`,
+                  title_en: g.caption_en || g.title_en || defaultServices[idx]?.title_en || `Service #${idx + 1}`,
+                  img: g.image || g.img || g.url || defaultServices[idx]?.img || '/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg',
+                  desc_bn: g.desc_bn || g.description_bn || defaultServices[idx]?.desc_bn || '',
+                  desc_en: g.desc_en || g.description_en || defaultServices[idx]?.desc_en || '',
+                  icon: defaultServices[idx]?.icon || BookOpen
+                }));
+              } else if (hasSec3 && sections[3].content && sections[3].content.length > 0) {
+                if (Array.isArray(sections[3].content)) {
+                  galleryServices = sections[3].content.map((item, idx) => {
+                    const parts = item.split('|').map(s => s.trim());
+                    return {
+                      title_bn: getTranslatedText(parts[0] || '', 'bn') || (defaultServices[idx]?.title_bn || ''),
+                      title_en: getTranslatedText(parts[0] || '', 'en') || (defaultServices[idx]?.title_en || ''),
+                      img: parts[1] || (defaultServices[idx]?.img || ''),
+                      desc_bn: getTranslatedText(parts[2] || '', 'bn') || (defaultServices[idx]?.desc_bn || ''),
+                      desc_en: getTranslatedText(parts[2] || '', 'en') || (defaultServices[idx]?.desc_en || ''),
+                      icon: defaultServices[idx]?.icon || BookOpen
+                    };
+                  });
+                }
               }
 
               const activeSer = galleryServices[activeServiceIndex] || galleryServices[0];
@@ -4022,9 +3401,18 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             setActivePhotoIndex={setActivePhotoIndex}
             setActiveAlbumPhotos={setActiveAlbumPhotos}
           />
+        ) : (page.id === 'primary-teacher' || page.id === 'primary_teacher') ? (
+          <PrimaryTeacherPage
+            page={page}
+            language={language}
+            onNavigate={onNavigate}
+            setActivePhoto={setActivePhoto}
+            setActivePhotoIndex={setActivePhotoIndex}
+            setActiveAlbumPhotos={setActiveAlbumPhotos}
+          />
         ) : (
           <div className="space-y-6 w-full">
-            {page.id !== 'press' && page.id !== 'notice' && page.id !== 'central-library' && page.id !== 'ataglance' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'building' && page.id !== 'cafe' && page.id !== 'bookshop' && Array.isArray(page.sections) && page.sections.map((sec, sIdx) => {
+            {page.id !== 'press' && page.id !== 'notice' && page.id !== 'blog' && page.id !== 'central-library' && page.id !== 'ataglance' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'building' && page.id !== 'cafe' && page.id !== 'bookshop' && Array.isArray(page.sections) && page.sections.map((sec, sIdx) => {
               // If section contains zero paragraphs, let's skip or show a notice
               if ((!sec.content || !Array.isArray(sec.content) || sec.content.length === 0) && !sec.title) return null;
               
@@ -4474,6 +3862,21 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           ? 'sm:flex-row sm:border-t-0 sm:pt-0 sm:mt-0 sm:w-auto sm:shrink-0 sm:justify-end' 
                           : 'w-full'
                       }`}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveModalCircular(circ);
+                          }}
+                          className={`px-4 py-2 bg-[#FAF7F2] hover:bg-[#E8DDD0] text-[#6B5135] border border-[#E8DDD0] rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${
+                            recruitmentViewMode === 'list' ? 'sm:flex-none sm:px-4' : 'flex-1'
+                          }`}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          <span>{language === 'bn' ? 'বিজ্ঞপ্তি বিস্তারিত' : 'View Circular Details'}</span>
+                        </button>
+
                         {circ.fileUrl && (
                           <a
                             href={circ.fileUrl}
@@ -4502,34 +3905,26 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           </a>
                         )}
                         {!isExpired && (
-                          circ.applyUrl ? (
-                            <a
-                              href={circ.applyUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`px-5 py-2 bg-[#2E5942] hover:bg-[#1E3B2C] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1 text-center cursor-pointer ${
-                                recruitmentViewMode === 'list' ? 'sm:flex-none sm:px-6' : 'flex-1'
-                              }`}
-                            >
-                              <ArrowUpRight className="h-3.5 w-3.5" />
-                              <span>{language === 'bn' ? 'অনলাইনে আবেদন' : 'Apply Online'}</span>
-                            </a>
-                          ) : (
+                          <>
+                            {circ.applyUrl && (
+                              <a
+                                href={circ.applyUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 text-center cursor-pointer ${
+                                  recruitmentViewMode === 'list' ? 'sm:flex-none sm:px-4' : 'flex-1'
+                                }`}
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                <span>{language === 'bn' ? 'অনলাইন পোর্টাল লিংক' : 'Online Portal'}</span>
+                              </a>
+                            )}
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 setActiveApplyCircular(circ);
-                                setApplyFormSubmitted(false);
-                                setApplyError('');
-                                setApplyFormData({
-                                  name: '',
-                                  email: '',
-                                  phone: '',
-                                  coverLetter: '',
-                                  resumeUrl: '',
-                                  resumeType: '',
-                                  resumeName: ''
-                                });
                               }}
                               className={`px-5 py-2 bg-[#2E5942] hover:bg-[#1E3B2C] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1 cursor-pointer ${
                                 recruitmentViewMode === 'list' ? 'sm:flex-none sm:px-6' : 'flex-1'
@@ -4538,7 +3933,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                               <ArrowUpRight className="h-3.5 w-3.5" />
                               <span>{language === 'bn' ? 'আবেদন করুন' : 'Apply Now'}</span>
                             </button>
-                          )
+                          </>
                         )}
                       </div>
                     </div>
@@ -4548,239 +3943,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             )}
           </div>
 
-          {/* Job Application Modal */}
+          {/* Full Official Job Application Modal */}
           <AnimatePresence>
             {activeApplyCircular && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                  transition={{ duration: 0.15 }}
-                  className="bg-white rounded-3xl border border-stone-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col my-8"
-                >
-                  {/* Modal Header */}
-                  <div className="bg-stone-900 text-white p-5 text-left relative">
-                    <button
-                      type="button"
-                      onClick={() => setActiveApplyCircular(null)}
-                      className="absolute right-4 top-4 text-stone-400 hover:text-white transition p-1.5 rounded-full hover:bg-white/10"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                    <span className="bg-[#B8862A] text-stone-950 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">
-                      {language === 'bn' ? 'চাকরির আবেদন ফরম' : 'Application Portal'}
-                    </span>
-                    <h4 className="font-serif font-bold text-lg mt-1.5">
-                      {language === 'bn' ? activeApplyCircular.position_bn : activeApplyCircular.position_en}
-                    </h4>
-                    <p className="text-[11px] text-stone-400 mt-1 font-sans">
-                      {language === 'bn' ? activeApplyCircular.title_bn : activeApplyCircular.title_en}
-                    </p>
-                  </div>
-
-                  {/* Modal Content */}
-                  <div className="p-6 overflow-y-auto max-h-[70vh]">
-                    {applyFormSubmitted ? (
-                      <div className="text-center py-8 space-y-4 font-sans">
-                        <div className="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-200">
-                          ✓
-                        </div>
-                        <h5 className="font-serif font-bold text-md text-[#1A1207]">
-                          {language === 'bn' ? 'আবেদনপত্র সফলভাবে জমা হয়েছে!' : 'Application Submitted Successfully!'}
-                        </h5>
-                        <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
-                          {language === 'bn' 
-                            ? 'আপনার আবেদনপত্রটি সফলভাবে বিশ্বসাহিত্য কেন্দ্রের ডাটাবেজে সংরক্ষণ করা হয়েছে। আপনার শিক্ষাগত যোগ্যতা ও পূর্ব অভিজ্ঞতা পর্যালোচনা করে আমাদের কর্তৃপক্ষ পরবর্তী ধাপের জন্য আপনার সাথে যোগাযোগ করবে।' 
-                            : 'Your credentials have been securely logged. BSK human resource managers will review your experience and qualifications for shortlisting.'}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setActiveApplyCircular(null)}
-                          className="px-6 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition"
-                        >
-                          {language === 'bn' ? 'বন্ধ করুন' : 'Close Portal'}
-                        </button>
-                      </div>
-                    ) : (
-                      <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (!applyFormData.name.trim() || !applyFormData.email.trim() || !applyFormData.phone.trim()) {
-                          setApplyError(language === 'bn' ? 'দয়া করে সকল বাধ্যতামূলক তথ্য পূরণ করুন।' : 'Please fill in all required fields.');
-                          return;
-                        }
-                        setApplySubmitting(true);
-                        setApplyError('');
-                        try {
-                          const docId = 'app_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-                          const payload = {
-                            id: docId,
-                            name: applyFormData.name.trim(),
-                            email: applyFormData.email.trim(),
-                            phone: applyFormData.phone.trim(),
-                            coverLetter: applyFormData.coverLetter.trim(),
-                            resumeUrl: applyFormData.resumeUrl || '',
-                            resumeType: applyFormData.resumeType || '',
-                            resumeName: applyFormData.resumeName || '',
-                            circularId: activeApplyCircular.id,
-                            jobTitleBn: activeApplyCircular.position_bn,
-                            jobTitleEn: activeApplyCircular.position_en,
-                            createdAt: serverTimestamp()
-                          };
-                          await setDoc(doc(db, 'job_applications', docId), payload);
-                          setApplyFormSubmitted(true);
-                        } catch (err) {
-                          console.error("Error submitting job application:", err);
-                          setApplyError(language === 'bn' ? 'দুঃখিত, প্রযুক্তিগত ত্রুটির কারণে আবেদন জমা নেওয়া যায়নি।' : 'An error occurred. Submit failed.');
-                        } finally {
-                          setApplySubmitting(false);
-                        }
-                      }} className="space-y-4 text-xs text-left font-sans">
-                        {applyError && (
-                          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-[11px] font-bold">
-                            ⚠️ {applyError}
-                          </div>
-                        )}
-
-                        <div className="space-y-1.5">
-                          <label className="font-bold text-stone-700 block">{language === 'bn' ? 'আপনার পূর্ণ নাম *' : 'Your Full Name *'}</label>
-                          <input
-                            type="text"
-                            placeholder={language === 'bn' ? 'যেমন: হাসিব রহমান' : 'e.g. Hasib Rahman'}
-                            value={applyFormData.name}
-                            onChange={(e) => setApplyFormData({ ...applyFormData, name: e.target.value })}
-                            className="w-full p-2.5 border border-stone-200 rounded-xl bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#2E5942]"
-                            required
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="font-bold text-stone-700 block">{language === 'bn' ? 'ইমেইল এড্রেস *' : 'Email Address *'}</label>
-                            <input
-                              type="email"
-                              placeholder="hasib@example.com"
-                              value={applyFormData.email}
-                              onChange={(e) => setApplyFormData({ ...applyFormData, email: e.target.value })}
-                              className="w-full p-2.5 border border-stone-200 rounded-xl bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#2E5942]"
-                              required
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="font-bold text-stone-700 block">{language === 'bn' ? 'মোবাইল নম্বর *' : 'Mobile Number *'}</label>
-                            <input
-                              type="tel"
-                              placeholder="017xxxxxxxx"
-                              value={applyFormData.phone}
-                              onChange={(e) => setApplyFormData({ ...applyFormData, phone: e.target.value })}
-                              className="w-full p-2.5 border border-stone-200 rounded-xl bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#2E5942]"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="font-bold text-stone-700 block">{language === 'bn' ? 'কভার লেটার / সংক্ষিপ্ত বক্তব্য *' : 'Cover Letter / Brief Remarks *'}</label>
-                          <textarea
-                            rows={4}
-                            placeholder={language === 'bn' ? 'আপনার শিক্ষাগত যোগ্যতা, অভিজ্ঞতা এবং কেন এই পদের জন্য আপনি উপযুক্ত তা সংক্ষেপে উল্লেখ করুন।' : 'Introduce yourself, summarize experience, and explain why you are suitable for this job position.'}
-                            value={applyFormData.coverLetter}
-                            onChange={(e) => setApplyFormData({ ...applyFormData, coverLetter: e.target.value })}
-                            className="w-full p-3 border border-stone-200 rounded-xl bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#2E5942] font-sans text-xs leading-relaxed"
-                            required
-                          />
-                        </div>
-
-                        {/* Resume File Upload Widget */}
-                        <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
-                          <label className="font-bold text-stone-700 block text-left">
-                            {language === 'bn' ? 'জীবনবৃত্তান্ত আপলোড (CV / Resume) *' : 'Upload CV / Resume Document *'}
-                          </label>
-
-                          <div className="relative border-2 border-dashed border-stone-300 rounded-xl p-4 flex flex-col items-center justify-center bg-white hover:bg-stone-50 hover:border-[#2E5942] transition text-center min-h-[90px]">
-                            <input
-                              type="file"
-                              accept="image/*,application/pdf"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  if (file.size > 950 * 1024) {
-                                    alert(language === 'bn' ? 'ফাইল সাইজ অবশ্যই ৯৫০ কেবির কম হতে হবে।' : 'File size must be under 950 KB.');
-                                    return;
-                                  }
-                                  const reader = new FileReader();
-                                  reader.onload = () => {
-                                    setApplyFormData({
-                                      ...applyFormData,
-                                      resumeUrl: reader.result as string,
-                                      resumeType: file.type.startsWith('image/') ? 'image' : 'pdf',
-                                      resumeName: file.name
-                                    });
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <Upload className="h-5 w-5 text-stone-400 mb-1 pointer-events-none" />
-                            <p className="text-[10px] text-stone-600 font-bold leading-normal pointer-events-none">
-                              {language === 'bn' ? 'এখানে ক্লিক করে পিডিএফ ফাইল বেছে নিন' : 'Click here to choose PDF or Image Resume'}
-                            </p>
-                            <p className="text-[9px] text-stone-400 pointer-events-none">
-                              {language === 'bn' ? 'সর্বোচ্চ ৯৫০ KB' : 'Max 950 KB'}
-                            </p>
-                          </div>
-
-                          {applyFormData.resumeUrl ? (
-                            <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center justify-between gap-2 text-[10px]">
-                              <div className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
-                                <span className="text-sm">📄</span>
-                                <div className="min-w-0">
-                                  <p className="font-bold truncate">{applyFormData.resumeName || 'Attached CV'}</p>
-                                  <p className="text-[8px] font-mono opacity-75 uppercase">{applyFormData.resumeType || 'pdf'}</p>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setApplyFormData({ ...applyFormData, resumeUrl: '', resumeType: '', resumeName: '' })}
-                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-emerald-100/50 transition shrink-0 cursor-pointer"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="p-2.5 bg-amber-50 border border-amber-200 text-[#8B3A1E] rounded-xl text-center text-[10px] font-bold">
-                              {language === 'bn' ? '⚠️ জীবনবৃত্তান্ত ফাইল সংযুক্ত করা আবশ্যক।' : '⚠️ PDF resume attachment is required.'}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Submit Actions */}
-                        <div className="flex gap-2.5 justify-end pt-3 select-none">
-                          <button
-                            type="button"
-                            onClick={() => setActiveApplyCircular(null)}
-                            className="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition cursor-pointer"
-                          >
-                            {language === 'bn' ? 'বাতিল' : 'Cancel'}
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={applySubmitting || !applyFormData.resumeUrl}
-                            className={`px-6 py-2.5 rounded-xl text-white font-bold transition shadow-md flex items-center gap-1.5 ${
-                              applySubmitting || !applyFormData.resumeUrl
-                                ? 'bg-stone-300 cursor-not-allowed opacity-60'
-                                : 'bg-[#2E5942] hover:bg-[#1E3B2C] cursor-pointer'
-                            }`}
-                          >
-                            <span>{applySubmitting ? (language === 'bn' ? 'প্রক্রিয়াধীন...' : 'Submitting...') : (language === 'bn' ? 'আবেদন জমা দিন' : 'Submit Application')}</span>
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </div>
-                </motion.div>
-              </div>
+              <OfficialJobApplicationModal
+                circular={activeApplyCircular}
+                language={language}
+                onClose={() => setActiveApplyCircular(null)}
+              />
             )}
           </AnimatePresence>
         </div>
@@ -4790,31 +3960,54 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
       {page.id === 'press' && (
         <div id="press-media-center" className="space-y-12 text-left font-sans pt-4">
           
-          {/* Header Description */}
-          <div className="mb-6 bg-[#FAF7F2] border border-[#B8862A]/20 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <h3 className="font-serif text-2xl md:text-3xl font-extrabold text-[#1A1207]">
-                {language === 'bn' ? 'প্রেস ও মিডিয়া সেন্টার' : 'Press & Media Center'}
-              </h3>
-              <p className="text-xs md:text-sm text-[#6B5135] leading-relaxed">
+          {/* Header Description / Banner */}
+          <div className="mb-6 bg-[#1A1207] text-[#FAF7F2] border border-[#B8862A]/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-lg">
+            {pressSettingsBlock?.banner_image && (
+              <>
+                <img 
+                  src={pressSettingsBlock.banner_image} 
+                  alt="Press Banner" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#1A1207]/90 via-[#1A1207]/80 to-[#1A1207]/90 pointer-events-none" />
+              </>
+            )}
+            <div className="space-y-3 max-w-2xl relative z-10">
+              <span className="inline-block bg-[#B8862A] text-white text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">
                 {language === 'bn' 
-                  ? 'বিশ্বসাহিত্য কেন্দ্রের সর্বশেষ প্রেস রিলিজ, জাতীয় ও আন্তর্জাতিক মিডিয়া কভারেজ, অফিসিয়াল ডাউনলোড এবং গ্যালারি।' 
-                  : "All official press releases, nationwide media features, photo archives, and brand assets of Bishwo Shahitto Kendro."}
+                  ? (pressSettingsBlock?.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র প্রেস ও মিডিয়া') 
+                  : (pressSettingsBlock?.badge_en || 'BSK Press & Media Center')}
+              </span>
+              <h3 className="font-serif text-2xl md:text-3xl font-extrabold text-white leading-tight">
+                {language === 'bn' 
+                  ? (pressSettingsBlock?.title_bn || 'প্রেস ও মিডিয়া সেন্টার') 
+                  : (pressSettingsBlock?.title_en || 'Press & Media Center')}
+              </h3>
+              <p className="text-xs md:text-sm text-stone-300 leading-relaxed font-sans">
+                {language === 'bn' 
+                  ? (pressSettingsBlock?.desc_bn || 'বিশ্বসাহিত্য কেন্দ্রের সর্বশেষ প্রেস রিলিজ, জাতীয় ও আন্তর্জাতিক মিডিয়া কভারেজ, অফিসিয়াল ডাউনলোড এবং গ্যালারি।') 
+                  : (pressSettingsBlock?.desc_en || "All official press releases, nationwide media features, photo archives, and brand assets of Bishwo Shahitto Kendro.")}
               </p>
             </div>
-            <div className="flex gap-3 shrink-0">
+            <div className="flex gap-3 shrink-0 relative z-10">
               <a 
-                href="#media-downloads" 
-                className="px-4 py-2 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-xl shadow-xs transition-transform hover:scale-102 flex items-center gap-1.5 cursor-pointer"
+                href={pressSettingsBlock?.btn1_url || "#media-downloads"} 
+                className="px-4 py-2.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-xl shadow-md transition-transform hover:scale-102 flex items-center gap-1.5 cursor-pointer"
               >
-                <Download className="h-3.5 w-3.5" />
-                <span>{language === 'bn' ? 'মিডিয়া কিট ডাউনলোড' : 'Download Media Kit'}</span>
+                <Download className="h-4 w-4 text-amber-300" />
+                <span>
+                  {language === 'bn' 
+                    ? (pressSettingsBlock?.btn1_text_bn || 'মিডিয়া কিট ডাউনলোড') 
+                    : (pressSettingsBlock?.btn1_text_en || 'Download Media Kit')}
+                </span>
               </a>
               <a 
-                href="#media-contact" 
-                className="px-4 py-2 bg-[#FAF7F2] border border-[#B8862A]/30 text-[#6B5135] hover:bg-[#B8862A]/5 text-xs font-bold rounded-xl transition cursor-pointer"
+                href={pressSettingsBlock?.btn2_url || "#media-contact"} 
+                className="px-4 py-2.5 bg-[#FAF7F2] border border-[#B8862A]/40 text-[#6B5135] hover:bg-[#B8862A]/10 text-xs font-bold rounded-xl transition cursor-pointer shadow-xs"
               >
-                {language === 'bn' ? 'যোগাযোগ করুন' : 'Media Contact'}
+                {language === 'bn' 
+                  ? (pressSettingsBlock?.btn2_text_bn || 'যোগাযোগ করুন') 
+                  : (pressSettingsBlock?.btn2_text_en || 'Media Contact')}
               </a>
             </div>
           </div>
@@ -5045,7 +4238,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       <FileText className="h-5 w-5 text-[#B8862A]" />
                       <span>
                         {selectedPressCategory === 'All' 
-                          ? (language === 'bn' ? '১. সর্বশেষ সংবাদ ও প্রেস বিজ্ঞপ্তি' : '1. Latest News & Press Releases')
+                          ? (language === 'bn' ? (pressSettingsBlock?.sec1_title_bn || '১. সর্বশেষ সংবাদ ও প্রেস বিজ্ঞপ্তি') : (pressSettingsBlock?.sec1_title_en || '1. Latest News & Press Releases'))
                           : (language === 'bn' ? `সর্বশেষ: ${selectedPressCategory}` : `Latest: ${selectedPressCategory}`)}
                       </span>
                     </h4>
@@ -5085,18 +4278,18 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                               <div className="space-y-2">
                                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2.5 mb-2">
-                                  <span className="text-[10px] text-stone-400 font-mono flex items-center gap-1">
+                                  <span className="text-[10px] text-stone-600 font-mono font-bold flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-[#B8862A]" />
                                     {item.publishedDate || "2026-06-28"}
                                   </span>
-                                  <span className="text-[10px] text-stone-400 font-mono flex items-center gap-1 bg-[#B8862A]/10 text-[#B8862A] px-2 py-0.5 rounded">
+                                  <span className="text-[10px] font-mono font-bold flex items-center gap-1 bg-[#B8862A]/15 text-[#855D16] px-2 py-0.5 rounded">
                                     {item.category}
                                   </span>
                                 </div>
                                 <h5 className="font-serif font-bold text-sm text-stone-900 hover:text-[#B8862A] transition line-clamp-2 leading-snug">
                                   {language === 'bn' ? item.title_bn : item.title_en}
                                 </h5>
-                                <p className="text-xs text-stone-500 line-clamp-3 leading-relaxed font-sans">
+                                <p className="text-xs text-stone-700 line-clamp-3 leading-relaxed font-sans font-medium">
                                   {item.summary || (language === 'bn' ? "বিশ্বসাহিত্য কেন্দ্রের গুরুত্বপূর্ণ বিবরণী।" : "Important media announcement regarding Bishwo Shahitto Kendro.")}
                                 </p>
                               </div>
@@ -5137,7 +4330,11 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     <div className="space-y-4">
                       <h4 className="font-serif font-bold text-lg text-[#1A1207] flex items-center gap-2 border-b border-stone-100 pb-3">
                         <Award className="h-5 w-5 text-[#B8862A]" />
-                        <span>{language === 'bn' ? '২. নিউজ ও মিডিয়া কভারেজ' : '2. News & Media Coverage'}</span>
+                        <span>
+                          {language === 'bn' 
+                            ? (pressSettingsBlock?.sec2_title_bn || '২. নিউজ ও মিডিয়া কভারেজ') 
+                            : (pressSettingsBlock?.sec2_title_en || '2. News & Media Coverage')}
+                        </span>
                       </h4>
 
                       <div className="space-y-4">
@@ -5185,45 +4382,47 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       
                       <div className="space-y-1 relative z-10">
                         <h4 className="font-serif font-bold text-base">
-                          {language === 'bn' ? '৪. ডাউনলোড এবং রিসোর্স' : '4. Official Media Downloads'}
+                          {language === 'bn' 
+                            ? (pressSettingsBlock?.sec4_title_bn || '৪. ডাউনলোড এবং রিসোর্স') 
+                            : (pressSettingsBlock?.sec4_title_en || '4. Official Media Downloads')}
                         </h4>
                         <p className="text-[11px] text-white/75 leading-relaxed font-sans">
                           {language === 'bn' 
-                            ? 'সংবাদ ও কভারেজের জন্য বিশ্বসাহিত্য কেন্দ্রের ব্র্যান্ড এসেট এবং মিডিয়া গাইড বুক ডাউনলোড করুন।' 
-                            : "Download high resolution brand assets, SVG logo elements, and official profile booklet guides."}
+                            ? (pressSettingsBlock?.sec4_subtitle_bn || 'সংবাদ ও কভারেজের জন্য বিশ্বসাহিত্য কেন্দ্রের ব্র্যান্ড এসেট এবং মিডিয়া গাইড বুক ডাউনলোড করুন।') 
+                            : (pressSettingsBlock?.sec4_subtitle_en || "Download high resolution brand assets, SVG logo elements, and official profile booklet guides.")}
                         </p>
                       </div>
 
                       <div className="space-y-2 relative z-10 pt-1">
-                        <a 
-                          href="https://bskbd.org/assets/img/logo_bn2.png"
-                          download="bsk-logo.png"
-                          className="w-full p-2.5 bg-white/10 hover:bg-white/15 border border-white/5 rounded-xl flex items-center justify-between text-xs transition cursor-pointer"
-                        >
-                          <span className="font-medium">{language === 'bn' ? 'BSK অফিশিয়াল লোগো (PNG)' : 'BSK Official Logo (PNG)'}</span>
-                          <span className="text-[9px] font-mono bg-white/10 px-1.5 py-0.5 rounded">1.2 MB</span>
-                        </a>
-                        <div 
-                          className="w-full p-2.5 bg-white/10 hover:bg-white/15 border border-white/5 rounded-xl flex items-center justify-between text-xs transition select-all cursor-pointer"
-                          onClick={() => alert(language === 'bn' ? 'ভেক্টর লোগো ফাইল ডাউনলোড হচ্ছে' : 'Downloading Vector Logo Assets')}
-                        >
-                          <span className="font-medium">{language === 'bn' ? 'BSK ভেক্টর লোগো (SVG)' : 'BSK Logo Vector (SVG)'}</span>
-                          <span className="text-[9px] font-mono bg-white/10 px-1.5 py-0.5 rounded">45 KB</span>
-                        </div>
-                        <div 
-                          className="w-full p-2.5 bg-white/10 hover:bg-white/15 border border-white/5 rounded-xl flex items-center justify-between text-xs transition cursor-pointer"
-                          onClick={() => alert(language === 'bn' ? 'সাংগঠনিক পরিচিতি পিডিএফ ফাইল ডাউনলোড হচ্ছে' : 'Downloading organizational brochure PDF')}
-                        >
-                          <span className="font-medium">{language === 'bn' ? 'সাংগঠনিক পরিচিতি ও বিবরণী (PDF)' : 'BSK Profile & Brochure (PDF)'}</span>
-                          <span className="text-[9px] font-mono bg-white/10 px-1.5 py-0.5 rounded">4.5 MB</span>
-                        </div>
-                        <div 
-                          className="w-full p-2.5 bg-white/10 hover:bg-white/15 border border-white/5 rounded-xl flex items-center justify-between text-xs transition cursor-pointer"
-                          onClick={() => alert(language === 'bn' ? 'সম্পূর্ণ জিপ মিডিয়া বান্ডেল ডাউনলোড হচ্ছে' : 'Downloading complete zip Media Bundle')}
-                        >
-                          <span className="font-medium">{language === 'bn' ? 'মিডিয়া কিট এবং রিসোর্স ফাইল (ZIP)' : 'Media Kit Resources (ZIP Bundle)'}</span>
-                          <span className="text-[9px] font-mono bg-white/10 px-1.5 py-0.5 rounded">45.8 MB</span>
-                        </div>
+                        {(() => {
+                          const defaultDownloads = [
+                            { id: 'dl-1', title_bn: 'BSK অফিশিয়াল লোগো (PNG)', title_en: 'BSK Official Logo (PNG)', fileType: 'PNG', fileSize: '1.2 MB', fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png' },
+                            { id: 'dl-2', title_bn: 'BSK ভেক্টর লোগো (SVG)', title_en: 'BSK Logo Vector (SVG)', fileType: 'SVG', fileSize: '45 KB', fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png' },
+                            { id: 'dl-3', title_bn: 'সাংগঠনিক পরিচিতি ও বিবরণী (PDF)', title_en: 'BSK Profile & Brochure (PDF)', fileType: 'PDF', fileSize: '4.5 MB', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+                            { id: 'dl-4', title_bn: 'মিডিয়া কিট এবং রিসোর্স ফাইল (ZIP)', title_en: 'Media Kit Resources (ZIP Bundle)', fileType: 'ZIP', fileSize: '45.8 MB', fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png' }
+                          ];
+                          let rawItems = pressDownloadsBlock?.items;
+                          if (typeof rawItems === 'string') {
+                            try { rawItems = JSON.parse(rawItems); } catch (_) { rawItems = []; }
+                          }
+                          const activeDownloads = (Array.isArray(rawItems) && rawItems.length > 0)
+                            ? rawItems
+                            : defaultDownloads;
+
+                          return activeDownloads.map((dl: any) => (
+                            <a 
+                              key={dl.id}
+                              href={dl.fileUrl || '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                              download={dl.title_en || 'download'}
+                              className="w-full p-2.5 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl flex items-center justify-between text-xs transition cursor-pointer"
+                            >
+                              <span className="font-medium">{language === 'bn' ? dl.title_bn : dl.title_en}</span>
+                              <span className="text-[9px] font-mono bg-white/15 px-1.5 py-0.5 rounded">{dl.fileType || 'FILE'} • {dl.fileSize || '1 MB'}</span>
+                            </a>
+                          ));
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -5232,7 +4431,11 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   <div className="col-span-1 md:col-span-2 xl:col-span-3 space-y-6 pt-6 w-full">
                     <h4 className="font-serif font-bold text-lg text-[#1A1207] flex items-center gap-2 border-b border-stone-100 pb-3">
                       <ImageIcon className="h-5 w-5 text-[#B8862A]" />
-                      <span>{language === 'bn' ? '৩. ফটো গ্যালারি ও প্রেস অ্যালবাম' : '3. Photo Gallery & Press Albums'}</span>
+                      <span>
+                        {language === 'bn' 
+                          ? (pressSettingsBlock?.sec3_title_bn || '৩. ফটো গ্যালারি ও প্রেস অ্যালবাম') 
+                          : (pressSettingsBlock?.sec3_title_en || '3. Photo Gallery & Press Albums')}
+                      </span>
                     </h4>
 
                     {/* Album Selector */}
@@ -5269,8 +4472,12 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       {photoAlbums
                         .filter(album => selectedPhotoAlbum === 'All' || album.id === selectedPhotoAlbum)
                         .flatMap(album => {
-                          const photosList = album.photos || album.images || [];
-                          return photosList.map(photo => ({ photo, album }));
+                          let pList = album.photos || album.images || [];
+                          if (typeof pList === 'string') {
+                            try { pList = JSON.parse(pList); } catch (_) { pList = []; }
+                          }
+                          const safeList = Array.isArray(pList) ? pList : [];
+                          return safeList.map(photo => ({ photo, album }));
                         })
                         .map((imgObj, idx, arr) => (
                           <div 
@@ -5330,12 +4537,14 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             <div id="media-contact" className="bg-stone-100 border border-[#B8862A]/20 rounded-2xl p-6 md:p-8 space-y-6 w-full">
               <div className="border-b border-[#E8DDD0] pb-4">
                 <h4 className="font-serif font-bold text-lg text-[#1A1207]">
-                  {language === 'bn' ? '৫. মিডিয়া ও প্রেস যোগাযোগ' : '5. Media & Public Relations Contact'}
+                  {language === 'bn' 
+                    ? (pressSettingsBlock?.sec5_title_bn || '৫. মিডিয়া ও প্রেস যোগাযোগ') 
+                    : (pressSettingsBlock?.sec5_title_en || '5. Media & Public Relations Contact')}
                 </h4>
                 <p className="text-xs text-stone-500 mt-1 font-sans">
                   {language === 'bn' 
-                    ? 'বিশ্বসাহিত্য কেন্দ্রের যেকোনো কার্যক্রম, সংবাদ বা সাক্ষাৎকার প্রচারের প্রয়োজনে আমাদের জনসংযোগ বিভাগের সাথে সরাসরি যোগাযোগ করুন।' 
-                    : "For press briefings, interview bookings, activity reporting, or queries regarding BSK operations, contact our media relation desks."}
+                    ? (pressSettingsBlock?.sec5_subtitle_bn || 'বিশ্বসাহিত্য কেন্দ্রের যেকোনো কার্যক্রম, সংবাদ বা সাক্ষাৎকার প্রচারের প্রয়োজনে আমাদের জনসংযোগ বিভাগের সাথে সরাসরি যোগাযোগ করুন।') 
+                    : (pressSettingsBlock?.sec5_subtitle_en || "For press briefings, interview bookings, activity reporting, or queries regarding BSK operations, contact our media relation desks.")}
                 </p>
               </div>
 
@@ -5397,12 +4606,16 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
           {/* Press Item Modal Details Popup */}
           <AnimatePresence>
             {activePressItem && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto select-none">
+              <div 
+                onClick={() => setActivePressItem(null)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto select-none cursor-pointer"
+              >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: 15 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                  className="bg-white rounded-2xl max-w-2xl w-full border border-stone-200 overflow-hidden flex flex-col shadow-2xl max-h-[90vh]"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white rounded-2xl max-w-2xl w-full border border-stone-200 overflow-hidden flex flex-col shadow-2xl max-h-[90vh] cursor-default"
                 >
                   {/* Modal Header */}
                   <div className="bg-[#FAF7F2] p-5 border-b border-[#B8862A]/20 flex justify-between items-center shrink-0">
@@ -5513,7 +4726,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 <span>{page.sections[0].title || (language === 'bn' ? 'আজকের নোটিশ ও ঘোষণা' : "Today's Notice & Announcements")}</span>
               </h4>
               <div className="space-y-3">
-                {page.sections[0].content.map((pText, pIdx) => (
+                {(Array.isArray(page.sections?.[0]?.content) ? page.sections[0].content : []).map((pText, pIdx) => (
                   <p key={pIdx} className="text-stone-800 leading-relaxed text-sm md:text-base font-sans">
                     {pText}
                   </p>
@@ -5650,7 +4863,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   return (
                     <div
                       key={'notice-rec-' + circ.id}
-                      onClick={() => onNavigate('recruitment')}
+                      onClick={() => setActiveModalCircular(circ)}
                       className={`p-5 bg-white border border-[#E8DDD0] rounded-xl cursor-pointer hover:border-[#B8862A]/60 flex flex-col justify-between hover:-translate-y-0.5 transition shadow-xs hover:shadow-md ${
                         isExpired ? 'opacity-70' : ''
                       }`}
@@ -5679,9 +4892,32 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                         <span className="text-[11px] text-stone-500">
                           ⏳ {language === 'bn' ? `শেষ তারিখ: ${circ.deadline_bn || 'শীঘ্রই'}` : `Deadline: ${circ.deadline_en || 'Soon'}`}
                         </span>
-                        <div className="flex items-center gap-1">
-                          <span>{language === 'bn' ? 'আবেদন করুন' : 'Apply Now'}</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setActiveModalCircular(circ);
+                            }}
+                            className="px-2.5 py-1 bg-[#FAF7F2] hover:bg-[#E8DDD0] text-[#6B5135] rounded-lg text-[11px] font-bold transition border border-[#E8DDD0] cursor-pointer"
+                          >
+                            {language === 'bn' ? 'বিবরণ দেখুন' : 'View Circular'}
+                          </button>
+                          {!isExpired && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveApplyCircular(circ);
+                              }}
+                              className="px-3 py-1 bg-[#2E5942] hover:bg-[#1E3B2C] text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
+                            >
+                              <span>{language === 'bn' ? 'আবেদন করুন' : 'Apply Now'}</span>
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -5757,18 +4993,29 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
         <div id="bsk-blog-section" className="space-y-8 text-left font-sans text-stone-800">
           {/* Header Banner */}
           <div className="bg-[#1A1207] text-[#FAF7F2] p-6 md:p-8 rounded-2xl border border-[#B8862A]/30 relative overflow-hidden shadow-lg">
+            {dbBlogSettings?.banner_image && (
+              <img 
+                src={dbBlogSettings.banner_image} 
+                alt="Blog Cover" 
+                className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" 
+              />
+            )}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#B8862A]/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 max-w-3xl space-y-3">
               <span className="inline-block bg-[#B8862A] text-white text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">
-                {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র ব্লগ' : 'BSK Official Blog'}
+                {language === 'bn' 
+                  ? (dbBlogSettings?.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র ব্লগ') 
+                  : (dbBlogSettings?.badge_en || 'BSK Official Blog')}
               </span>
               <h3 className="text-2xl md:text-3xl font-extrabold font-serif text-white tracking-tight leading-tight">
-                {language === 'bn' ? 'সাহিত্যচিন্তা, শিক্ষা ও আলোকদীপ্ত জীবন' : 'Literature, Education & Enlightened Thought'}
+                {language === 'bn' 
+                  ? (dbBlogSettings?.title_bn || 'সাহিত্যচিন্তা, শিক্ষা ও আলোকদীপ্ত জীবন') 
+                  : (dbBlogSettings?.title_en || 'Literature, Education & Enlightened Thought')}
               </h3>
               <p className="text-stone-300 text-xs md:text-sm font-sans leading-relaxed">
                 {language === 'bn' 
-                  ? 'বইপড়া আন্দোলন, বিশ্বসাহিত্য চিন্তন, মানবিক মূল্যবোধ গঠন ও তরুণের চিন্তার বিকাশে কেন্দ্রের প্রকাশিত গুরুত্বপূর্ণ ব্লগ, প্রবন্ধ ও নিবন্ধমালা।' 
-                  : 'Articles, essays and reflections on reading movements, literature, aesthetics, and youth development.'}
+                  ? (dbBlogSettings?.desc_bn || 'বইপড়া আন্দোলন, বিশ্বসাহিত্য চিন্তন, মানবিক মূল্যবোধ গঠন ও তরুণের চিন্তার বিকাশে কেন্দ্রের প্রকাশিত গুরুত্বপূর্ণ ব্লগ, প্রবন্ধ ও নিবন্ধমালা।') 
+                  : (dbBlogSettings?.desc_en || 'Articles, essays and reflections on reading movements, literature, aesthetics, and youth development.')}
               </p>
             </div>
           </div>
@@ -6091,9 +5338,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                         if (!reviewForm.reviewerName.trim() || !reviewForm.bookTitle.trim() || !reviewForm.content.trim()) return;
                         setReviewSubmitting(true);
                         try {
-                          const newDocRef = doc(collection(db, 'blog_reviews'));
                           const reviewData = {
-                            id: newDocRef.id,
                             reviewerName: reviewForm.reviewerName.trim(),
                             reviewerRole: reviewForm.reviewerRole.trim() || 'পাঠক ও সাহিত্যপ্রেমী',
                             bookTitle: reviewForm.bookTitle.trim(),
@@ -6102,9 +5347,9 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             content: reviewForm.content.trim(),
                             date: new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }),
                             status: 'approved',
-                            createdAt: serverTimestamp()
+                            createdAt: new Date().toISOString()
                           };
-                          await setDoc(newDocRef, reviewData);
+                          await cpanelApi.addDoc('blog_reviews', reviewData);
                           setReviewSubmitted(true);
                           setReviewForm({
                             reviewerName: '',
@@ -6444,17 +5689,39 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
               {/* Scrollable Article Body */}
               <div className="p-6 md:p-8 overflow-y-auto space-y-5 leading-relaxed font-sans text-stone-800 text-sm md:text-base">
-                {activeModalBlogPost.content_bn && Array.isArray(activeModalBlogPost.content_bn) ? (
-                  (language === 'bn' ? activeModalBlogPost.content_bn : activeModalBlogPost.content_en || activeModalBlogPost.content_bn).map((paragraph: string, pIdx: number) => (
-                    <p key={pIdx} className="leading-relaxed text-stone-800 font-serif text-justify">
-                      {paragraph}
+                {(() => {
+                  const rawContent = language === 'bn' 
+                    ? (activeModalBlogPost.content_bn || activeModalBlogPost.content_en || activeModalBlogPost.excerpt_bn)
+                    : (activeModalBlogPost.content_en || activeModalBlogPost.content_bn || activeModalBlogPost.excerpt_en);
+
+                  if (Array.isArray(rawContent)) {
+                    return rawContent.map((paragraph: string, pIdx: number) => (
+                      <p key={pIdx} className="leading-relaxed text-stone-800 font-serif text-justify whitespace-pre-wrap">
+                        {paragraph}
+                      </p>
+                    ));
+                  } else if (typeof rawContent === 'string' && rawContent.trim()) {
+                    const paragraphs = rawContent.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+                    if (paragraphs.length > 0) {
+                      return paragraphs.map((para, pIdx) => (
+                        <p key={pIdx} className="leading-relaxed text-stone-800 font-serif text-justify whitespace-pre-wrap">
+                          {para}
+                        </p>
+                      ));
+                    }
+                    return (
+                      <p className="leading-relaxed text-stone-800 font-serif text-justify whitespace-pre-wrap">
+                        {rawContent}
+                      </p>
+                    );
+                  }
+
+                  return (
+                    <p className="leading-relaxed text-stone-800 font-serif text-justify">
+                      {language === 'bn' ? (activeModalBlogPost.excerpt_bn || activeModalBlogPost.title_bn) : (activeModalBlogPost.excerpt_en || activeModalBlogPost.title_en)}
                     </p>
-                  ))
-                ) : (
-                  <p className="leading-relaxed text-stone-800 font-serif text-justify">
-                    {language === 'bn' ? (activeModalBlogPost.excerpt_bn || activeModalBlogPost.title_bn) : (activeModalBlogPost.excerpt_en || activeModalBlogPost.title_en)}
-                  </p>
-                )}
+                  );
+                })()}
 
                 {/* Author Quote Box */}
                 <div className="p-5 bg-white border-l-4 border-[#B8862A] rounded-r-xl shadow-xs space-y-1 font-serif my-4">
@@ -6933,6 +6200,204 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   : `Photo ${activePhotoIndex + 1} of ${activeAlbumPhotos.length}`}
               </div>
             )}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic Pop-up Modal for Job Circular Details (বিজ্ঞপ্তি ও নিয়োগ শর্তাবলী) */}
+      <AnimatePresence>
+        {activeModalCircular && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveModalCircular(null)}
+              className="absolute inset-0 bg-stone-900/70 backdrop-blur-md"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', duration: 0.3 }}
+              className="relative bg-[#FAF7F2] border border-[#B8862A]/40 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden font-sans max-h-[90vh] flex flex-col z-10 text-left"
+            >
+              {/* Header block */}
+              <div className="bg-[#1A1207] text-[#FAF7F2] p-6 relative border-b border-[#B8862A]/40">
+                <button
+                  type="button"
+                  onClick={() => setActiveModalCircular(null)}
+                  className="absolute top-4 right-4 text-stone-300 hover:text-white hover:scale-110 transition cursor-pointer p-1.5 rounded-full hover:bg-white/10"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="bg-[#B8862A] text-stone-950 text-[10px] uppercase tracking-wider font-extrabold px-3 py-0.5 rounded-full shadow-xs">
+                      {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র নিয়োগ বিজ্ঞপ্তি' : 'BSK Job Circular'}
+                    </span>
+                    {activeModalCircular.dept_bn && (
+                      <span className="bg-white/10 text-stone-200 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                        💼 {language === 'bn' ? activeModalCircular.dept_bn : activeModalCircular.dept_en}
+                      </span>
+                    )}
+                    <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+                      activeModalCircular.status === 'expired' ? 'bg-stone-700 text-stone-300' : 'bg-emerald-600 text-white'
+                    }`}>
+                      {activeModalCircular.status === 'expired' ? (language === 'bn' ? 'মেয়াদোত্তীর্ণ' : 'Closed') : (language === 'bn' ? 'চলমান নিয়োগ' : 'Open')}
+                    </span>
+                  </div>
+
+                  <h3 className="font-serif text-xl md:text-2xl font-extrabold text-white pr-8 leading-snug">
+                    {language === 'bn' ? activeModalCircular.position_bn : activeModalCircular.position_en}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#FAF7F2]/80 font-sans pt-1">
+                    <p>
+                      <span className="font-bold text-[#B8862A]">{language === 'bn' ? 'বিজ্ঞপ্তি বিষয়: ' : 'Subject: '}</span>
+                      {language === 'bn' ? activeModalCircular.title_bn : activeModalCircular.title_en}
+                    </p>
+                    {activeModalCircular.circular_no && (
+                      <p>
+                        <span className="font-bold text-stone-400">{language === 'bn' ? 'স্মারক/রেফ নং: ' : 'Ref No: '}</span>
+                        {activeModalCircular.circular_no}
+                      </p>
+                    )}
+                    {activeModalCircular.deadline_bn && (
+                      <p className="text-amber-400 font-bold">
+                        📅 {language === 'bn' ? `আবেদনের শেষ তারিখ: ${activeModalCircular.deadline_bn}` : `Deadline: ${activeModalCircular.deadline_en}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Scrollable Main content */}
+              <div className="p-6 overflow-y-auto space-y-6 font-sans text-stone-800">
+                {/* Detailed Description */}
+                <div className="space-y-3 leading-relaxed text-sm md:text-base">
+                  <h4 className="font-serif font-bold text-base text-[#1A1207] border-b border-[#E8DDD0] pb-2 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-[#B8862A] inline-block" />
+                    <span>{language === 'bn' ? 'নিয়োগের বিবরণ ও প্রয়োজনীয় যোগ্যতা' : 'Circular Details & Requirements'}</span>
+                  </h4>
+                  
+                  {activeModalCircular.desc_bn ? (
+                    <div className="bg-white p-5 rounded-2xl border border-[#E8DDD0] shadow-xs text-stone-700 font-sans leading-relaxed text-sm md:text-base space-y-3 whitespace-pre-wrap">
+                      {language === 'bn' ? activeModalCircular.desc_bn : activeModalCircular.desc_en}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl text-stone-500 text-xs italic text-center">
+                      {language === 'bn' ? 'এই বিজ্ঞপ্তির জন্য কোনো পৃথক বিস্তারিত বিবরণ যোগ করা হয়নি। নিচে সংযুক্ত ফাইল ডাউনলোড করুন।' : 'No additional detailed text provided. Please check attached documents below.'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Attached Files & Downloadable Documents */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="font-serif font-bold text-base text-[#1A1207] border-b border-[#E8DDD0] pb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-[#B8862A]" />
+                    <span>{language === 'bn' ? 'সংযুক্ত নথিপত্র ও আবেদন ফরম' : 'Attached Documents & Application Forms'}</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {activeModalCircular.fileUrl ? (
+                      <a
+                        href={activeModalCircular.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3.5 bg-white hover:bg-stone-50 border border-[#E8DDD0] hover:border-[#B8862A] rounded-xl flex items-center gap-3 transition shadow-xs group"
+                      >
+                        <div className="p-2 bg-amber-50 text-[#B8862A] rounded-lg shrink-0">
+                          <Paperclip className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-stone-800 truncate">
+                            {activeModalCircular.fileName || (language === 'bn' ? 'মূল নিয়োগ সার্কুলার (PDF/ছবি)' : 'Official Circular PDF')}
+                          </p>
+                          <p className="text-[10px] text-[#B8862A] font-medium flex items-center gap-1 mt-0.5">
+                            <span>{language === 'bn' ? 'বিজ্ঞপ্তি ফাইলটি দেখুন/ডাউনলোড করুন' : 'View / Download Circular'}</span>
+                            <ArrowUpRight className="h-3 w-3" />
+                          </p>
+                        </div>
+                      </a>
+                    ) : (
+                      <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-400 text-xs italic flex items-center gap-2">
+                        <Paperclip className="h-4 w-4 text-stone-300" />
+                        <span>{language === 'bn' ? 'কোনো সার্কুলার ফাইল সংযুক্ত নেই' : 'No circular file attached'}</span>
+                      </div>
+                    )}
+
+                    {activeModalCircular.applyFileUrl && (
+                      <a
+                        href={activeModalCircular.applyFileUrl}
+                        download={activeModalCircular.applyFileName || 'application_form'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3.5 bg-white hover:bg-stone-50 border border-[#E8DDD0] hover:border-[#2E5942] rounded-xl flex items-center gap-3 transition shadow-xs group"
+                      >
+                        <div className="p-2 bg-emerald-50 text-[#2E5942] rounded-lg shrink-0">
+                          <Download className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-stone-800 truncate">
+                            {activeModalCircular.applyFileName || (language === 'bn' ? 'ম্যানুয়াল আবেদন ফরম (PDF)' : 'Manual Application Form')}
+                          </p>
+                          <p className="text-[10px] text-[#2E5942] font-medium flex items-center gap-1 mt-0.5">
+                            <span>{language === 'bn' ? 'ফরমটি ডাউনলোড করুন' : 'Download Application Form'}</span>
+                            <Download className="h-3 w-3" />
+                          </p>
+                        </div>
+                      </a>
+                    )}
+                  </div>
+
+                  {activeModalCircular.applyUrl && (
+                    <a
+                      href={activeModalCircular.applyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 p-3 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-xl flex items-center justify-between text-stone-700 text-xs font-bold transition"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4 text-[#B8862A]" />
+                        <span>{language === 'bn' ? 'বাহ্যিক অনলাইন নিয়োগ পোর্টাল লিংক' : 'External Online Portal Link'}</span>
+                      </div>
+                      <span className="text-[11px] text-[#B8862A] underline truncate max-w-[200px]">{activeModalCircular.applyUrl}</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="bg-stone-100 p-4 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveModalCircular(null)}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  {language === 'bn' ? 'বন্ধ করুন' : 'Close'}
+                </button>
+
+                {activeModalCircular.status !== 'expired' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const targetCirc = activeModalCircular;
+                      setActiveModalCircular(null);
+                      setActiveApplyCircular(targetCirc);
+                    }}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white rounded-xl text-xs font-bold transition shadow-md flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                  >
+                    <span>{language === 'bn' ? 'অনলাইনে আবেদন করুন' : 'Apply Online Now'}</span>
+                    <ArrowUpRight className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

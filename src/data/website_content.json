@@ -4,6 +4,48 @@
     "title_bn": "বিশ্বসাহিত্য কেন্দ্র পরিচিতি",
     "title_en": "About BSK",
     "html_title": "বিশ্বসাহিত্য কেন্দ্র",
+    "who_we_are_title_bn": "আমরা কারা",
+    "who_we_are_title_en": "Who We Are",
+    "who_we_are_subtitle_bn": "আলোকিত মানুষ ও উন্নত সমাজ বিনির্মাণের মহতী জাতীয় আন্দোলন",
+    "who_we_are_subtitle_en": "A transformative nation-building movement cultivating enlightened minds and noble human values",
+    "who_we_are_paragraphs_bn": [
+      "বিশ্বসাহিত্য কেন্দ্র বাংলাদেশের একটি অগ্রণী সামাজিক, শিক্ষামূলক ও সাংস্কৃতিক প্রতিষ্ঠান। ১৯৭৮ সালের ১৭ ডিসেম্বর অধ্যাপক আবদুল্লাহ আবু সায়ীদের হাত ধরে মাত্র ১৫ জন সদস্যের একটি ছোট্ট পাঠচক্র থেকে এই মহতী উদ্যোগের সূচনা হয়। গত ৪৬ বছরেরও বেশি সময় ধরে এটি সমগ্র বাংলাদেশে কোটি মানুষের জীবনে আলো জ্বালিয়ে চলেছে।",
+      "আমাদের মূল ব্রত— “আলোকিত মানুষ চাই”। আমরা বিশ্বাস করি, বৈষয়িক প্রবৃদ্ধির পাশাপাশি একটি জাতির শ্রেষ্ঠ সম্পদ হলো তার উচ্চ মানবিক গুণসম্পন্ন, রুচিমান ও মুক্তচিন্তার মানুষ। দেশব্যাপী বইপড়া কর্মসূচি, ভ্রাম্যমাণ লাইব্রেরি, পাঠচক্র, সাহিত্য ও সংস্কৃতি চর্চার মধ্য দিয়ে কেন্দ্র নতুন প্রজন্মকে পরিপূর্ণ মানুষ হিসেবে গড়ে তুলতে অঙ্গীকারবদ্ধ।"
+    ],
+    "who_we_are_paragraphs_en": [
+      "Bishwo Shahitto Kendro (World Literature Centre) is a pioneering non-profit educational and cultural movement in Bangladesh. Founded on December 17, 1978, under the visionary leadership of Professor Abdullah Abu Sayeed, it originated from a small study circle of 15 members and has flourished over four decades into an indelible national institution.",
+      "Guided by our defining creed “We Want Enlightened Humans”, we believe true national progress stems from broad-minded, intellectually enriched, and deeply empathetic souls. Through nationwide reading programs, mobile libraries, literary circles, and creative arts, the Centre remains dedicated to awakening higher human values across generations."
+    ],
+    "who_we_are_features": [
+      {
+        "icon": "BookOpen",
+        "title_bn": "দেশব্যাপী বইপড়া কর্মসূচি",
+        "title_en": "Nationwide Reading Program",
+        "desc_bn": "স্কুল ও কলেজের লক্ষ লক্ষ ছাত্রছাত্রীকে উন্নত মনন ও গভীর বোধের সমৃদ্ধ বই পড়ার ধারায় সম্পৃক্ত রাখা।",
+        "desc_en": "Engaging millions of school and college students in cultivating lifelong reading habits and critical thought."
+      },
+      {
+        "icon": "Library",
+        "title_bn": "ভ্রাম্যমাণ লাইব্রেরি সেবা",
+        "title_en": "Mobile Library Fleet",
+        "desc_bn": "দেশের ৬৪টি জেলার প্রত্যন্ত অঞ্চলে সাধারণ পাঠকদের ঘরের দোরগোড়ায় বিশ্বসাহিত্যের সেরা গ্রন্থ পৌঁছে দেওয়া।",
+        "desc_en": "Bringing curated treasures of world literature directly to community doorsteps across all 64 districts."
+      },
+      {
+        "icon": "Users",
+        "title_bn": "পাঠচক্র ও উন্মুক্ত আলোচনা",
+        "title_en": "Study Circles & Discourse",
+        "desc_bn": "দর্শন, সাহিত্য, শিল্পকলা ও বিজ্ঞান ভাবনার গভীর পর্যালোচনায় মুক্তবুদ্ধি ও উচ্চতর রুচি বিকাশ।",
+        "desc_en": "Nurturing expansive worldviews, philosophical inquiry, and progressive dialogue through intimate forums."
+      },
+      {
+        "icon": "Sparkles",
+        "title_bn": "সাংস্কৃতিক উৎকর্ষ ও নেতৃত্ব",
+        "title_en": "Cultural Excellence & Leadership",
+        "desc_bn": "চলচ্চিত্র, সংগীত ও শিল্পচর্চার মাধ্যমে জাতির আগামীর মননশীল, দায়িত্ববান ও মানবিক নেতৃত্ব তৈরি।",
+        "desc_en": "Fostering aesthetic sensibility and compassionate leadership to steer the nation toward enlightenment."
+      }
+    ],
     "sections": [
       {
         "title": "ব্রত ও লক্ষ্য",

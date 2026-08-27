@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, Landmark, MapPin, Layers, CheckCircle2, 
   Building, Clock, Phone, Mail, ArrowRight, ShieldCheck, 
@@ -6,6 +6,8 @@ import {
   ChevronRight, Calendar
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultBuildingData } from '../data/specializedPagesDefaults';
 
 interface BuildingPageProps {
   page: ParsedPage;
@@ -16,7 +18,30 @@ interface BuildingPageProps {
 export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNavigate }) => {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
-  const floorData = [
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'building');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultBuildingData, ...page, ...dbPageData };
+
+  const defaultFloorData = [
     {
       floorNo: 0,
       floorBn: 'ভূগর্ভস্থ ও নিচতলা',
@@ -102,130 +127,107 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
       floorNo: 5,
       floorBn: '৫ম তলা',
       floorEn: '5th Floor',
-      titleBn: 'চিত্রশালা (আর্ট গ্যালারি) ও সাধারণ মিলনায়তন',
-      titleEn: 'Art Gallery (R402) & General Hall (R401)',
-      icon: ImageIcon,
+      titleBn: 'ভ্রাম্যমাণ লাইব্রেরি ও দেশভিত্তিক বই পড়া কর্মসূচি বিভাগ',
+      titleEn: 'Mobile Library & Nationwide Reading Program Ops',
+      icon: Layers,
       featuresBn: [
-        'আর্ট গ্যালারি ৪০২ (স্পটলাইট ও চিত্রকর্ম প্রদর্শনী গ্যালারি)',
-        'সাধারণ মিলনায়তন ৪০১ (৮০ আসন)',
-        'চিত্রকলা, আলোকচিত্র প্রদর্শনী ও সাহিত্য আড্ডার জন্য আদর্শ'
+        'সারাদেশে বিস্তৃত ভ্রাম্যমাণ লাইব্রেরি প্রধান প্রশাসনিক কার্যালয়',
+        'শিক্ষার্থীদের বই পড়া প্রতিযোগিতার কেন্দ্রীয় মনিটরিং সেল',
+        'বই প্যাকেজিং ও বুক সার্ভিসিং ডেপো'
       ],
       featuresEn: [
-        'Art Gallery 402 with dynamic track lighting hardware',
-        'General Auditorium 401 (80 seats)',
-        'Specialized for art exhibitions, photography showcases & discussions'
+        'Central administrative HQ for nationwide Mobile Library Fleet',
+        'Nationwide School & College Reading Program operations',
+        'Book distribution center & processing hub'
       ],
-      image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80',
-      actionRoute: 'auditorium'
+      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&auto=format&fit=crop&q=80'
     },
     {
       floorNo: 6,
       floorBn: '৬ষ্ঠ তলা',
       floorEn: '6th Floor',
-      titleBn: 'বিশেষ মিলনায়তন ও অতিরিক্ত সেমিনার হল',
-      titleEn: 'Special Auditorium (R505) & Rooms',
-      icon: Users,
-      featuresBn: [
-        'বিশেষ মিলনায়তন ৫০৫ (১০০ আসন, উচ্চমানের আসন ও ডায়াস)',
-        'সাধারণ শ্রেণীকক্ষ ৫০৪ (৩০ আসন)',
-        'সাংবাদিক সম্মেলন ও প্রাতিষ্ঠানিক সভার প্রিয় স্থান'
-      ],
-      featuresEn: [
-        'Special Auditorium 505 (100 seats with elevated dais)',
-        'Classroom 504 (30 seats)',
-        'Preferred choice for press conferences & academic symposia'
-      ],
-      image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&auto=format&fit=crop&q=80',
-      actionRoute: 'auditorium'
-    },
-    {
-      floorNo: 7,
-      floorBn: '৭ম তলা',
-      floorEn: '7th Floor',
-      titleBn: 'এক্সিকিউটিভ কনফারেন্স রুম ও ট্রাস্টি কার্যালয়',
-      titleEn: 'Executive Boardroom (R605) & Trustee Office',
-      icon: Landmark,
-      featuresBn: [
-        'কনফারেন্স রুম ৬০৫ (২০ আসন কনফারেন্স টেবিল + ৫০ আসন)',
-        'বিশ্বসাহিত্য কেন্দ্র ব্যবস্থাপনা ও ট্রাস্টি বোর্ড অফিস',
-        'উচ্চমানের করপোরেট মিটিং ও নীতি-নির্ধারণী বৈঠকের জন্য নির্ধারিত'
-      ],
-      featuresEn: [
-        'Executive Conference Room 605 (20 boardroom seats + 50 total)',
-        'BSK Executive Management & Trustee Board Offices',
-        'Equipped for executive board meetings and policy summits'
-      ],
-      image: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=800&auto=format&fit=crop&q=80',
-      actionRoute: 'auditorium'
-    },
-    {
-      floorNo: 8,
-      floorBn: '৮ম তলা',
-      floorEn: '8th Floor',
-      titleBn: 'আলোর পাঠশালা ও অডিও-ভিজ্যুয়াল কার্যক্রম',
-      titleEn: 'Aalor Ishkool & Media Studio',
+      titleBn: 'আলোকচিত্র গ্যালারি ও সেমিনার হল',
+      titleEn: 'Art Gallery & Seminar Hall (R601, R602)',
       icon: Tv,
       featuresBn: [
-        'আলোর পাঠশালা কার্যক্রম পরিচালনা কেন্দ্র',
-        'ডিজিটাল কন্টেন্ট রেকর্ডিং ও মাল্টিমিডিয়া স্টুডিও',
-        'দেশব্যাপী আলোকিত মানুষ গড়ার ডিজিটাল অবকাঠামো'
+        'চিত্রকলা ও আলোকচিত্র প্রদর্শনীর জন্য সুসজ্জিত গ্যালারি',
+        'ভিআইপি সেমিনার কক্ষ ও সাহিত্য আড্ডার স্পেস',
+        'সাংস্কৃতিক প্রদর্শনী ও মিডিয়া প্রেস ব্রিফিং সেন্টার'
       ],
       featuresEn: [
-        'Aalor Ishkool coordination and learning center',
-        'Digital broadcasting & multimedia recording studio',
-        'National headquarters for educational content production'
+        'Elegantly lit Art Gallery for painting & photo exhibitions',
+        'VIP Seminar Hall R601 & Discussion Lounges',
+        'Press conference and media briefing facilities'
       ],
-      image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=80',
-      actionRoute: 'aalor-ishkool'
+      image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80'
     },
     {
-      floorNo: 9,
-      floorBn: '৯ম তলা',
-      floorEn: '9th Floor & Rooftop',
-      titleBn: 'ওপেন এয়ার ক্যাফেটেরিয়া ও রুফটপ গার্ডেন',
-      titleEn: 'BSK Open-Air Rooftop Cafe & Terrace',
+      floorNo: 10,
+      floorBn: '১০ম তলা (ছাদ)',
+      floorEn: '10th Floor (Rooftop)',
+      titleBn: 'উন্মুক্ত ক্যাফেটেরিয়া ও প্রাকৃতিক ছাদবাগান',
+      titleEn: 'Open Air Rooftop Cafeteria & Garden',
       icon: Coffee,
       featuresBn: [
-        'সবুজ প্রাকৃতিক পরিবেশে সুন্দর ওপেন এয়ার ক্যাফেটেরিয়া',
-        'স্বাস্থ্যকর নাস্তা, কফি, চা ও স্ন্যাক্স পরিবেশন',
-        'অনুষ্ঠানের ক্যাটারিং অর্ডার ও বইপ্রেমীদের রিফ্রেশমেন্ট আড্ডা'
+        'সবুজ প্রাকৃতিক পরিবেশে পরিচ্ছন্ন ওপেন-এয়ার ক্যাফেটেরিয়া',
+        'ঢাকা শহরের দিগন্ত দেখার মনোরম ওয়াচ ডেক',
+        'স্বাস্থ্যকর হালকা নাশতা, কফি, চা ও স্ন্যাক্স সুবিধা'
       ],
       featuresEn: [
-        'Open-air garden cafeteria surrounded by lush greenery',
-        'Fresh snacks, hot tea/coffee and dining catering services',
-        'Popular rooftop gathering space for intellectuals and readers'
+        'Open-air garden cafeteria surrounded by lush plants',
+        'Panoramic Dhaka skyline viewing deck',
+        'Fresh refreshments, espresso coffee, and gourmet snacks'
       ],
-      image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop&q=80',
+      image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop&q=80',
       actionRoute: 'cafe'
     }
   ];
 
-  const buildingSpecs = [
+  const defaultBuildingSpecs = [
     {
-      titleBn: 'পরিবেশবান্ধব ও সবুজ স্থাপত্য',
-      titleEn: 'Eco-Friendly Green Architecture',
-      descBn: 'প্রাকৃতিক আলো-বাতাসের সর্বোচ্চ ব্যবহার এবং ভবনের প্রতি তলায় বিস্তৃত সবুজ উদ্ভিদের মনোরম পরিবেশ।',
-      descEn: 'Architecturally designed for natural daylight and cross ventilation with vertical greenery.'
+      titleBn: '১২ তলা বিশিষ্ট অত্যাধুনিক টাওয়ার',
+      titleEn: '12-Storey Modern Tower Complex',
+      descBn: 'ঢাকার বাংলামোটরে অবস্থিত ভূগর্ভস্থ পার্কিং সহ সর্বাধুনিক স্থাপত্য শৈলীর আন্তর্জাতিক মানের সাংস্কৃতিক কমপ্লেক্স।',
+      descEn: 'Architectural landmark in Banglamotor equipped with basement parking and modern cultural amenities.'
     },
     {
-      titleBn: 'কেন্দ্রীয় এসি ও সাউন্ডপ্রুফ হল',
-      titleEn: 'Central AC & Soundproof Auditoriums',
-      descBn: 'সাউন্ডপ্রুফ একোস্টিক ডিজাইন, ভিআইপি ডায়াস ও প্রিমিয়াম স্টেজ সুবিধা সম্পন্ন অডিটোরিয়াম।',
-      descEn: 'Acoustically insulated halls equipped with stage lighting and central climate control.'
+      titleBn: 'অটোমেটেড সিসমিক ও ফায়ার সেফটি',
+      titleEn: 'Seismic Resilience & Modern Fire Safety',
+      descBn: 'ভূমিকম্প সহনশীল কাঠামো, অত্যাধুনিক অটোমেটিক স্প্রিংকলার, স্মোক ডিটেক্টর ও জরুরি সিঁড়ি ব্যবস্থা।',
+      descEn: 'Earthquake-resistant engineering with automatic sprinklers, smoke alarms, and dual emergency staircases.'
     },
     {
-      titleBn: 'সার্বক্ষণিক বিদ্যুৎ ও নিরাপত্তা',
-      titleEn: '24/7 Power Backup & Security',
-      descBn: 'ভারী জেনারেটর ব্যাকআপ, ডিজিটাল সিকিউরিটি সিসিটিভি এবং সর্বাধুনিক অগ্নি নির্বাপক ব্যবস্থা।',
-      descEn: 'Industrial auto-generator back-up, round-the-clock CCTV surveillance and fire alarms.'
+      titleBn: 'সবুজ শক্তি ও বিদ্যুৎ সাশ্রয়ী নকশা',
+      titleEn: 'Eco-Friendly & Green Energy Design',
+      descBn: 'প্রাকৃতিক আলো-বাতাসের সর্বোত্তম ব্যবহার, ছাদবাগান ও পরিবেশবান্ধব সৌরশক্তির সমন্বিত ব্যবহার।',
+      descEn: 'Maximized natural light and ventilation integrated with solar power and rooftop green landscaping.'
     },
     {
-      titleBn: 'সার্বজনীন সুগম্যতা (Accessibility)',
-      titleEn: 'Universal Wheelchair Access',
-      descBn: 'প্রতিবন্ধী, প্রবীণ ও বিশেষ চাহিদাসম্পন্ন দর্শনার্থীদের জন্য র‍্যাম্প ও আধুনিক লিফট ব্যবস্থা।',
-      descEn: 'Dedicated wheelchair entrance ramps, wide elevators, and accessible restrooms.'
+      titleBn: 'আন্তর্জাতিক মানসম্পন্ন এক্সেসিবিলিটি',
+      titleEn: 'Full Barrier-Free Accessibility',
+      descBn: 'প্রতিটি তলায় হাই-স্পিড লিফট, হুইলচেয়ার এক্সেস ও বিশেষ ক্ষমতাসম্পন্ন নাগরিকদের জন্য প্রস্তুত টয়লেট ব্যবস্থা।',
+      descEn: 'High-speed passenger lifts, smooth ramps, and dedicated accessible restrooms on every floor level.'
     }
   ];
+
+  // Dynamic values from page prop or fallbacks
+  const heroBadge = language === 'bn' 
+    ? (page?.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র ভবন') 
+    : (page?.badge_en || 'BSK Complex & Center');
+
+  const heroTitle = language === 'bn' 
+    ? (page?.title_bn || 'বিশ্বসাহিত্য কেন্দ্র প্রধান কার্যালয় ও বহুতল ভবন পরিচিতি') 
+    : (page?.title_en || 'Bishwo Shahitto Kendro Complex & Infrastructure');
+
+  const heroSubtitle = language === 'bn'
+    ? (page?.subtitle_bn || page?.hero_desc_bn || '১৯৭৮ সালে যাত্রা শুরু করা মানবকল্যাণমুখী শিক্ষা ও সংস্কৃতি আন্দোলনের জাতীয় কেন্দ্রবিন্দু। বাংলামোটরের ১২ তলা বিশিষ্ট এই আধুনিক ভবনটি বাংলাদেশের সাহিত্য, শিল্প ও মানবিক মূল্যবোধ চর্চার অন্যতম বৃহত্তম ঠিকানা।')
+    : (page?.subtitle_en || page?.hero_desc_en || 'The national epicenter of Bangladesh’s literary, cultural, and human enlightenment movement since 1978. A 12-storey state-of-the-art complex housing auditoriums, libraries, and galleries.');
+
+  const heroImage = page?.hero_image || page?.heroImage || 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80';
+
+  const specs = (page?.specs && page.specs.length > 0) ? page.specs : defaultBuildingSpecs;
+  const floors = (page?.floors && page.floors.length > 0) ? page.floors : defaultFloorData;
+  const gallery = page?.gallery || [];
 
   return (
     <div className="space-y-12 w-full animate-fade-in text-left font-sans">
@@ -304,7 +306,7 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
               <div className="absolute inset-0 bg-gradient-to-tr from-[#B8862A]/30 to-transparent rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative rounded-2xl overflow-hidden border-2 border-[#B8862A]/40 shadow-2xl bg-[#1A1207]/80 aspect-[4/3] w-full">
                 <img 
-                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80" 
+                  src={heroImage} 
                   alt="BSK Building Exterior" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
@@ -338,7 +340,7 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {buildingSpecs.map((spec, idx) => (
+          {specs.map((spec: any, idx: number) => (
             <div 
               key={idx}
               className="bg-white border border-[#E8DDD0] hover:border-[#B8862A] p-5 rounded-2xl shadow-2xs hover:shadow-md transition-all space-y-2.5"
@@ -347,10 +349,10 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
                 {idx + 1}
               </div>
               <h3 className="font-serif font-bold text-stone-900 text-sm">
-                {language === 'bn' ? spec.titleBn : spec.titleEn}
+                {language === 'bn' ? (spec.titleBn || spec.title_bn) : (spec.titleEn || spec.title_en)}
               </h3>
               <p className="text-xs text-stone-600 leading-relaxed font-sans">
-                {language === 'bn' ? spec.descBn : spec.descEn}
+                {language === 'bn' ? (spec.descBn || spec.desc_bn) : (spec.descEn || spec.desc_en)}
               </p>
             </div>
           ))}
@@ -371,19 +373,19 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
           </div>
           
           <div className="text-xs text-stone-500 font-mono">
-            {language === 'bn' ? 'মোট ৯টি মূল তলা বিবরণ' : '9 Functional Floor Levels'}
+            {language === 'bn' ? `মোট ${floors.length}টি মূল তলা বিবরণ` : `${floors.length} Functional Floor Levels`}
           </div>
         </div>
 
         {/* Floor Cards Grid */}
         <div className="space-y-4">
-          {floorData.map((fl) => {
-            const IconComp = fl.icon;
-            const isSelected = selectedFloor === fl.floorNo;
+          {floors.map((fl: any, flIdx: number) => {
+            const IconComp = fl.icon || Building;
+            const isSelected = selectedFloor === (fl.floorNo ?? flIdx);
 
             return (
               <div 
-                key={fl.floorNo}
+                key={fl.floorNo ?? flIdx}
                 className={`border rounded-2xl transition-all overflow-hidden bg-white ${
                   isSelected ? 'border-[#B8862A] ring-2 ring-[#B8862A]/10 shadow-md' : 'border-[#E8DDD0] hover:border-[#B8862A]/50'
                 }`}
@@ -398,11 +400,11 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-mono font-bold bg-[#F7EFE5] text-[#8C6212] border border-[#B8862A]/30 px-2.5 py-0.5 rounded-full">
-                          {language === 'bn' ? fl.floorBn : fl.floorEn}
+                          {language === 'bn' ? (fl.floorBn || fl.floor_bn) : (fl.floorEn || fl.floor_en)}
                         </span>
                       </div>
                       <h3 className="font-serif text-lg font-bold text-[#1A1207]">
-                        {language === 'bn' ? fl.titleBn : fl.titleEn}
+                        {language === 'bn' ? (fl.titleBn || fl.title_bn) : (fl.titleEn || fl.title_en)}
                       </h3>
                     </div>
                   </div>
@@ -467,6 +469,36 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
         </div>
 
       </div>
+
+      {/* PHOTO GALLERY SECTION IF AVAILABLE */}
+      {gallery && gallery.length > 0 && (
+        <div className="bg-white border border-[#E8DDD0] rounded-3xl p-6 md:p-8 shadow-xs space-y-4">
+          <div className="border-b border-[#E8DDD0] pb-3">
+            <h2 className="font-serif text-xl font-extrabold text-[#1A1207] flex items-center space-x-2">
+              <ImageIcon className="w-5 h-5 text-[#B8862A]" />
+              <span>{language === 'bn' ? 'ভবনের আলোকচিত্র গ্যালারি' : 'Building Photo Gallery'}</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {gallery.map((item: any, gIdx: number) => (
+              <div key={gIdx} className="rounded-2xl overflow-hidden border border-[#E8DDD0] bg-[#FAF8F5] group shadow-2xs">
+                <div className="aspect-4/3 overflow-hidden">
+                  <img
+                    src={item.image || item.url}
+                    alt={item.caption_bn || item.caption_en || 'Building Photo'}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                {(item.caption_bn || item.caption_en) && (
+                  <div className="p-3 bg-white text-xs font-serif font-bold text-stone-800 border-t border-[#E8DDD0]">
+                    {language === 'bn' ? (item.caption_bn || item.caption_en) : (item.caption_en || item.caption_bn)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 4. AUDITORIUM RENTAL REDIRECT BANNER */}
       <div className="bg-gradient-to-r from-[#FAF7F2] to-[#F7EFE5] border-2 border-[#B8862A]/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">

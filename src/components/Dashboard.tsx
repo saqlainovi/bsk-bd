@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import gsap from 'gsap';
 import SplitType from 'split-type';
 import { 
-  Users, BookOpen, GraduationCap, Building, Award, Library, Map as MapIcon, Sparkles, TrendingUp, Calendar, HeartHandshake, CheckCircle, ArrowRight, ArrowUpRight, FileText, Bell, PhoneCall, HelpCircle, Mail, MapPin, ChevronLeft, ChevronRight, BookOpenCheck, X, Grid, MousePointerClick
+  Users, BookOpen, GraduationCap, Building, Award, Library, Map as MapIcon, Sparkles, TrendingUp, Calendar, HeartHandshake, CheckCircle, ArrowRight, ArrowUpRight, FileText, Bell, PhoneCall, HelpCircle, Mail, MapPin, ChevronLeft, ChevronRight, BookOpenCheck, X, Grid, MousePointerClick, Compass, ExternalLink
 } from 'lucide-react';
 import { Language } from '../types';
+import websiteContentJson from '../data/website_content.json';
 import { normalizeImageUrl } from './imageUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import Footer from './Footer';
-import { 
-  db, handleFirestoreError, OperationType, collection, query, orderBy, onSnapshot, doc 
-} from '../firebase';
+import { cpanelApi } from '../services/cpanelApi';
 
 const cleanTextEmoji = (str?: string) => {
   if (!str) return '';
@@ -269,128 +268,107 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
   const [dbFounderBlock, setDbFounderBlock] = useState<any>(null);
   const [dbBeliefBlock, setDbBeliefBlock] = useState<any>(null);
   const [dbCtaBlock, setDbCtaBlock] = useState<any>(null);
+  const [dbPortalsBlock, setDbPortalsBlock] = useState<any>(null);
   const [dbHomepagePrograms, setDbHomepagePrograms] = useState<any[]>([]);
+  const [dbPages, setDbPages] = useState<any[]>([]);
   const [dbGalleryML, setDbGalleryML] = useState<any>(null);
   const [dbGalleryRH, setDbGalleryRH] = useState<any>(null);
   const [dbGalleryCL, setDbGalleryCL] = useState<any>(null);
+  const [dbWhoWeAreBlock, setDbWhoWeAreBlock] = useState<any>(null);
+  const [dbInfographicBlock, setDbInfographicBlock] = useState<any>(null);
+  const [homePageData, setHomePageData] = useState<any>(null);
   const [founderPageData, setFounderPageData] = useState<any>(null);
 
   useEffect(() => {
-    // 1. Subscribe to Live Hero Slides in ascending order of placement priority
-    const qHero = query(collection(db, 'hero_slides'), orderBy('order', 'asc'));
-    const unsubHero = onSnapshot(qHero, (snapshot) => {
-      const slides: any[] = [];
-      snapshot.forEach((doc) => {
-        slides.push(doc.data());
-      });
-      setDbHeroSlides(slides);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'hero_slides');
-    });
+    const fetchDashboardContent = async () => {
+      try {
+        const heroes = await cpanelApi.getCollection('hero_slides');
+        if (Array.isArray(heroes)) {
+          const sorted = [...heroes].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          setDbHeroSlides(sorted);
+        }
 
-    // 2. Subscribe to Recent Activities in ascending priority order
-    const qAct = query(collection(db, 'recent_activities'), orderBy('order', 'asc'));
-    const unsubAct = onSnapshot(qAct, (snapshot) => {
-      const acts: any[] = [];
-      snapshot.forEach((doc) => {
-        acts.push(doc.data());
-      });
-      setDbRecentActivities(acts);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'recent_activities');
-    });
+        const activities = await cpanelApi.getCollection('recent_activities');
+        if (Array.isArray(activities)) {
+          const sorted = [...activities].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          setDbRecentActivities(sorted);
+        }
 
-    // 3. Subscribe to News Items
-    const qNews = query(collection(db, 'news_items'));
-    const unsubNews = onSnapshot(qNews, (snapshot) => {
-      const news: any[] = [];
-      snapshot.forEach((doc) => {
-        news.push(doc.data());
-      });
-      setDbNewsItems(news);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'news_items');
-    });
+        const news = await cpanelApi.getCollection('news_items');
+        if (Array.isArray(news)) setDbNewsItems(news);
 
-    // 4. Subscribe to Events
-    const qEvents = query(collection(db, 'events'));
-    const unsubEvents = onSnapshot(qEvents, (snapshot) => {
-      const evs: any[] = [];
-      snapshot.forEach((doc) => {
-        evs.push(doc.data());
-      });
-      setDbEvents(evs);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'events');
-    });
+        const evs = await cpanelApi.getCollection('events');
+        if (Array.isArray(evs)) setDbEvents(evs);
 
-    // 5. Subscribe to Notices
-    const qNotices = query(collection(db, 'notices'));
-    const unsubNotices = onSnapshot(qNotices, (snapshot) => {
-      const nots: any[] = [];
-      snapshot.forEach((doc) => {
-        nots.push(doc.data());
-      });
-      setDbNotices(nots);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'notices');
-    });
+        const nots = await cpanelApi.getCollection('notices');
+        if (Array.isArray(nots)) setDbNotices(nots);
 
-    // 6. Subscribe to All Homepage Blocks
-    const unsubBlocks = onSnapshot(collection(db, 'homepage_blocks'), (snapshot) => {
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (doc.id === 'intro_banner') setDbIntroBlock(data);
-        else if (doc.id === 'statistics') setDbStatsBlock(data);
-        else if (doc.id === 'founder') setDbFounderBlock(data);
-        else if (doc.id === 'central_belief') setDbBeliefBlock(data);
-        else if (doc.id === 'cta_block') setDbCtaBlock(data);
-        else if (doc.id === 'gallery_ml') setDbGalleryML(data);
-        else if (doc.id === 'gallery_rh') setDbDbGalleryRH(data); // wait, let's make sure it corresponds to dbGalleryRH
-        else if (doc.id === 'gallery_cl') setDbGalleryCL(data);
-      });
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'homepage_blocks');
-    });
+        const blocks = await cpanelApi.getCollection('homepage_blocks');
+        if (Array.isArray(blocks)) {
+          blocks.forEach((b: any) => {
+            if (b.id === 'intro_banner') setDbIntroBlock(b);
+            else if (b.id === 'statistics') setDbStatsBlock(b);
+            else if (b.id === 'founder') setDbFounderBlock(b);
+            else if (b.id === 'central_belief') setDbBeliefBlock(b);
+            else if (b.id === 'cta_block') setDbCtaBlock(b);
+            else if (b.id === 'portals') setDbPortalsBlock(b);
+            else if (b.id === 'gallery_ml') setDbGalleryML(b);
+            else if (b.id === 'gallery_rh') setDbGalleryRH(b);
+            else if (b.id === 'gallery_cl') setDbGalleryCL(b);
+            else if (b.id === 'who_we_are') setDbWhoWeAreBlock(b);
+            else if (b.id === 'infographic') setDbInfographicBlock(b);
+          });
+        }
 
-    const setDbDbGalleryRH = (data: any) => {
-      setDbGalleryRH(data);
+        const progs = await cpanelApi.getCollection('homepage_programs');
+        if (Array.isArray(progs)) {
+          const sorted = [...progs].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          setDbHomepagePrograms(sorted);
+        }
+
+        const pages = await cpanelApi.getCollection('website_pages');
+        if (Array.isArray(pages)) {
+          setDbPages(pages);
+        }
+
+        const homeDoc = await cpanelApi.getDoc('website_pages', 'home');
+        if (homeDoc) setHomePageData(homeDoc);
+
+        const founderDoc = await cpanelApi.getDoc('website_pages', 'founder');
+        if (founderDoc) setFounderPageData(founderDoc);
+      } catch (err) {
+        console.warn('Error loading Dashboard content via cpanelApi:', err);
+      }
     };
 
-    // 7. Subscribe to Homepage Programs list
-    const qProgs = query(collection(db, 'homepage_programs'), orderBy('order', 'asc'));
-    const unsubProgs = onSnapshot(qProgs, (snapshot) => {
-      const progs: any[] = [];
-      snapshot.forEach((doc) => {
-        progs.push(doc.data());
-      });
-      setDbHomepagePrograms(progs);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'homepage_programs');
-    });
+    fetchDashboardContent();
 
-    // 8. Subscribe to website_pages founder page document for synchronized layout
-    const unsubFounderPage = onSnapshot(doc(db, 'website_pages', 'founder'), (docSnap) => {
-      if (docSnap.exists()) {
-        setFounderPageData(docSnap.data());
+    const handleUpdate = (e: any) => {
+      const col = e?.detail?.collection;
+      if (
+        !col ||
+        [
+          'hero_slides',
+          'recent_activities',
+          'news_items',
+          'events',
+          'notices',
+          'homepage_blocks',
+          'homepage_programs',
+          'website_pages'
+        ].includes(col)
+      ) {
+        fetchDashboardContent();
       }
-    }, (err) => {
-      console.warn("Firestore founder page read error:", err);
-    });
+    };
 
+    window.addEventListener('bsk_db_updated', handleUpdate);
     return () => {
-      unsubHero();
-      unsubAct();
-      unsubNews();
-      unsubEvents();
-      unsubNotices();
-      unsubBlocks();
-      unsubProgs();
-      unsubFounderPage();
+      window.removeEventListener('bsk_db_updated', handleUpdate);
     };
   }, []);
 
-  // Standard static slides fallback used if Firestore hasn't been populated
+  // Standard static slides fallback used if database hasn't been populated
   const defaultHeroSlides = [
     {
       id: "slide-1",
@@ -434,7 +412,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     }
   ];
 
-  // Standard static activities fallback used if Firestore hasn't been populated
+  // Standard static activities fallback used if database hasn't been populated
   const defaultRecentActivities = [
     {
       id: "act-1",
@@ -647,23 +625,71 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
   ];
 
   const activeProgramsList = React.useMemo(() => {
-    const baseMap = new Map(programs.map((p) => [p.id, p]));
+    const pagesMap = new Map(dbPages.map((page: any) => [page.id, page]));
+    const baseMap = new Map(programs.map((p) => [p.id, { ...p }]));
+
+    // 1. Sync hero_image/bgImage from website_pages doc if available
+    baseMap.forEach((prog, id) => {
+      const pageDoc = pagesMap.get(id) || (id === 'bangalir_chinta' ? pagesMap.get('bangalir-chinta') : null);
+      if (pageDoc) {
+        const pageImg = pageDoc.hero_image || pageDoc.bgImage || pageDoc.cover_image || pageDoc.image || pageDoc.imageUrl;
+        if (pageImg) {
+          prog.bgImage = pageImg;
+        }
+      }
+    });
+
+    // 2. Merge dbHomepagePrograms items
     if (dbHomepagePrograms.length > 0) {
       dbHomepagePrograms.forEach((p) => {
-        if (p.id && baseMap.has(p.id)) {
-          const existing = baseMap.get(p.id)!;
+        if (p.id) {
+          const existing = baseMap.get(p.id) || {
+            id: p.id,
+            title_bn: p.title_bn || 'নতুন কার্যক্রম',
+            title_en: p.title_en || 'New Program',
+            desc_bn: p.desc_bn || '',
+            desc_en: p.desc_en || '',
+            tag_bn: p.tag_bn || '',
+            tag_en: p.tag_en || '',
+            colorClass: p.colorClass || 'bg-[#2E5942] text-emerald-100',
+            icon: resolveProgramIcon(p.iconName || p.icon) || BookOpen,
+            bgImage: p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1600&auto=format&fit=crop&q=90'
+          };
+          const pageDoc = pagesMap.get(p.id) || (p.id === 'bangalir_chinta' ? pagesMap.get('bangalir-chinta') : null);
+          const pageImg = pageDoc?.hero_image || pageDoc?.bgImage || pageDoc?.cover_image || pageDoc?.image || pageDoc?.imageUrl;
+          const imgToUse = p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || pageImg || existing.bgImage;
+
           baseMap.set(p.id, {
             ...existing,
             ...p,
+            bgImage: imgToUse,
             icon: resolveProgramIcon(p.iconName || p.icon) || existing.icon
           });
         }
       });
     }
-    return OFFICIAL_PROGRAM_IDS.map((id) => baseMap.get(id)).filter(Boolean) as typeof programs;
-  }, [dbHomepagePrograms]);
+
+    const result: typeof programs = [];
+    const seen = new Set<string>();
+
+    OFFICIAL_PROGRAM_IDS.forEach((id) => {
+      if (baseMap.has(id)) {
+        result.push(baseMap.get(id)!);
+        seen.add(id);
+      }
+    });
+
+    baseMap.forEach((prog, id) => {
+      if (!seen.has(id)) {
+        result.push(prog);
+      }
+    });
+
+    return result;
+  }, [dbHomepagePrograms, dbPages]);
 
   const [hoveredMiniGallery, setHoveredMiniGallery] = React.useState<'A' | 'B' | 'C' | null>(null);
+  const [lightboxImage, setLightboxImage] = React.useState<string | null>(null);
 
   const [mlGalleryIndex, setMlGalleryIndex] = React.useState(0);
   const [readingGalleryIndex, setReadingGalleryIndex] = React.useState(0);
@@ -721,61 +747,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     }
   };
 
-  // 3 Mini Gallery datasets
-  const mobileLibraryGallery = [
-    {
-      image: "/assets/IMGS/481260669_1052017186949762_8260665744101041376_n.jpg",
-      category_bn: "ভ্রাম্যমাণ লাইব্রেরি",
-      category_en: "Mobile Library Network",
-      caption_bn: "সুসজ্জিত লাইব্রেরি বাস পৌঁছে যাচ্ছে প্রত্যন্ত অঞ্চলের পাঠকদের দোরগোড়ায়",
-      caption_en: "Fully equipped mobile library buses reaching readers across the country",
-      route: "mobile-library"
-    },
-    {
-      image: "/assets/IMGS/482961231_1052017300283084_4946044543018534392_n.jpg",
-      category_bn: "ভ্রাম্যমাণ লাইব্রেরি",
-      category_en: "Mobile Library Units",
-      caption_bn: "ভ্রাম্যমাণ লাইব্রেরির সামনে বই সংগ্রহে দূর-দূরান্তের পাঠকদের উদ্দীপনা",
-      caption_en: "Enthusiastic readers gathering at mobile library stops",
-      route: "mobile-library"
-    },
-    {
-      image: "/assets/IMGS/482987837_1052017193616428_2990994478265034796_n.jpg",
-      category_bn: "ভ্রাম্যমাণ লাইব্রেরি",
-      category_en: "Doorstep Reading",
-      caption_bn: "স্কুল ও লোকালয়ে নিয়মিত চলমান ভ্রাম্যমাণ লাইব্রেরি সেবা",
-      caption_en: "Regular mobile library service covering thousands of schools and localities",
-      route: "mobile-library"
-    }
-  ];
-
-  const readingHabitGallery = [
-    {
-      image: "/assets/IMGS/482211665_1052017196949761_6208359942702643653_n.jpg",
-      category_bn: "দেশভিত্তিক উৎকর্ষ",
-      category_en: "Elite Book Assessment",
-      caption_bn: "দেশভিত্তিক উৎকর্ষ কার্যক্রমে বই মূল্যায়ন পরীক্ষা ও পুরস্কার",
-      caption_en: "Elite book evaluation assessments and creative reading rewards",
-      route: "reading-habit"
-    },
-    {
-      image: "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg",
-      category_bn: "পাঠাভ্যাস উন্নয়ন",
-      category_en: "Reading Habits",
-      caption_bn: "শত শত শিক্ষাপ্রতিষ্ঠানে ছাত্র-ছাত্রীদের মাঝে বই পড়ার আনন্দ",
-      caption_en: "Inspiring book-reading habits throughout hundreds of institutions",
-      route: "reading-habit"
-    },
-    {
-      image: "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg",
-      category_bn: "দেশভিত্তিক উৎকর্ষ",
-      category_en: "Youth Awakening Mission",
-      caption_bn: "নতুন প্রজন্মকে সৃজনশীল চিন্তাধারায় আলোকিত করার মিশন",
-      caption_en: "Guiding the next generation toward enlightened global mindsets",
-      route: "reading-habit"
-    }
-  ];
-
+  // 3 Mini Gallery datasets (কেন্দ্রীয় লাইব্রেরি, ক্যাফেটেরিয়া, বই বিক্রয় কেন্দ্র)
   const centralLibraryGallery = [
     {
       image: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
@@ -827,46 +799,124 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     }
   ];
 
-  const activeMLGallery = dbGalleryML?.slides?.length > 0 ? dbGalleryML.slides : mobileLibraryGallery;
-  const activeRHGallery = dbGalleryRH?.slides?.length > 0 ? dbGalleryRH.slides : readingHabitGallery;
+  const cafeteriaGallery = [
+    {
+      image: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
+      category_bn: "ক্যাফেটেরিয়া",
+      category_en: "Cafeteria & Lounge",
+      caption_bn: "বিশ্বসাহিত্য কেন্দ্র ভবনের ছাদ সংলগ্ন উন্মুক্ত ক্যাফেটেরিয়া ও মনোরম পরিবেশ",
+      caption_en: "Open air rooftop cafeteria with lush green surroundings at BSK Building",
+      route: "cafe"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg",
+      category_bn: "ক্যাফেটেরিয়া",
+      category_en: "Cafeteria & Lounge",
+      caption_bn: "পাঠক ও সংস্কৃতিমনা দর্শনার্থীদের সান্ধ্যকালীন আড্ডা ও চা-চক্রের শান্ত আবহ",
+      caption_en: "Aesthetic outdoor terrace for intellectual adda, tea, and dialogue",
+      route: "cafe"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg",
+      category_bn: "ক্যাফেটেরিয়া",
+      category_en: "Cafeteria & Lounge",
+      caption_bn: "পরিচ্ছন্ন, মনোরম ও রুচিশীল ইনডোর সিটিং ব্যবস্থা",
+      caption_en: "Clean and aesthetic indoor dining and refreshment space",
+      route: "cafe"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484318312_1054477440037070_1610026182586324512_n.jpg",
+      category_bn: "ক্যাফেটেরিয়া",
+      category_en: "Cafeteria & Lounge",
+      caption_bn: "সবুজ বাগান ও প্রাকৃতিক আলো-বাতাসপূর্ণ মনোরম ছাদ বারান্দা",
+      caption_en: "Lush rooftop garden with refreshing natural breezes",
+      route: "cafe"
+    }
+  ];
+
+  const bookSalesGallery = [
+    {
+      image: "/assets/IMGS/LIBARY/484495050_1054485666702914_3052177565535586646_n.jpg",
+      category_bn: "বই বিক্রয় কেন্দ্র",
+      category_en: "Book Sales Center",
+      caption_bn: "বিশ্বসাহিত্য কেন্দ্র ভবন ২য় তলার সুসজ্জিত আধুনিক বই বিক্রয় কেন্দ্র",
+      caption_en: "Spacious bookstore with world classics on 2nd floor of BSK Building",
+      route: "bookshop"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg",
+      category_bn: "বই বিক্রয় কেন্দ্র",
+      category_en: "Book Sales Center",
+      caption_bn: "দেশি-বিদেশি ধ্রুপদী বই, কেন্দ্রের প্রকাশনা ও বিশেষ ছাড়ের তথ্য কাউন্টার",
+      caption_en: "Extensive display of BSK publications and imported Bengali literature",
+      route: "bookshop"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484318312_1054477440037070_1610026182586324512_n.jpg",
+      category_bn: "বই বিক্রয় কেন্দ্র",
+      category_en: "Book Sales Center",
+      caption_bn: "পাঠকদের সুবিধার্থে বিষয়ভিত্তিক সাজানো বইয়ের সুবিশাল সম্ভার",
+      caption_en: "Categorized bookshelves and reader-friendly consulting desk",
+      route: "bookshop"
+    },
+    {
+      image: "/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg",
+      category_bn: "বই বিক্রয় কেন্দ্র",
+      category_en: "Book Sales Center",
+      caption_bn: "শান্ত ও শীতাতপ নিয়ন্ত্রিত আধুনিক পঠন ও বই নির্বাচন পরিবেশ",
+      caption_en: "Air-conditioned modern browsing and purchase atmosphere",
+      route: "bookshop"
+    }
+  ];
+
   const activeCLGallery = dbGalleryCL?.slides?.length > 0 ? dbGalleryCL.slides : centralLibraryGallery;
+  const activeCafeGallery = dbGalleryML?.slides?.length > 0 ? dbGalleryML.slides : cafeteriaGallery;
+  const activeBookShopGallery = dbGalleryRH?.slides?.length > 0 ? dbGalleryRH.slides : bookSalesGallery;
 
   const sectionTitle = language === 'bn' 
-    ? (dbGalleryML?.section_title_bn || 'আমাদের কার্যক্রম ও সেবা') 
-    : (dbGalleryML?.section_title_en || 'Our Activities & Services');
+    ? (dbGalleryML?.section_title_bn || 'আমাদের পরিসেবা') 
+    : (dbGalleryML?.section_title_en || 'Our Services');
 
   const sectionSubtitle = language === 'bn' 
     ? (dbGalleryML?.section_subtitle_bn || '') 
     : (dbGalleryML?.section_subtitle_en || '');
 
-  const mlGalleryTitle = language === 'bn'
-    ? (dbGalleryML?.title_bn || 'ভ্রাম্যমাণ লাইব্রেরি')
-    : (dbGalleryML?.title_en || 'Mobile Library Network');
-
-  const rhGalleryTitle = language === 'bn'
-    ? (dbGalleryRH?.title_bn || 'পাঠাভ্যাস উন্নয়ন')
-    : (dbGalleryRH?.title_en || 'Reading Habit Development');
-
   const clGalleryTitle = language === 'bn'
     ? (dbGalleryCL?.title_bn || 'কেন্দ্রীয় লাইব্রেরি')
-    : (dbGalleryCL?.title_en || 'Central Library HQ');
+    : (dbGalleryCL?.title_en || 'Central Library');
+
+  const cafeGalleryTitle = language === 'bn'
+    ? (dbGalleryML?.title_bn || 'ক্যাফেটেরিয়া')
+    : (dbGalleryML?.title_en || 'Cafeteria');
+
+  const bookShopGalleryTitle = language === 'bn'
+    ? (dbGalleryRH?.title_bn || 'বই বিক্রয় কেন্দ্র')
+    : (dbGalleryRH?.title_en || 'Book Sales Center');
 
   // Auto-advance intervals for individual mini galleries
   React.useEffect(() => {
-    if (activeMLGallery.length === 0) return;
-    const mlTimer = setInterval(() => {
-      setMlGalleryIndex((prev) => (prev + 1) % activeMLGallery.length);
+    if (activeCLGallery.length === 0) return;
+    const clTimer = setInterval(() => {
+      setCulturalGalleryIndex((prev) => (prev + 1) % activeCLGallery.length);
     }, 4000);
-    return () => clearInterval(mlTimer);
-  }, [activeMLGallery.length]);
+    return () => clearInterval(clTimer);
+  }, [activeCLGallery.length]);
 
   React.useEffect(() => {
-    if (activeRHGallery.length === 0) return;
-    const rhTimer = setInterval(() => {
-      setReadingGalleryIndex((prev) => (prev + 1) % activeRHGallery.length);
+    if (activeCafeGallery.length === 0) return;
+    const cafeTimer = setInterval(() => {
+      setMlGalleryIndex((prev) => (prev + 1) % activeCafeGallery.length);
     }, 4500);
-    return () => clearInterval(rhTimer);
-  }, [activeRHGallery.length]);
+    return () => clearInterval(cafeTimer);
+  }, [activeCafeGallery.length]);
+
+  React.useEffect(() => {
+    if (activeBookShopGallery.length === 0) return;
+    const bsTimer = setInterval(() => {
+      setReadingGalleryIndex((prev) => (prev + 1) % activeBookShopGallery.length);
+    }, 5000);
+    return () => clearInterval(bsTimer);
+  }, [activeBookShopGallery.length]);
 
   // GSAP + SplitType animation refs for Slogan & Intro Quote
   const sloganTitleRef = React.useRef<HTMLSpanElement>(null);
@@ -960,6 +1010,21 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     if (cat.includes('লাইব্রেরি') || title.includes('লাইব্রেরি') || cat.includes('library') || title.includes('library') || cat.includes('কেন্দ্রীয়') || title.includes('কেন্দ্রীয়')) return 'central-library';
     if (cat.includes('সাংস্কৃতিক') || cat.includes('seminar') || title.includes('সেমিনার')) return 'facilities';
     return 'central-library';
+  };
+
+  const resolveImageUrl = (url?: string | null): string => {
+    if (!url || typeof url !== 'string' || !url.trim()) return '';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('./')) {
+      return trimmed.substring(1);
+    }
+    if (!trimmed.startsWith('/')) {
+      return '/' + trimmed;
+    }
+    return trimmed;
   };
 
   const resolveItemRoute = (item?: any, fallbackRoute?: string) => {
@@ -1075,29 +1140,41 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
     <div className="min-h-screen bg-[#FAF7F2] text-[#1A1207] font-sans">
       {/* ── SECTION 1: HERO SLIDER (EDITORIAL ORGANIC CURVE HERO) ── */}
       <div 
-        className="relative w-full h-[380px] xs:h-[440px] sm:h-[68vh] md:h-[76vh] lg:h-[84vh] xl:h-[88vh] min-h-[380px] sm:min-h-[520px] md:min-h-[580px] lg:min-h-[660px] max-h-[880px] bg-stone-900 group select-none overflow-hidden"
+        className="relative w-full h-[380px] xs:h-[440px] sm:h-[68vh] md:h-[76vh] lg:h-[84vh] xl:h-[88vh] min-h-[380px] sm:min-h-[520px] md:min-h-[580px] lg:min-h-[660px] max-h-[880px] bg-stone-950 group select-none overflow-hidden"
       >
         
         {/* Full Image Slide Background - Natural cover fitting on both mobile & desktop */}
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={currentHeroSlide}
-            src={heroSlides[currentHeroSlide]?.bgImage || ''}
-            alt={heroSlides[currentHeroSlide]?.title_bn || 'Hero Banner'}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 w-full h-full object-cover object-center gpu-accelerated pointer-events-none"
-          />
-        </AnimatePresence>
+        {(() => {
+          const currentSlide = heroSlides[currentHeroSlide] || defaultHeroSlides[0];
+          const rawImg = currentSlide?.bgImage || currentSlide?.bg_image || currentSlide?.image || currentSlide?.banner_image || '';
+          const slideImg = resolveImageUrl(rawImg) || 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1600&auto=format&fit=crop';
+          return (
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={`${currentHeroSlide}-${slideImg}`}
+                src={slideImg}
+                alt={currentSlide?.title_bn || 'Hero Slide'}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1600&auto=format&fit=crop';
+                }}
+                initial={{ opacity: 0, scale: 1.01 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 w-full h-full object-cover object-center hero-slider-img gpu-accelerated pointer-events-none filter contrast-[1.04] saturate-[1.06] brightness-[1.02]"
+                loading="eager"
+                decoding="async"
+              />
+            </AnimatePresence>
+          );
+        })()}
 
-        {/* Minimal Editorial Bottom Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+        {/* Deep Contrast Multi-Stop Editorial Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 pointer-events-none z-10" />
 
         {/* Top-Right Floating Luxury Slide Controls & Indicators */}
         <div 
-          className="absolute top-3 right-3 sm:top-8 sm:right-10 z-30 flex items-center space-x-2.5 sm:space-x-4 bg-black/45 backdrop-blur-md border border-white/20 px-3 sm:px-4 py-1 sm:py-2 rounded-full shadow-xl"
+          className="absolute top-3 right-3 sm:top-8 sm:right-10 z-30 flex items-center space-x-2.5 sm:space-x-4 bg-black/60 backdrop-blur-md border border-white/25 px-3 sm:px-4 py-1 sm:py-2 rounded-full shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Dots */}
@@ -1107,7 +1184,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                 key={idx}
                 onClick={() => setCurrentHeroSlide(idx)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  currentHeroSlide === idx ? 'w-4 sm:w-6 bg-[#F0CC7A]' : 'w-1.5 bg-white/40 hover:bg-white/80'
+                  currentHeroSlide === idx ? 'w-4 sm:w-6 bg-[#F0CC7A]' : 'w-1.5 bg-white/40 hover:bg-white/90'
                 }`}
                 title={`Slide ${idx + 1}`}
               />
@@ -1121,51 +1198,71 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                 if (heroSlides.length === 0) return;
                 setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
               }}
-              className="p-0.5 sm:p-1 rounded-full text-stone-200 hover:text-white transition hover:bg-white/15 cursor-pointer"
+              className="p-0.5 sm:p-1 rounded-full text-white hover:text-white transition hover:bg-white/20 cursor-pointer"
               title="Previous"
             >
-              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </button>
             <button
               onClick={() => {
                 if (heroSlides.length === 0) return;
                 setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
               }}
-              className="p-0.5 sm:p-1 rounded-full text-stone-200 hover:text-white transition hover:bg-white/15 cursor-pointer"
+              className="p-0.5 sm:p-1 rounded-full text-white hover:text-white transition hover:bg-white/20 cursor-pointer"
               title="Next"
             >
-              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </button>
           </div>
         </div>
 
         {/* Floating Banner Caption Overlay */}
-        <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-[155px] md:bottom-[185px] lg:bottom-[215px] sm:left-10 md:left-16 z-20 sm:max-w-xl md:max-w-2xl text-left pointer-events-none">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentHeroSlide}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="space-y-1 sm:space-y-3"
-            >
-              <div className="inline-block">
-                <span className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#B8862A] text-[#FAF7F2] rounded-md text-[9px] sm:text-[10px] font-mono font-bold tracking-widest uppercase shadow-md">
-                  {language === 'bn' ? (heroSlides[currentHeroSlide]?.badge_bn || '') : (heroSlides[currentHeroSlide]?.badge_en || '')}
-                </span>
-              </div>
-              
-              <h2 className="font-serif text-sm xs:text-base sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#FAF7F2] drop-shadow-lg leading-tight group-hover:text-[#F0CC7A] transition-colors">
-                {language === 'bn' ? (heroSlides[currentHeroSlide]?.title_bn || '') : (heroSlides[currentHeroSlide]?.title_en || '')}
-              </h2>
+        {(() => {
+          const currentSlide = heroSlides[currentHeroSlide] || defaultHeroSlides[0];
+          return (
+            <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:bottom-[155px] md:bottom-[185px] lg:bottom-[215px] sm:left-10 md:left-16 z-20 sm:max-w-xl md:max-w-2xl text-left pointer-events-none">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentHeroSlide}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-1.5 sm:space-y-3"
+                >
+                  <div className="inline-block">
+                    <span 
+                      className="px-2.5 py-1 bg-[#B8862A] !text-white rounded-md text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase shadow-md inline-block"
+                      style={{ color: '#ffffff' }}
+                    >
+                      {language === 'bn' ? (currentSlide?.badge_bn || '') : (currentSlide?.badge_en || '')}
+                    </span>
+                  </div>
+                  
+                  <h2 
+                    className="font-serif text-lg xs:text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold !text-white leading-tight"
+                    style={{ 
+                      color: '#ffffff',
+                      textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1)'
+                    }}
+                  >
+                    {language === 'bn' ? (currentSlide?.title_bn || '') : (currentSlide?.title_en || '')}
+                  </h2>
 
-              <p className="font-sans text-xs sm:text-sm md:text-base/relaxed text-stone-200 drop-shadow-sm max-w-xl hidden sm:block">
-                {language === 'bn' ? (heroSlides[currentHeroSlide]?.desc_bn || '') : (heroSlides[currentHeroSlide]?.desc_en || '')}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+                  <p 
+                    className="font-sans text-xs sm:text-sm md:text-base/relaxed !text-white max-w-xl hidden sm:block font-medium"
+                    style={{ 
+                      color: '#ffffff',
+                      textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1)'
+                    }}
+                  >
+                    {language === 'bn' ? (currentSlide?.desc_bn || '') : (currentSlide?.desc_en || '')}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          );
+        })()}
 
         {/* Desktop-Only Organic Cave-like Curve Cut-out on Bottom-Right Corner */}
         <div className="hidden sm:block absolute -bottom-px inset-x-0 z-20 pointer-events-none h-[175px] md:h-[195px] lg:h-[225px] w-full leading-none overflow-hidden">
@@ -1259,84 +1356,166 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
       </div>
 
       {/* Container for the rest of Dashboard content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-10 w-full space-y-10 relative z-30 pt-2">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-10 w-full space-y-12 relative z-30 pt-4">
 
-      {/* ── SECTION 1 (TOP): ENLARGED FOUNDER & PRESIDENT SPOTLIGHT (PROTHISTATAR BANI) ── */}
-      <div className="pt-2">
-        <div className={`flex flex-col ${dbFounderBlock?.image_position === 'right' ? 'md:flex-row-reverse' : 'md:flex-row'} gap-10 lg:gap-14 items-center pb-6 text-[#1A1207]`}>
+      {/* ── SECTION 0: WHO WE ARE (আমরা কারা - SIMPLE CENTER ALIGNED) ── */}
+      {(() => {
+        const homeData = homePageData || websiteContentJson.find((p: any) => p.id === 'home') || {};
+        const title = language === 'bn' 
+          ? (dbWhoWeAreBlock?.title_bn || homeData.who_we_are_title_bn || 'আমরা কারা') 
+          : (dbWhoWeAreBlock?.title_en || homeData.who_we_are_title_en || 'Who We Are');
+        
+        const subtitle = language === 'bn' 
+          ? (dbWhoWeAreBlock?.subtitle_bn || homeData.who_we_are_subtitle_bn || 'আলোকিত মানুষ ও উন্নত সমাজ বিনির্মাণের মহতী জাতীয় আন্দোলন') 
+          : (dbWhoWeAreBlock?.subtitle_en || homeData.who_we_are_subtitle_en || 'A transformative nation-building movement cultivating enlightened minds and noble human values');
+
+        const paragraphs: string[] = (language === 'bn' 
+          ? (dbWhoWeAreBlock?.paragraphs_bn || homeData.who_we_are_paragraphs_bn) 
+          : (dbWhoWeAreBlock?.paragraphs_en || homeData.who_we_are_paragraphs_en)) || [
+            language === 'bn'
+              ? "বিশ্বসাহিত্য কেন্দ্র বাংলাদেশের একটি অগ্রণী সামাজিক, শিক্ষামূলক ও সাংস্কৃতিক প্রতিষ্ঠান। ১৯৭৮ সালের ১৭ ডিসেম্বর অধ্যাপক আবদুল্লাহ আবু সায়ীদের হাত ধরে মাত্র ১৫ জন সদস্যের একটি ছোট্ট পাঠচক্র থেকে এই মহতী উদ্যোগের সূচনা হয়। গত ৪৬ বছরেরও বেশি সময় ধরে এটি সমগ্র বাংলাদেশে কোটি মানুষের জীবনে আলো জ্বালিয়ে চলেছে।"
+              : "Bishwo Shahitto Kendro (World Literature Centre) is a pioneering non-profit educational and cultural movement in Bangladesh. Founded on December 17, 1978, under the visionary leadership of Professor Abdullah Abu Sayeed, it originated from a small study circle of 15 members and has flourished over four decades into an indelible national institution.",
+            language === 'bn'
+              ? "আমাদের মূল ব্রত— “আলোকিত মানুষ চাই”। আমরা বিশ্বাস করি, বৈষয়িক প্রবৃদ্ধির পাশাপাশি একটি জাতির শ্রেষ্ঠ সম্পদ হলো তার উচ্চ মানবিক গুণসম্পন্ন, রুচিমান ও মুক্তচিন্তার মানুষ। দেশব্যাপী বইপড়া কর্মসূচি, ভ্রাম্যমাণ লাইব্রেরি, পাঠচক্র, সাহিত্য ও সংস্কৃতি চর্চার মধ্য দিয়ে কেন্দ্র নতুন প্রজন্মকে পরিপূর্ণ মানুষ হিসেবে গড়ে তুলতে অঙ্গীকারবদ্ধ।"
+              : "Guided by our defining creed “We Want Enlightened Humans”, we believe true national progress stems from broad-minded, intellectually enriched, and deeply empathetic souls. Through nationwide reading programs, mobile libraries, literary circles, and creative arts, the Centre remains dedicated to awakening higher human values across generations."
+          ];
+
+        return (
+          <section className="py-6 md:py-10 text-center animate-fade-in">
+            <div className="max-w-4xl mx-auto px-4 space-y-4">
+              {/* Centered Heading */}
+              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1A1207] tracking-tight">
+                {title}
+              </h2>
+
+              {/* Subtle Decorative Line */}
+              <div className="w-16 h-1 bg-[#B8862A] rounded-full mx-auto" />
+
+              {/* Centered Subtitle / Tagline */}
+              {subtitle && (
+                <p className="text-sm md:text-base font-serif text-[#8B621B] font-medium max-w-2xl mx-auto">
+                  {subtitle}
+                </p>
+              )}
+
+              {/* Centered Descriptive Paragraphs */}
+              <div className="space-y-4 pt-2">
+                {paragraphs.map((pText, pIdx) => (
+                  <p 
+                    key={pIdx} 
+                    className="font-serif text-stone-700 text-sm md:text-base lg:text-lg leading-relaxed text-center max-w-3xl mx-auto"
+                  >
+                    {pText}
+                  </p>
+                ))}
+              </div>
+
+
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── SECTION 1: ENLARGED FOUNDER & PRESIDENT SPOTLIGHT (PROTHISTATAR BANI) ── */}
+      <div className="pt-2 pb-6">
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-center text-[#1A1207]`}>
           
-          {/* Founder Beautiful Portrait Frame */}
-          <div className="relative shrink-0 w-full sm:w-[320px] md:w-[380px] lg:w-[420px] xl:w-[480px] 2xl:w-[560px] h-[320px] sm:h-[380px] md:h-[460px] lg:h-[500px] xl:h-[580px] 2xl:h-[680px] flex items-center justify-center select-none group hover:scale-[1.01] duration-300 transition animate-fade-in">
-            <img 
-              src={founderPageData?.founder_avatar || dbFounderBlock?.image || "https://bskbd.org/assets/img/logo_bn2.png"} 
-              alt="Prof. Abdullah Abu Sayeed Logo" 
-              className={`w-full h-full ${(founderPageData?.founder_avatar || dbFounderBlock?.image) ? 'object-cover rounded-2xl shadow-xl border border-[#B8862A]/20' : 'object-contain'} selection:bg-transparent`}
-              referrerPolicy="no-referrer"
-            />
+          {/* Column 1: Founder Image / Frame (Clean & Free - No border box) */}
+          <div className={`flex items-center justify-center w-full select-none animate-fade-in ${dbFounderBlock?.image_position === 'right' ? 'md:order-last' : 'md:order-first'}`}>
+            <div className="relative w-full max-w-[480px] rounded-2xl overflow-hidden group hover:scale-[1.01] transition-transform duration-300">
+              <img 
+                src={dbFounderBlock?.image || founderPageData?.founder_avatar || "https://bskbd.org/assets/img/logo_bn2.png"} 
+                alt="Prof. Abdullah Abu Sayeed" 
+                className="w-full h-auto object-cover rounded-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
           </div>
 
-          {/* Bani / Inspiring Quotes & Details */}
-          <div className={`space-y-6 text-left flex-1 ${dbFounderBlock?.image_position === 'right' ? 'md:pr-4' : 'md:pl-4'}`}>
-            <div className="space-y-2">
-              <h3 className="font-serif text-3xl md:text-5xl font-extrabold text-[#1A1207] leading-tight">
-                {language === 'bn' 
-                  ? (founderPageData?.founder_name_bn || dbFounderBlock?.name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') 
-                  : (founderPageData?.founder_name_en || dbFounderBlock?.name_en || 'Prof. Abdullah Abu Sayeed')}
-              </h3>
-              {(() => {
-                const raw = language === 'bn' 
-                  ? (founderPageData?.founder_bio_bn || dbFounderBlock?.subtitle_bn || '')
-                  : (founderPageData?.founder_bio_en || dbFounderBlock?.subtitle_en || '');
-                const cleaned = raw
-                  .replace(/জাতীয়\s*অধ্যাপক/gi, '')
-                  .replace(/সাহিত্যিক/gi, '')
-                  .replace(/শিক্ষাবিদ/gi, '')
-                  .replace(/সমাজ\s*সংস্কারক/gi, '')
-                  .replace(/প্রতিষ্ঠাতা\s*ও\s*সভাপতি\s*,\s*বিশ্বসাহিত্য\s*কেন্দ্র/gi, '')
-                  .replace(/প্রতিষ্ঠাতা\s*,\s*বিশ্বসাহিত্য\s*কেন্দ্র/gi, '')
-                  .replace(/বিশ্বসাহিত্য\s*কেন্দ্র/gi, '')
-                  .replace(/প্রতিষ্ঠাতা\s*ও\s*সভাপতি/gi, '')
-                  .replace(/প্রতিষ্ঠাতা/gi, '')
-                  .replace(/National\s*Teacher/gi, '')
-                  .replace(/Author/gi, '')
-                  .replace(/Public\s*Intellectual/gi, '')
-                  .replace(/Founder/gi, '')
-                  .replace(/^[\s,•-]+|[\s,•-]+$/g, '')
-                  .trim();
-                if (!cleaned) return null;
-                return (
-                  <p className="text-[11px] md:text-sm font-mono text-[#B8862A] uppercase tracking-wide font-bold">
-                    {cleaned}
-                  </p>
-                );
-              })()}
-            </div>
+          {/* Column 2: Details / Text */}
+          <div className={`space-y-5 text-left w-full ${dbFounderBlock?.image_position === 'right' ? 'md:order-first' : 'md:order-last'}`}>
+            
+            {/* Title / Name & Subtitle */}
+            {(() => {
+              const nameText = dbFounderBlock
+                ? (language === 'bn' ? dbFounderBlock.name_bn : dbFounderBlock.name_en)
+                : (language === 'bn' ? (founderPageData?.founder_name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') : (founderPageData?.founder_name_en || 'Prof. Abdullah Abu Sayeed'));
+              
+              const customSubtitle = dbFounderBlock 
+                ? (language === 'bn' ? dbFounderBlock.subtitle_bn : dbFounderBlock.subtitle_en)
+                : '';
 
-            {/* Inspiring quote block (Bani / Kotha) */}
-            <div className="relative border-l-4 border-[#B8862A] pl-6 py-2 space-y-3">
-              <p className="font-serif text-base md:text-xl text-stone-800 leading-relaxed italic font-medium">
-                {language === 'bn' 
-                  ? (founderPageData?.founder_quotes?.[0]?.text_bn || dbFounderBlock?.quote_bn || '“ক্ষুদ্র মানুষ আর বড় জাতি একসঙ্গে বাস করতে পারে না। যদি বড় জাতি গড়তে চাই, তবে বড় মনের মানুষ তৈরি করতে হবে। বই পড়ার মাধ্যমে মানুষের আত্মার পরিধি বৃদ্ধি পায় আর সেই আলোকিত মানুষই সমাজকে বদলে দিতে সমর্থ হয়।”') 
-                  : (founderPageData?.founder_quotes?.[0]?.text_en || dbFounderBlock?.quote_en || '"Small minds and a grand nation cannot coexist. If we want to build a grand nation, we must nurture expanded souls first. Reading books expands the boundaries of the soul, and only those enlightened minds have the power to transform human society."')
-                }
-              </p>
-              <div className="text-xs text-stone-500 font-mono font-bold">— {language === 'bn' ? 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ' : 'Prof. Abdullah Abu Sayeed'}</div>
-            </div>
+              if (!nameText && !customSubtitle) return null;
+
+              return (
+                <div className="space-y-1.5">
+                  {nameText && nameText.trim() && (
+                    <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A1207] leading-tight">
+                      {nameText}
+                    </h3>
+                  )}
+                  {customSubtitle && customSubtitle.trim() && (
+                    <p className="text-xs sm:text-sm font-mono text-[#B8862A] uppercase tracking-wide font-bold">
+                      {customSubtitle.trim()}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Quote Block (Renders ONLY if quote text exists) */}
+            {(() => {
+              const quoteText = dbFounderBlock
+                ? (language === 'bn' ? dbFounderBlock.quote_bn : dbFounderBlock.quote_en)
+                : (language === 'bn' 
+                    ? (founderPageData?.founder_quotes?.[0]?.text_bn || '“ক্ষুদ্র মানুষ আর বড় জাতি একসঙ্গে বাস করতে পারে না। যদি বড় জাতি গড়তে চাই, তবে বড় মনের মানুষ তৈরি করতে হবে। বই পড়ার মাধ্যমে মানুষের আত্মার পরিধি বৃদ্ধি পায় আর সেই আলোকিত মানুষই সমাজকে বদলে দিতে সমর্থ হয়।”') 
+                    : (founderPageData?.founder_quotes?.[0]?.text_en || '"Small minds and a grand nation cannot coexist. If we want to build a grand nation, we must nurture expanded souls first."'));
+              
+              if (!quoteText || !quoteText.trim()) return null;
+
+              const authorName = dbFounderBlock
+                ? (language === 'bn' ? dbFounderBlock.name_bn : dbFounderBlock.name_en)
+                : (language === 'bn' ? (founderPageData?.founder_name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') : (founderPageData?.founder_name_en || 'Prof. Abdullah Abu Sayeed'));
+
+              return (
+                <div className="relative border-l-4 border-[#B8862A] pl-5 py-1.5 space-y-2.5 bg-[#FAF7F2]/50 rounded-r-xl pr-4">
+                  <p className="font-serif text-sm sm:text-base lg:text-lg text-stone-800 leading-relaxed italic font-medium">
+                    {quoteText}
+                  </p>
+                  {authorName && authorName.trim() && (
+                    <div className="text-xs text-stone-500 font-mono font-bold">— {authorName}</div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Philosophy / Description details */}
+            {(() => {
+              const phil = language === 'bn' 
+                ? (dbFounderBlock?.philosophy_bn || '')
+                : (dbFounderBlock?.philosophy_en || dbFounderBlock?.philosophy_bn || '');
+              if (!phil || !phil.trim()) return null;
+              return (
+                <p className="text-xs sm:text-sm text-stone-700 font-sans leading-relaxed">
+                  {phil}
+                </p>
+              );
+            })()}
 
             {/* Badges / Awards */}
             {(() => {
               const badgesList: string[] = [];
-              if (founderPageData?.founder_badges && Array.isArray(founderPageData.founder_badges) && founderPageData.founder_badges.length > 0) {
-                founderPageData.founder_badges.forEach((b) => {
-                  const label = (language === 'bn' ? b.label_bn : b.label_en) || '';
-                  if (label.trim()) badgesList.push(label.trim());
-                });
-              } else if (dbFounderBlock) {
+              if (dbFounderBlock) {
                 const b1 = (language === 'bn' ? dbFounderBlock.badge1_bn : dbFounderBlock.badge1_en) || '';
                 const b2 = (language === 'bn' ? dbFounderBlock.badge2_bn : dbFounderBlock.badge2_en) || '';
                 const b3 = (language === 'bn' ? dbFounderBlock.badge3_bn : dbFounderBlock.badge3_en) || '';
                 [b1, b2, b3].forEach((b) => {
                   if (b && b.trim()) badgesList.push(b.trim());
+                });
+              } else if (founderPageData?.founder_badges && Array.isArray(founderPageData.founder_badges)) {
+                founderPageData.founder_badges.forEach((b) => {
+                  const label = (language === 'bn' ? b.label_bn : b.label_en) || '';
+                  if (label.trim()) badgesList.push(label.trim());
                 });
               }
 
@@ -1345,7 +1524,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
               return (
                 <div className="flex flex-wrap gap-2 pt-1 font-mono">
                   {badgesList.map((bText, idx) => (
-                    <span key={idx} className="px-2.5 py-1 bg-[#FAF7F2] text-[#B8862A] border border-[#B8862A]/30 text-[9px] font-bold uppercase rounded">
+                    <span key={idx} className="px-2.5 py-1 bg-[#FAF7F2] text-[#B8862A] border border-[#B8862A]/30 text-[9px] sm:text-[10px] font-bold uppercase rounded">
                       {bText}
                     </span>
                   ))}
@@ -1354,7 +1533,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             })()}
 
             {/* Biography Action Buttons */}
-            <div className="flex flex-wrap gap-4 pt-3 items-center">
+            <div className="flex flex-wrap gap-4 pt-2 items-center">
               {(() => {
                 const btnTxt = language === 'bn' 
                   ? (dbFounderBlock?.btn_text_bn !== undefined ? dbFounderBlock.btn_text_bn : 'জীবনী ও সাক্ষাৎকার পড়ুন')
@@ -1363,7 +1542,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                 return (
                   <button
                     onClick={() => onNavigate('founder')}
-                    className="px-6 py-3 bg-[#1A1207] hover:bg-stone-900 text-[#FAF7F2] hover:text-[#B8862A] font-extrabold text-xs transition duration-200 cursor-pointer flex items-center space-x-1"
+                    className="px-6 py-2.5 bg-[#1A1207] hover:bg-stone-900 text-[#FAF7F2] hover:text-[#B8862A] font-extrabold text-xs transition duration-200 cursor-pointer flex items-center space-x-1.5 rounded-lg shadow-sm"
                   >
                     <span>{btnTxt}</span>
                     <span>→</span>
@@ -1373,7 +1552,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
               
               {/* Visitor Indicator Widget */}
               {Boolean(dbFounderBlock?.visitor_count) && (
-                <div className="px-4 py-2 bg-[#FAF7F2] border border-[#E8DDD0] rounded-none flex items-center space-x-2 text-[10.5px]">
+                <div className="px-3.5 py-2 bg-[#FAF7F2] border border-[#E8DDD0] rounded-lg flex items-center space-x-2 text-[10.5px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping shrink-0" />
                   <span className="font-mono text-stone-600 font-semibold">
                     {language === 'bn' 
@@ -1431,8 +1610,9 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             {activeProgramsList.map((program, idx) => {
               const isCurrentActive = activeProgramIndex === idx;
               const programId = (program.id || '').toLowerCase();
-              const targetRoute = (program.route && program.route !== 'home' && program.route !== 'bsk-history')
-                ? program.route
+              const programObj = program as any;
+              const targetRoute = (programObj.route && programObj.route !== 'home' && programObj.route !== 'bsk-history')
+                ? programObj.route
                 : (
                     programId === 'nationwide-excellence' || programId === 'nationwide_excellence' || programId === 'utkorsho' ? 'nationwide-excellence' :
                     programId === 'reading-habit' || programId === 'reading-habit-dev' || programId === 'reading_habit' ? 'reading-habit' :
@@ -1470,17 +1650,17 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                     />
                     
                     {/* Subtle bottom-only vignette to keep images 100% bright, vivid and clear */}
-                    <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/65 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-black/95 via-black/80 to-transparent pointer-events-none" />
 
-                    {/* Animated bottom detail card info */}
-                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-stone-950 via-black/90 to-black/10 text-left flex flex-col justify-end space-y-1.5 transform translate-y-2 group-hover/card:translate-y-0 transition-transform duration-300">
-                      <p className="text-[11px]/relaxed text-stone-200 group-hover/card:text-white line-clamp-3 font-sans transition-colors">
+                    {/* Bottom detail card info */}
+                    <div className="absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-black/95 via-black/85 to-transparent text-left flex flex-col justify-end space-y-1.5 transition-transform duration-300">
+                      <p className="!text-white text-[11.5px] sm:text-[12px]/relaxed font-medium line-clamp-3 font-sans !text-left drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                         {language === 'bn' ? program.desc_bn : program.desc_en}
                       </p>
                       
-                      <div className="flex items-center justify-between text-[#F0CC7A] text-[9px] font-extrabold tracking-widest font-mono uppercase leading-none pt-1 border-t border-white/5">
-                        <span>{language === 'bn' ? 'কার্যক্রম বিস্তারিত' : 'View Details'}</span>
-                        <span className="transform group-hover/card:translate-x-1.5 transition-transform">→</span>
+                      <div className="flex items-center justify-between !text-white group-hover/card:!text-[#F0CC7A] text-[10.5px] font-bold tracking-wider font-sans uppercase leading-none pt-1.5 border-t border-white/30">
+                        <span className="!text-white group-hover/card:!text-[#F0CC7A]">{language === 'bn' ? 'কার্যক্রম বিস্তারিত' : 'View Details'}</span>
+                        <span className="transform group-hover/card:translate-x-1.5 transition-transform text-[#F0CC7A]">→</span>
                       </div>
                     </div>
                   </div>
@@ -1634,27 +1814,27 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         const miniGalleries = [
           {
             key: 'A' as const,
-            title: mlGalleryTitle,
-            index: mlGalleryIndex,
-            setIndex: setMlGalleryIndex,
-            slides: activeMLGallery,
-            defaultRoute: 'mobile-library',
-          },
-          {
-            key: 'B' as const,
-            title: rhGalleryTitle,
-            index: readingGalleryIndex,
-            setIndex: setReadingGalleryIndex,
-            slides: activeRHGallery,
-            defaultRoute: 'reading-habit',
-          },
-          {
-            key: 'C' as const,
             title: clGalleryTitle,
             index: culturalGalleryIndex,
             setIndex: setCulturalGalleryIndex,
             slides: activeCLGallery,
             defaultRoute: 'central-library',
+          },
+          {
+            key: 'B' as const,
+            title: cafeGalleryTitle,
+            index: mlGalleryIndex,
+            setIndex: setMlGalleryIndex,
+            slides: activeCafeGallery,
+            defaultRoute: 'cafe',
+          },
+          {
+            key: 'C' as const,
+            title: bookShopGalleryTitle,
+            index: readingGalleryIndex,
+            setIndex: setReadingGalleryIndex,
+            slides: activeBookShopGallery,
+            defaultRoute: 'bookshop',
           },
         ];
 
@@ -1830,7 +2010,11 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                         </button>
 
                         {/* Left 7 Columns: Photo Slider View */}
-                        <div className="md:col-span-7 relative h-[360px] sm:h-[420px] rounded-xl overflow-hidden group/exp">
+                        <div 
+                          onClick={() => activeSlide?.image && setLightboxImage(activeSlide.image)}
+                          className="md:col-span-7 relative h-[480px] sm:h-[560px] md:h-[620px] rounded-xl overflow-hidden group/exp shadow-2xl cursor-pointer"
+                          title={language === 'bn' ? 'ছবিটি বড় করে দেখতে ক্লিক করুন' : 'Click to view full image'}
+                        >
                           <AnimatePresence mode="wait">
                             <motion.div
                               key={activeGall.index}
@@ -1890,30 +2074,30 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                         </div>
 
                         {/* Right 5 Columns: Side Text Details Occupying Space ("side er jayga dokhol kore nibe") */}
-                        <div className="md:col-span-5 flex flex-col justify-between space-y-4 text-left p-2 sm:p-4 bg-black/40 rounded-xl border border-white/10 backdrop-blur-md">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between border-b border-[#B8862A]/30 pb-2">
+                        <div className="md:col-span-5 flex flex-col justify-between space-y-4 text-left p-4 sm:p-5 bg-black/80 rounded-xl border border-[#B8862A]/30 backdrop-blur-md min-h-[480px] sm:min-h-[560px] md:min-h-[620px]">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-[#B8862A]/40 pb-2.5">
                               <span className="text-xs font-mono font-bold text-[#F0CC7A] uppercase tracking-widest">
                                 {activeGall.title}
                               </span>
-                              <span className="text-xs font-mono text-stone-400">
-                                {activeGall.index + 1} / {activeGall.slides.length}
-                              </span>
                             </div>
 
-                            <h4 className="text-lg sm:text-xl font-serif font-bold text-white leading-snug">
-                              {cleanTextEmoji(language === 'bn' ? (activeSlide?.category_bn || activeGall.title) : (activeSlide?.category_en || activeGall.title))}
+                            <h4 className="text-lg sm:text-xl font-serif font-extrabold text-white leading-snug flex items-center gap-2">
+                              <span>{cleanTextEmoji(language === 'bn' ? (activeSlide?.category_bn || activeGall.title) : (activeSlide?.category_en || activeGall.title))}</span>
                             </h4>
 
-                            <p className="text-xs sm:text-sm/relaxed text-stone-200 font-sans leading-normal font-medium bg-white/5 p-3 rounded-lg border border-white/10">
+                            <p 
+                              className="text-sm sm:text-base/relaxed font-sans leading-relaxed font-semibold bg-stone-900/90 p-4 rounded-xl border border-white/20 shadow-inner"
+                              style={{ color: activeSlide?.text_color || activeSlide?.caption_color || '#FFFFFF' }}
+                            >
                               {language === 'bn' ? activeSlide?.caption_bn : activeSlide?.caption_en}
                             </p>
                           </div>
 
-                          <div className="pt-3 border-t border-white/10 flex items-center gap-3">
+                          <div className="pt-3 border-t border-white/10 flex items-center gap-3 mt-auto">
                             <button
                               onClick={() => onNavigate(resolveMiniGalleryRoute(activeSlide, activeGall.defaultRoute))}
-                              className="flex-1 py-2.5 px-4 bg-[#B8862A] hover:bg-[#a07422] text-stone-950 font-bold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                              className="flex-1 py-3 px-4 bg-[#B8862A] hover:bg-[#a07422] text-stone-950 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
                             >
                               <span>{language === 'bn' ? 'বিস্তারিত তথ্য দেখুন' : 'View Full Details'}</span>
                               <ArrowRight className="h-4 w-4" />
@@ -1928,10 +2112,6 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-mono font-bold text-stone-500 uppercase tracking-wider text-left">
                       <span>{language === 'bn' ? 'অন্যান্য গ্যালারিসমূহ (ক্লিক করে বিস্তার করুন)' : 'Other Galleries (Click to Expand)'}</span>
-                      <span className="text-[#B8862A] flex items-center gap-1">
-                        <MousePointerClick className="w-3 h-3" />
-                        {language === 'bn' ? 'ক্লিক করে স্থান পরিবর্তন করুন' : 'Click to Switch'}
-                      </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {miniGalleries
@@ -1987,47 +2167,70 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         );
       })()}
 
-      {/* ── SECTION 7: CALL TO ACTION (CTA) ── */}
-      <div className="bg-[#B8862A]/10 border-l-4 border-[#B8862A] p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative rounded-r-2xl text-left bg-grain animate-fade-in">
-        <div className="space-y-1 text-left">
-          <h3 className="font-serif font-extrabold text-[#1A1207] text-md md:text-lg">
-            {dbCtaBlock ? (
-              language === 'bn' ? dbCtaBlock.title_bn : dbCtaBlock.title_en
-            ) : (
-              language === 'bn' ? 'আলোকিত মানুষের এই দেশব্যাপী মহতী যাত্রায় যোগ দিন' : 'Embark Upon the Enlightening Literary Journey'
-            )}
-          </h3>
-          <p className="text-[11.5px] text-[#5C4033] font-medium">
-            {dbCtaBlock ? (
-              language === 'bn' ? dbCtaBlock.desc_bn : dbCtaBlock.desc_en
-            ) : (
-              language === 'bn' ? 'সদস্য হয়ে বিশ্বসাহিত্য কেন্দ্রের কার্যক্রমে অংশগ্রহণ করুন — বই পড়ুন, নিজেকে আলোকিত করুন।' : 'Become a lifetime registered regular reader, volunteer or advocate.'
-            )}
-          </p>
-        </div>
-        <div className="flex gap-2.5 shrink-0">
-          <button 
-            onClick={() => onNavigate(dbCtaBlock?.btn1Route || 'contact')}
-            className="px-4 py-2 bg-stone-950 hover:bg-stone-900 text-[#F0CC7A] font-extrabold text-[10.5px] rounded transition shadow-sm cursor-pointer"
-          >
-            {dbCtaBlock ? (
-              language === 'bn' ? dbCtaBlock.btn1Text_bn : dbCtaBlock.btn1Text_en
-            ) : (
-              language === 'bn' ? 'সদস্য হতে আবেদন করুন' : 'Apply for Membership'
-            )}
-          </button>
-          <button 
-            onClick={() => onNavigate(dbCtaBlock?.btn2Route || 'contact')}
-            className="px-4 py-2 bg-[#FAF7F2] hover:bg-stone-200 border border-[#E8DDD0] text-[#1A1207] font-extrabold text-[10.5px] rounded transition shadow-sm cursor-pointer"
-          >
-            {dbCtaBlock ? (
-              language === 'bn' ? dbCtaBlock.btn2Text_bn : dbCtaBlock.btn2Text_en
-            ) : (
-              language === 'bn' ? 'সহযোগিতা / অনুদান দিন' : 'Support BSK'
-            )}
-          </button>
-        </div>
-      </div>
+
+
+      {/* ── SECTION 5: 4 FULL IMAGE HIGHLIGHTS GRID ── */}
+      {(() => {
+        const infoDoc = dbInfographicBlock || {};
+        const headerTitle = language === 'bn' 
+          ? (infoDoc.header_title_bn || '') 
+          : (infoDoc.header_title_en || '');
+
+        // Check if a single full-section banner image is uploaded (full width, no border, no margin)
+        const fullBannerUrl = infoDoc.section_image || infoDoc.banner_image || infoDoc.image;
+        if (fullBannerUrl) {
+          return (
+            <div className="w-full rounded-2xl overflow-hidden shadow-xs bg-white animate-fade-in border-0 p-0 m-0">
+              <img 
+                src={fullBannerUrl} 
+                alt={headerTitle || 'Infographic Banner'}
+                className="w-full h-auto object-cover block border-0 p-0 m-0 rounded-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          );
+        }
+
+        const defaultImgs = [
+          "/assets/IMGS/482986950_1054527260032088_5237943853609018055_n.jpg",
+          "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg",
+          "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg",
+          "/assets/IMGS/534826832_1175889297895883_7988975073499309288_n.jpg"
+        ];
+
+        const rawItems = Array.isArray(infoDoc.items) && infoDoc.items.length > 0 ? infoDoc.items : [{}, {}, {}, {}];
+        const items = [0, 1, 2, 3].map((idx) => {
+          const item = rawItems[idx] || {};
+          return {
+            ...item,
+            image: item.image || item.imgUrl || item.img || defaultImgs[idx]
+          };
+        });
+
+        return (
+          <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-white animate-fade-in">
+            {/* 4 Full Image Slots Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 bg-white p-4 sm:p-6 lg:p-8 gap-4 sm:gap-6">
+              {items.map((item: any, idx: number) => {
+                const imgSrc = item.image || defaultImgs[idx];
+                return (
+                  <div 
+                    key={idx} 
+                    className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 border border-[#E8DDD0] shadow-xs hover:shadow-md transition-all duration-300 group"
+                  >
+                    <img 
+                      src={imgSrc} 
+                      alt={`BSK Showcase 0${idx + 1}`}
+                      className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── SECTION 6: CENTRAL BELIEF / ABOUT BAND ── */}
       <div className="border-t border-[#B8862A]/20 py-8 md:py-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center text-[#1A1207] text-left animate-fade-in">
@@ -2051,7 +2254,10 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             )}
           </p>
           <button 
-            onClick={() => onNavigate(dbBeliefBlock?.btnRoute || 'bsk-history')}
+            onClick={() => {
+              const targetRoute = (dbBeliefBlock?.btnRoute && dbBeliefBlock.btnRoute !== 'bsk-history') ? dbBeliefBlock.btnRoute : 'home';
+              onNavigate(targetRoute);
+            }}
             className="px-4 py-1.5 border border-[#B8862A]/40 text-[10.5px] font-bold text-[#B8862A] hover:bg-[#B8862A]/5 hover:text-[#1A1207] rounded transition mt-2 cursor-pointer"
           >
             {dbBeliefBlock ? (
@@ -2113,6 +2319,83 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* ── SECTION 7: CALL TO ACTION (CTA) — RIGHT ABOVE THE FOOTER ── */}
+      <div className="bg-[#B8862A]/10 border-l-4 border-[#B8862A] p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative rounded-r-2xl text-left bg-grain animate-fade-in shadow-xs">
+        <div className="space-y-1 text-left">
+          <h3 className="font-serif font-extrabold text-[#1A1207] text-md md:text-lg">
+            {dbCtaBlock ? (
+              language === 'bn' ? dbCtaBlock.title_bn : dbCtaBlock.title_en
+            ) : (
+              language === 'bn' ? 'আলোকিত মানুষ গড়ার এই দেশব্যাপী মহতী যাত্রায় যোগ দিন' : 'Embark Upon the Enlightening Literary Journey'
+            )}
+          </h3>
+          <p className="text-[11.5px] text-[#5C4033] font-medium">
+            {dbCtaBlock ? (
+              language === 'bn' ? dbCtaBlock.desc_bn : dbCtaBlock.desc_en
+            ) : (
+              language === 'bn' ? 'সদস্য হয়ে বিশ্বসাহিত্য কেন্দ্রের কার্যক্রমে অংশগ্রহণ করুন — বই পড়ুন, নিজেকে আলোকিত করুন।' : 'Become a lifetime registered regular reader, volunteer or advocate.'
+            )}
+          </p>
+        </div>
+        <div className="flex gap-2.5 shrink-0">
+          <button 
+            onClick={() => {
+              const route = (dbCtaBlock?.btn1Route && dbCtaBlock.btn1Route !== 'contact') ? dbCtaBlock.btn1Route : 'central-library';
+              onNavigate(route);
+            }}
+            className="px-4 py-2 bg-stone-950 hover:bg-stone-900 text-[#F0CC7A] font-extrabold text-[10.5px] rounded transition shadow-sm cursor-pointer"
+          >
+            {dbCtaBlock ? (
+              language === 'bn' ? dbCtaBlock.btn1Text_bn : dbCtaBlock.btn1Text_en
+            ) : (
+              language === 'bn' ? 'সদস্য হতে আবেদন করুন' : 'Apply for Membership'
+            )}
+          </button>
+          <button 
+            onClick={() => {
+              const route = (dbCtaBlock?.btn2Route && dbCtaBlock.btn2Route !== 'contact') ? dbCtaBlock.btn2Route : 'donation';
+              onNavigate(route);
+            }}
+            className="px-4 py-2 bg-[#FAF7F2] hover:bg-stone-200 border border-[#E8DDD0] text-[#1A1207] font-extrabold text-[10.5px] rounded transition shadow-sm cursor-pointer"
+          >
+            {dbCtaBlock ? (
+              language === 'bn' ? dbCtaBlock.btn2Text_bn : dbCtaBlock.btn2Text_en
+            ) : (
+              language === 'bn' ? 'সহযোগিতা / অনুদান দিন' : 'Support BSK'
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ── FULLSCREEN LIGHTBOX PHOTO POPUP ── */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <div 
+            onClick={() => setLightboxImage(null)}
+            className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer select-none animate-in fade-in duration-200"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-5xl max-h-[90vh] bg-stone-950/90 rounded-2xl overflow-hidden shadow-2xl border border-stone-800 p-2 cursor-default flex flex-col items-center justify-center"
+            >
+              <button
+                onClick={() => setLightboxImage(null)}
+                className="absolute top-4 right-4 bg-black/70 hover:bg-[#B8862A] text-white hover:text-stone-950 p-2 rounded-full transition cursor-pointer z-20 border border-white/20 shadow-lg"
+                title={language === 'bn' ? 'বন্ধ করুন' : 'Close'}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <img
+                src={lightboxImage}
+                alt="Full size view"
+                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ── FOOTER INFO ── */}
       <Footer language={language} onNavigate={onNavigate} />

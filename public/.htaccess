@@ -1,0 +1,94 @@
+# ----------------------------------------------------------------------
+# Single Page Application (SPA) URL Rewrite Rules for Apache, LiteSpeed & cPanel
+# Ensures all routes (/founder, /home, /admin, /trustees, /recruitment, etc.)
+# resolve seamlessly without 404 errors or blank white screens.
+# ----------------------------------------------------------------------
+
+# Enable FollowSymLinks or SymLinksIfOwnerMatch for rewrite engine
+<IfModule mod_rewrite.c>
+  Options +FollowSymLinks -MultiViews -Indexes
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Allow existing real files (images, JS, CSS, fonts, audio, video) to be served directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 2. Never rewrite direct API endpoint calls (e.g. /api.php or /api/...)
+  RewriteRule ^api\.php - [L,QSA]
+
+  # 3. Prevent MIME type confusion: Never rewrite missing asset files (.js, .css, .jpg, .png, etc.) to index.html
+  RewriteCond %{REQUEST_URI} !\.(css|js|jsx|ts|tsx|map|json|jpg|jpeg|png|gif|svg|webp|ico|woff|woff2|ttf|eot|otf|pdf|mp4|webm|wav|mp3|txt|xml|zip|tar|gz)$ [NC]
+
+  # 4. Route all standard SPA web routes to index.html for React router
+  RewriteRule ^ index.html [L,QSA]
+</IfModule>
+
+# Fallback for Apache 2.4+ / LiteSpeed environments where mod_rewrite may be bypassed
+<IfModule mod_dir.c>
+  DirectoryIndex index.html index.php
+</IfModule>
+
+# Universal 404 & 403 Fallback: send directly to index.html so React SPA boots safely
+ErrorDocument 404 /index.html
+ErrorDocument 403 /index.html
+
+# Security & Encoding Configurations
+AddDefaultCharset UTF-8
+
+# Prevent directory browsing
+<IfModule mod_autoindex.c>
+  Options -Indexes
+</IfModule>
+
+# Protect hidden config files (.env, .git, .htaccess, etc.)
+<FilesMatch "^\.">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Allow public .htaccess itself if needed by server but keep env files blocked
+<FilesMatch "^(\.env|\.git|\.lock|package\.json|tsconfig\.json)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Gzip / Brotli Compression Headers
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/x-javascript application/json image/svg+xml
+</IfModule>
+
+# Cache & MIME Type Security Headers
+<IfModule mod_headers.c>
+  # Prevent MIME type sniffing
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+
+  # Cache static assets (1 year)
+  <FilesMatch "\.(ico|jpg|jpeg|png|gif|svg|webp|woff|woff2|ttf|eot|otf)$">
+    Header set Cache-Control "max-age=31536000, public, immutable"
+  </FilesMatch>
+
+  # Cache JS and CSS build bundles (1 year, as Vite creates content hashes)
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=31536000, public, immutable"
+  </FilesMatch>
+
+  # Never cache index.html or 404.html to guarantee clients always get the newest SPA build
+  <FilesMatch "(index\.html|404\.html)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+</IfModule>

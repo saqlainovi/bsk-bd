@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Store, BookOpen, MapPin, Phone, Mail, Clock, FileText, Download, 
   Eye, CheckCircle2, Send, Image as ImageIcon, X
 } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { ParsedPage, Language } from '../types';
-import { db } from '../firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { cpanelApi } from '../services/cpanelApi';
 import { normalizeImageUrl } from './imageUtils';
+import { defaultBookShopData } from '../data/specializedPagesDefaults';
 
 interface BookShopPageProps {
   page: ParsedPage;
@@ -19,12 +19,36 @@ interface BookShopPageProps {
 }
 
 export const BookShopPage: React.FC<BookShopPageProps> = ({
+  page,
   language,
   setActivePhoto,
   setActivePhotoIndex,
   setActiveAlbumPhotos
 }) => {
   const isBn = language === 'bn';
+
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'bookshop');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultBookShopData, ...page, ...dbPageData };
 
   // Contact / Inquiry Form state
   const [inquirerName, setInquirerName] = useState('');
@@ -69,7 +93,7 @@ export const BookShopPage: React.FC<BookShopPageProps> = ({
   ];
 
   // Bookstore Gallery Photos
-  const galleryImages = [
+  const defaultGalleryImages = [
     {
       url: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
       captionBn: "বিশ্বসাহিত্য কেন্দ্র ভবন ২য় তলার সুসজ্জিত বই বিক্রয় কেন্দ্র",
@@ -102,6 +126,14 @@ export const BookShopPage: React.FC<BookShopPageProps> = ({
     }
   ];
 
+  const galleryImages = (page?.gallery && page.gallery.length > 0)
+    ? page.gallery.map((g: any) => ({
+        url: g.image || g.url,
+        captionBn: g.caption_bn || g.captionBn || 'বই বিক্রয় কেন্দ্রের ছবি',
+        captionEn: g.caption_en || g.captionEn || 'Bookstore Photo'
+      }))
+    : defaultGalleryImages;
+
   // Submit Inquiry Form
   const handleSubmitInquiry = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,16 +146,13 @@ export const BookShopPage: React.FC<BookShopPageProps> = ({
     setFormError('');
 
     try {
-      const inquiriesRef = collection(db, 'inquiries');
-      const newDoc = doc(inquiriesRef);
-      await setDoc(newDoc, {
-        id: newDoc.id,
+      await cpanelApi.addDoc('inquiries', {
         type: 'bookshop_query',
         name: inquirerName.trim(),
         phone: inquirerPhone.trim(),
         notes: bookInterest.trim(),
         status: 'pending',
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       });
 
       setSubmittedSuccess(true);
@@ -157,17 +186,17 @@ export const BookShopPage: React.FC<BookShopPageProps> = ({
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B8862A]/20 border border-[#D4A84B]/40 text-[#F0CC7A] text-xs font-semibold">
             <Store className="w-3.5 h-3.5 text-[#F0CC7A]" />
-            <span>{isBn ? 'বিশ্বসাহিত্য কেন্দ্র ভবন • ২য় তলা' : 'BSK Building • 2nd Floor'}</span>
+            <span>{isBn ? (page?.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র ভবন • ২য় তলা') : (page?.badge_en || 'BSK Building • 2nd Floor')}</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#FAF7F2] font-serif tracking-tight">
-            {isBn ? 'বই বিক্রয় কেন্দ্র' : 'Book Shop'}
+            {isBn ? (page?.title_bn || 'বই বিক্রয় কেন্দ্র') : (page?.title_en || 'Book Shop')}
           </h1>
 
           <p className="text-sm sm:text-base text-[#E8DDD0] leading-relaxed text-justify max-w-3xl">
             {isBn 
-              ? 'বিশ্বসাহিত্য কেন্দ্রের ভবনের ২য় তলায় নিজস্ব বই বিক্রয় কেন্দ্র। বাংলাদেশের প্রায় সবকটি প্রকাশনার বাছাইকৃত শ্রেষ্ঠ বইগুলোর পাশাপাশি পশ্চিম বাংলার সেরা প্রকাশনীর বাছাই করা বাংলা বই এবং ভারত, যুক্তরাজ্য, যুক্তরাষ্ট্র ইত্যাদি দেশে প্রকাশিত উচ্চমানের ইংরেজি বই হ্রাসকৃত মূল্যে বিক্রয়ের জন্য রাখা হয়েছে এখানে। এ ছাড়াও রয়েছে বিশ্বসাহিত্য কেন্দ্র প্রকাশিত বিশ্বসাহিত্য, বাংলা সাহিত্য ও কিশোর সাহিত্যের পাঁচ শতাধিক ধ্রুপদী বই।'
-              : 'Located on the 2nd floor of the Bishwo Shahitto Kendro building. Features selected masterpieces from nearly all top Bangladeshi publishers alongside curated Bengali literature from West Bengal and high-quality English books from India, UK, USA at discounted prices, plus over 500 BSK classics.'}
+              ? (page?.subtitle_bn || page?.sections?.[0]?.content?.[0] || 'বিশ্বসাহিত্য কেন্দ্রের ভবনের ২য় তলায় নিজস্ব বই বিক্রয় কেন্দ্র। বাংলাদেশের প্রায় সবকটি প্রকাশনার বাছাইকৃত শ্রেষ্ঠ বইগুলোর পাশাপাশি পশ্চিম বাংলার সেরা প্রকাশনীর বাছাই করা বাংলা বই এবং ভারত, যুক্তরাজ্য, যুক্তরাষ্ট্র ইত্যাদি দেশে প্রকাশিত উচ্চমানের ইংরেজি বই হ্রাসকৃত মূল্যে বিক্রয়ের জন্য রাখা হয়েছে এখানে। এ ছাড়াও রয়েছে বিশ্বসাহিত্য কেন্দ্র প্রকাশিত বিশ্বসাহিত্য, বাংলা সাহিত্য ও কিশোর সাহিত্যের পাঁচ শতাধিক ধ্রুপদী বই।')
+              : (page?.subtitle_en || page?.sections?.[0]?.content_en?.[0] || 'Located on the 2nd floor of the Bishwo Shahitto Kendro building. Features selected masterpieces from nearly all top Bangladeshi publishers alongside curated Bengali literature from West Bengal and high-quality English books from India, UK, USA at discounted prices, plus over 500 BSK classics.')}
           </p>
         </div>
       </div>
@@ -404,11 +433,17 @@ export const BookShopPage: React.FC<BookShopPageProps> = ({
       {/* LIGHTBOX MODAL */}
       <AnimatePresence>
         {activeImageModal && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-            <div className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden p-2">
+          <div 
+            onClick={() => setActiveImageModal(null)}
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden p-2 shadow-2xl cursor-default"
+            >
               <button
                 onClick={() => setActiveImageModal(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black cursor-pointer"
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black cursor-pointer z-10"
               >
                 <X className="w-5 h-5" />
               </button>

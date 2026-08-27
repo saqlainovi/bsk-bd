@@ -1,0 +1,48 @@
+# ==============================================================================
+# Nginx Configuration for Bishwo Shahitto Kendro (BSK) Single Page Application
+# Place inside your /etc/nginx/sites-available/new.bskbd.org or server block
+# ==============================================================================
+
+server {
+    listen 80;
+    server_name new.bskbd.org bskbd.org;
+    root /home/user/public_html; # Change to your actual web root directory
+
+    index index.html index.php;
+    charset utf-8;
+
+    # 1. Direct PHP API requests to PHP-FPM
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; # Adjust PHP-FPM socket or 127.0.0.1:9000
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    # 2. Immutable Cache for Static Assets
+    location ~* \.(ico|css|js|gif|jpeg|jpg|png|svg|webp|woff|woff2|ttf|eot|otf)$ {
+        expires 1y;
+        add_header Cache-Control "public, no-transform, immutable";
+        try_files $uri =404;
+    }
+
+    # 3. Never cache index.html so users always receive fresh frontend builds
+    location = /index.html {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, post-check=0, pre-check=0";
+    }
+
+    # 4. Universal Single Page Application routing (Prevents 404 / White screens)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 5. Security - deny hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+}

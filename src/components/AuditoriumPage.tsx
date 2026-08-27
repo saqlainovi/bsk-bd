@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Landmark, Calendar, Clock, Phone, Mail, MapPin, Search, 
   CheckCircle2, ShieldAlert, Info, ArrowRight,
@@ -7,8 +7,8 @@ import {
   Download, Printer, DollarSign, Layers
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultAuditoriumData } from '../data/specializedPagesDefaults';
 
 interface AuditoriumPageProps {
   page: ParsedPage;
@@ -51,6 +51,29 @@ export interface RoomOption {
 }
 
 export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, onNavigate }) => {
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'auditorium');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultAuditoriumData, ...page, ...dbPageData };
+
   // Navigation / View mode: 'all' | 'table' | 'rules'
   const [activeSection, setActiveSection] = useState<'all' | 'table' | 'rules'>('all');
   
@@ -76,8 +99,8 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
 
-  // Complete Official BSK Hall Data from PDF Document
-  const roomsData: RoomOption[] = [
+  // Complete Official BSK Hall Data from PDF Document or from CMS Page Prop
+  const defaultRoomsData: RoomOption[] = [
     {
       id: 'r103',
       roomNo: '১০৩',
@@ -314,6 +337,12 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
     }
   ];
 
+  const roomsData: RoomOption[] = (page?.rooms && page.rooms.length > 0) 
+    ? page.rooms 
+    : (page?.roomsData && page.roomsData.length > 0) 
+      ? page.roomsData 
+      : defaultRoomsData;
+
   // Filtered rooms logic
   const filteredRooms = roomsData.filter((r) => {
     const matchesCat = selectedCategory === 'all' || r.category === selectedCategory;
@@ -327,7 +356,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
     return matchesCat && matchesQuery;
   });
 
-  // Submit Booking Form to Firestore
+  // Submit Booking Form to cPanel Database
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!applicantName || !applicantPhone || !eventTitle) {
@@ -337,7 +366,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
 
     setSubmitting(true);
     try {
-      await addDoc(collection(db, 'hall_bookings'), {
+      await cpanelApi.addDoc('hall_bookings', {
         roomId: targetRoom?.id || 'general',
         roomTitleBn: targetRoom?.titleBn || 'সাধারণ হল বুকিং',
         roomTitleEn: targetRoom?.titleEn || 'General Hall Booking',
@@ -355,7 +384,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
         reqProjector,
         specialNotes,
         status: 'pending',
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       });
 
       setSubmitting(false);
@@ -513,7 +542,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
               <div className="absolute inset-0 bg-gradient-to-tr from-[#B8862A]/30 to-transparent rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative rounded-2xl overflow-hidden border-2 border-[#B8862A]/40 shadow-2xl bg-[#1A1207]/80 aspect-[4/3] w-full">
                 <img 
-                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80" 
+                  src={page?.hero_image || page?.heroImage || "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80"} 
                   alt="BSK Main Auditorium" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
@@ -932,8 +961,14 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
 
       {/* 7. ONLINE BOOKING MODAL */}
       {bookingModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-[#E8DDD0] rounded-3xl max-w-xl w-full p-6 md:p-8 space-y-5 shadow-2xl relative animate-scale-up my-8">
+        <div 
+          onClick={() => setBookingModalOpen(false)}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white border border-[#E8DDD0] rounded-3xl max-w-xl w-full p-6 md:p-8 space-y-5 shadow-2xl relative animate-scale-up my-8 cursor-default"
+          >
             
             <button 
               onClick={() => setBookingModalOpen(false)}

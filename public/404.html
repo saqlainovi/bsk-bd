@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <title>বিশ্বসাহিত্য কেন্দ্র | Bishwo Shahitto Kendro</title>
+    <script>
+      // Single Page Application (SPA) 404 Fallback Redirect
+      // If server does not have .htaccess, 404.html intercepts deep links (/home, /founder, etc.)
+      // and redirects smoothly to index.html preserving the route.
+      (function() {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        
+        // Save full requested URL path in sessionStorage
+        try {
+          sessionStorage.setItem('spa_redirect_path', path + search + hash);
+        } catch(e) {}
+
+        // Extract last segment (e.g., /home -> home, /founder -> founder)
+        var cleanPath = path.replace(/^\/+|\/+$/g, '').replace(/index\.html$/i, '');
+        var targetPage = cleanPath ? cleanPath.split('/').pop() : '';
+
+        // Determine destination redirect
+        var destination = '/';
+        if (targetPage) {
+          destination = '/?page=' + encodeURIComponent(targetPage) + (hash || '');
+        }
+
+        window.location.replace(destination);
+      })();
+    </script>
+  </head>
+  <body style="background:#FAF7F2; font-family:sans-serif; text-align:center; padding-top:20vh; color:#1A1207;">
+    <h2>বিশ্বসাহিত্য কেন্দ্র (BSK)</h2>
+    <p>অপেক্ষা করুন, আপনাকে সঠিক পাতায় নিয়ে যাওয়া হচ্ছে...</p>
+    <script>
+      // Backup fallback if script redirect didn't trigger
+      setTimeout(function() {
+        window.location.href = '/';
+      }, 1500);
+    </script>
+  </body>
+</html>

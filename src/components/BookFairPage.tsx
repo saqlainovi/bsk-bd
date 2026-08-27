@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, MapPin, Sparkles, CheckCircle2,
   Download, Phone, Mail, FileText, Send, Eye, ShieldCheck,
   Trophy, ArrowRight, Compass, Camera, Calendar, Clock, Store, X
 } from 'lucide-react';
 import { ParsedPage, Language } from '../types';
+import { cpanelApi } from '../services/cpanelApi';
+import { defaultBookFairData } from '../data/specializedPagesDefaults';
 
 interface BookFairPageProps {
   page: ParsedPage;
@@ -28,6 +30,29 @@ export const BookFairPage: React.FC<BookFairPageProps> = ({
   const [galleryPage, setGalleryPage] = useState(1);
   const [selectedHighlight, setSelectedHighlight] = useState<any | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<any | null>(null);
+
+  // Live cPanel SQL page state
+  const [dbPageData, setDbPageData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const data = await cpanelApi.getDoc('website_pages', 'book-fair');
+      if (data) {
+        setDbPageData(data);
+      }
+    };
+    fetchPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handleUpdate);
+  }, []);
+
+  const pageData = { ...defaultBookFairData, ...page, ...dbPageData };
 
   // Stats list from CMS or empty
   const statsList = page.stats && page.stats.length > 0 ? page.stats : [];
@@ -66,9 +91,22 @@ export const BookFairPage: React.FC<BookFairPageProps> = ({
   const totalGalleryPages = Math.ceil(galleryList.length / photosPerPage) || 1;
   const currentGalleryPhotos = galleryList.slice((galleryPage - 1) * photosPerPage, galleryPage * photosPerPage);
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiryForm.name || !inquiryForm.phone) return;
+    try {
+      await cpanelApi.addDoc('inquiries', {
+        name: inquiryForm.name,
+        phone: inquiryForm.phone,
+        institution: inquiryForm.institute || '',
+        message: inquiryForm.message || '',
+        type: 'book_fair_inquiry',
+        source: 'Book Fair Page',
+        createdAt: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Error saving inquiry:', err);
+    }
     setInquirySubmitted(true);
   };
 

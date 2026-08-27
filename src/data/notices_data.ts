@@ -260,3 +260,34 @@ export const defaultBlogPosts: BlogPostItem[] = [
     ]
   }
 ];
+
+export const defaultCirculars = [
+  {
+    id: "circ-1",
+    title_bn: "দেশব্যাপী বইপড়া ও লাইব্রেরি কর্মসূচিতে সহকারী কর্মসূচি কর্মকর্তা নিয়োগ",
+    title_en: "Recruitment for Assistant Program Officer in Nationwide Reading Program",
+    position_bn: "সহকারী কর্মসূচি কর্মকর্তা (Assistant Program Officer)",
+    position_en: "Assistant Program Officer",
+    dept_bn: "দেশব্যাপী বইপড়া কর্মসূচি",
+    dept_en: "Nationwide Book Reading Program",
+    deadline_bn: "৩০ জুন ২০২৫",
+    deadline_en: "30 June 2025",
+    desc_bn: "বিশ্বসাহিত্য কেন্দ্রের দেশব্যাপী স্কুল-কলেজ পর্যায়ের বইপড়া কর্মসূচি বাস্তবায়ন, শিক্ষক ও ছাত্রছাত্রীদের সাথে যোগাযোগ এবং মাঠপর্যায়ে বই উৎসব পরিচালনার জন্য উদ্যমী ও সংস্কৃতিমনা প্রার্থী আবশ্যক।",
+    desc_en: "Energetic and motivated candidates required for executing nationwide reading program, school coordination, and field book festivals.",
+    status: "active"
+  },
+  {
+    id: "circ-2",
+    title_bn: "ভ্রাম্যমাণ লাইব্রেরি কার্যক্রমে ইউনিট সুপারভাইজার নিয়োগ বিজ্ঞপ্তি",
+    title_en: "Unit Supervisor Recruitment for Mobile Library Operations",
+    position_bn: "ভ্রাম্যমাণ লাইব্রেরি সুপারভাইজার (Mobile Library Supervisor)",
+    position_en: "Mobile Library Supervisor",
+    dept_bn: "ভ্রাম্যমাণ লাইব্রেরি ইউনিট",
+    dept_en: "Mobile Library Unit",
+    deadline_bn: "১৫ জুলাই ২০২৫",
+    deadline_en: "15 July 2025",
+    desc_bn: "ভ্রাম্যমাণ লাইব্রেরি গাড়ির সার্বিক পাঠক সেবা, বই ইস্যু ও জমা গ্রহণ এবং পাঠচক্র পরিচালনায় অভিজ্ঞ প্রার্থী অগ্রাধিকার পাবেন।",
+    desc_en: "Candidates with passion for library reader service, book management, and community reading circles.",
+    status: "active"
+  }
+];
