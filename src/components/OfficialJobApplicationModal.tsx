@@ -475,7 +475,7 @@ export default function OfficialJobApplicationModal({
               </span>
               {circular.deadline_bn && (
                 <span className="bg-white/10 text-stone-300 text-[10px] px-2.5 py-0.5 rounded-full">
-                  📅 {language === 'bn' ? 'শেষ তারিখ: ' : 'Deadline: '}{language === 'bn' ? circular.deadline_bn : circular.deadline_en}
+                  \uD83D\uDCC5 {language === 'bn' ? 'শেষ তারিখ: ' : 'Deadline: '}{language === 'bn' ? circular.deadline_bn : circular.deadline_en}
                 </span>
               )}
             </div>
@@ -517,7 +517,7 @@ export default function OfficialJobApplicationModal({
                   <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] ${
                     currentStep === item.step ? 'bg-white text-[#2E5942]' : (item.step < currentStep ? 'bg-emerald-600 text-white' : 'bg-stone-300 text-stone-700')
                   }`}>
-                    {item.step < currentStep ? '✓' : item.step}
+                    {item.step < currentStep ? '\u2713' : item.step}
                   </span>
                   <span>{language === 'bn' ? item.label_bn : item.label_en}</span>
                 </button>
@@ -531,7 +531,7 @@ export default function OfficialJobApplicationModal({
               /* Success View */
               <div className="text-center py-8 space-y-5 font-sans">
                 <div className="h-16 w-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold border-2 border-emerald-300 shadow-sm animate-bounce">
-                  ✓
+                  \u2713
                 </div>
 
                 <div className="space-y-2 max-w-lg mx-auto">
@@ -822,7 +822,7 @@ export default function OfficialJobApplicationModal({
                     {/* Present Address */}
                     <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
                       <span className="font-bold text-stone-800 text-xs block">
-                        📍 {language === 'bn' ? 'বর্তমান ঠিকানা (Present Address):' : 'Present Address:'}
+                        \uD83D\uDCCD {language === 'bn' ? 'বর্তমান ঠিকানা (Present Address):' : 'Present Address:'}
                       </span>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -889,7 +889,7 @@ export default function OfficialJobApplicationModal({
                     <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <span className="font-bold text-stone-800 text-xs block">
-                          🏡 {language === 'bn' ? 'স্থায়ী ঠিকানা (Permanent Address):' : 'Permanent Address:'}
+                          \uD83C\uDFE1 {language === 'bn' ? 'স্থায়ী ঠিকানা (Permanent Address):' : 'Permanent Address:'}
                         </span>
 
                         <label className="flex items-center gap-1.5 text-xs text-stone-700 font-bold cursor-pointer select-none bg-white px-3 py-1 rounded-lg border border-stone-200">
@@ -1032,7 +1032,7 @@ export default function OfficialJobApplicationModal({
                         <div key={idx} className="p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2.5 relative">
                           <div className="flex justify-between items-center">
                             <span className="font-bold text-[#2E5942] text-xs">
-                              🎓 {language === 'bn' ? `ডিগ্রি / স্তর ${idx + 1}:` : `Degree / Level ${idx + 1}:`}
+                              \uD83C\uDF93 {language === 'bn' ? `ডিগ্রি / স্তর ${idx + 1}:` : `Degree / Level ${idx + 1}:`}
                             </span>
                             {formData.educations.length > 1 && (
                               <button
@@ -1137,7 +1137,7 @@ export default function OfficialJobApplicationModal({
                         <div key={idx} className="p-3.5 bg-stone-50 border border-stone-200 rounded-2xl space-y-2.5">
                           <div className="flex justify-between items-center">
                             <span className="font-bold text-stone-700 text-xs">
-                              💼 {language === 'bn' ? `প্রতিষ্ঠান / অভিজ্ঞতা ${idx + 1}:` : `Company / Experience ${idx + 1}:`}
+                              \uD83D\uDCBC {language === 'bn' ? `প্রতিষ্ঠান / অভিজ্ঞতা ${idx + 1}:` : `Company / Experience ${idx + 1}:`}
                             </span>
                             {formData.experiences.length > 1 && (
                               <button
@@ -1239,7 +1239,7 @@ export default function OfficialJobApplicationModal({
                     {/* Two References */}
                     <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
                       <span className="font-bold text-stone-800 text-xs block">
-                        👥 {language === 'bn' ? 'প্রত্যয়নকারী / রেফারেন্স (২ জন বিশিষ্ট ব্যক্তি):' : 'Two References (Non-relatives):'}
+                        \uD83D\uDC65 {language === 'bn' ? 'প্রত্যয়নকারী / রেফারেন্স (২ জন বিশিষ্ট ব্যক্তি):' : 'Two References (Non-relatives):'}
                       </span>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1302,7 +1302,7 @@ export default function OfficialJobApplicationModal({
                       {/* Photo Upload */}
                       <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
                         <label className="font-bold text-stone-800 block text-xs">
-                          📷 {language === 'bn' ? 'পাসপোর্ট সাইজের রঙিন ছবি *' : 'Passport Size Photo *'}
+                          \uD83D\uDCF7 {language === 'bn' ? 'পাসপোর্ট সাইজের রঙিন ছবি *' : 'Passport Size Photo *'}
                         </label>
 
                         <div className="flex items-center gap-4">
@@ -1393,7 +1393,7 @@ export default function OfficialJobApplicationModal({
                     {/* Resume Attachment */}
                     <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-3">
                       <label className="font-bold text-stone-800 block text-xs">
-                        📄 {language === 'bn' ? 'জীবনবৃত্তান্ত ফাইল সংযুক্তি (CV / Resume PDF) *' : 'Attach CV / Resume Document (PDF) *'}
+                        \uD83D\uDCC4 {language === 'bn' ? 'জীবনবৃত্তান্ত ফাইল সংযুক্তি (CV / Resume PDF) *' : 'Attach CV / Resume Document (PDF) *'}
                       </label>
 
                       <div className="relative border-2 border-dashed border-stone-300 rounded-xl p-4 flex flex-col items-center justify-center bg-white hover:bg-stone-50 transition text-center">

@@ -550,7 +550,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-xs p-3 rounded-xl border border-white/10">
                   <p className="text-xs font-bold text-[#F0CC7A] font-serif">
-                    {language === 'bn' ? '🏛️ ইস্তেন্দিয়ার জাহিদ হাসান মিলনায়তন (২০০ আসন)' : '🏛️ Istendiar Zahid Hasan Auditorium (200 Seats)'}
+                    {language === 'bn' ? '\uD83C\uDFDB️ ইস্তেন্দিয়ার জাহিদ হাসান মিলনায়তন (২০০ আসন)' : '\uD83C\uDFDB️ Istendiar Zahid Hasan Auditorium (200 Seats)'}
                   </p>
                   <p className="text-[10px] text-stone-300 font-sans mt-0.5">
                     {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র ভবন - ২য় তলা, রুম ১০৩' : '2nd Floor, Bishwo Shahitto Kendro'}

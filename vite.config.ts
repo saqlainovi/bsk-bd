@@ -82,6 +82,9 @@ function serveRootAssetsPlugin() {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), serveRootAssetsPlugin()],
+    esbuild: {
+      charset: 'utf8' as const,
+    },
     define: {
       'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || '')
     },

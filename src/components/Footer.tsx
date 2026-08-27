@@ -115,8 +115,8 @@ export default function Footer({ language, onNavigate }: FooterProps) {
         </div>
         <div className="space-y-2 text-left">
           <h5 className="font-bold text-[#1A1207] uppercase tracking-wider font-serif text-[12px] mb-1">{language === 'bn' ? 'অফিসিয়াল কেন্দ্র' : 'HQ Headquarters'}</h5>
-          <span className="block">📍 {address}</span>
-          <span className="block">📞 {phone}</span>
+          <span className="block">\uD83D\uDCCD {address}</span>
+          <span className="block">\uD83D\uDCDE {phone}</span>
           <span className="block">✉️ {email}</span>
         </div>
         <div className="space-y-2 text-left">

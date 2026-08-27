@@ -10,8 +10,8 @@ import { safeCacheData } from './cacheUtils';
 
 interface PressCMSProps {
   language: Language;
-  db: any;
-  openImageResizer: (preset: 'banner' | 'landscape' | 'square' | 'portrait' | 'any', callback: (resizedUrl: string) => void) => void;
+  db?: any;
+  openImageResizer?: (preset: 'banner' | 'landscape' | 'square' | 'portrait' | 'any', callback: (resizedUrl: string) => void) => void;
 }
 
 // Image compression helper to convert file to lightweight JPEG Base64
@@ -107,7 +107,7 @@ const ImageFieldControl = ({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <label className="flex-1 px-4 py-2 bg-white hover:bg-stone-100 border border-stone-300 rounded-xl text-xs font-bold text-stone-700 transition cursor-pointer flex items-center justify-center gap-2 text-center shadow-2xs">
               <Upload className="h-4 w-4 text-[#2E5942]" />
-              <span>{isUploading ? (language === 'bn' ? 'প্রসেস হচ্ছে...' : 'Processing...') : (language === 'bn' ? '📁 ডিভাইস থেকে ছবি নির্বাচন করুন' : '📁 Choose Image File')}</span>
+              <span>{isUploading ? (language === 'bn' ? 'প্রসেস হচ্ছে...' : 'Processing...') : (language === 'bn' ? '\uD83D\uDCC1 ডিভাইস থেকে ছবি নির্বাচন করুন' : '\uD83D\uDCC1 Choose Image File')}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -497,7 +497,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
           {/* Live Visual Preview Card */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-stone-700">
-              {language === 'bn' ? '👁️ লাইভ হেডার কভার ব্যানার প্রিভিউ (Live Preview):' : '👁️ Live Header Preview:'}
+              {language === 'bn' ? '\uD83D\uDC41️ লাইভ হেডার কভার ব্যানার প্রিভিউ (Live Preview):' : '\uD83D\uDC41️ Live Header Preview:'}
             </label>
             <div className="bg-[#1A1207] text-[#FAF7F2] p-6 rounded-2xl border border-[#B8862A]/30 relative overflow-hidden shadow-md">
               {pressHeaderSettings.banner_image && (
@@ -1012,7 +1012,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
                           className="hidden"
                         />
                         <Upload className="h-5 w-5 text-stone-400 mb-1" />
-                        <span className="text-xs text-stone-600 font-bold">{language === 'bn' ? '📁 পিডিএফ ফাইল সিলেক্ট করুন' : '📁 Select PDF File'}</span>
+                        <span className="text-xs text-stone-600 font-bold">{language === 'bn' ? '\uD83D\uDCC1 পিডিএফ ফাইল সিলেক্ট করুন' : '\uD83D\uDCC1 Select PDF File'}</span>
                         <span className="text-[10px] text-stone-400 mt-0.5">(Max 950 KB)</span>
                       </label>
                     </div>
@@ -1079,13 +1079,13 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
                             {item.coverImage ? (
                               <img src={item.coverImage} className="w-full h-full object-cover" alt="" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-stone-300">📰</div>
+                              <div className="w-full h-full flex items-center justify-center text-stone-300">\uD83D\uDCF0</div>
                             )}
                           </div>
                           <div className="truncate text-left">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="px-2 py-0.5 bg-amber-50 text-amber-700 text-[9px] font-bold rounded border border-amber-200/50">{item.category}</span>
-                              <span className="text-[10px] text-stone-400">📅 {item.publishedDate}</span>
+                              <span className="text-[10px] text-stone-400">\uD83D\uDCC5 {item.publishedDate}</span>
                               <span className={`px-1.5 py-0.5 text-[8px] font-bold rounded-full uppercase ${
                                 item.status === 'published' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-stone-50 text-stone-500 border border-stone-200'
                               }`}>
@@ -1242,7 +1242,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
                     {/* Batch Upload Button */}
                     <label className="px-3 py-1.5 bg-[#2E5942] text-white text-xs font-bold rounded-xl hover:bg-[#203F2F] transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
                       <Upload className="h-3.5 w-3.5" />
-                      <span>{language === 'bn' ? '📁 একাধিক ছবি একসাথে যুক্ত করুন' : '📁 Upload Multiple Photos'}</span>
+                      <span>{language === 'bn' ? '\uD83D\uDCC1 একাধিক ছবি একসাথে যুক্ত করুন' : '\uD83D\uDCC1 Upload Multiple Photos'}</span>
                       <input
                         type="file"
                         multiple
@@ -1374,7 +1374,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
                         {album.cover ? (
                           <img src={album.cover} className="w-full h-full object-cover" alt="" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-stone-300">🖼️</div>
+                          <div className="w-full h-full flex items-center justify-center text-stone-300">\uD83D\uDDBC️</div>
                         )}
                         <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold rounded-full">
                           {(album.photos || []).length} {language === 'bn' ? 'ছবি' : 'Photos'}
@@ -1527,7 +1527,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
                   <label className="px-4 py-2.5 bg-white border border-stone-300 hover:bg-stone-100 rounded-xl text-xs font-bold text-stone-700 cursor-pointer flex items-center justify-center gap-2 shadow-2xs">
                     <Upload className="h-4 w-4 text-[#2E5942]" />
-                    <span>{language === 'bn' ? '📁 ডিভাইস থেকে ফাইল আপলোড করুন' : '📁 Upload Local File'}</span>
+                    <span>{language === 'bn' ? '\uD83D\uDCC1 ডিভাইস থেকে ফাইল আপলোড করুন' : '\uD83D\uDCC1 Upload Local File'}</span>
                     <input
                       type="file"
                       className="hidden"

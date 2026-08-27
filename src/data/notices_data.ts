@@ -40,7 +40,7 @@ export interface NoticeItem {
 export const newsItems: NewsItem[] = [
   {
     id: "news-1",
-    icon: "📢",
+    icon: "\uD83D\uDCE2",
     tag_bn: "সংবাদ",
     tag_en: "News",
     date_bn: "৪ অক্টোবর ২০২৪",
@@ -50,7 +50,7 @@ export const newsItems: NewsItem[] = [
   },
   {
     id: "news-2",
-    icon: "🏆",
+    icon: "\uD83C\uDFC6",
     tag_bn: "পুরস্কার",
     tag_en: "Award",
     date_bn: "৩ ডিসেম্বর ২০২৩",
@@ -60,7 +60,7 @@ export const newsItems: NewsItem[] = [
   },
   {
     id: "news-3",
-    icon: "📚",
+    icon: "\uD83D\uDCDA",
     tag_bn: "কার্যক্রম",
     tag_en: "Activity",
     date_bn: "১৮ নভেম্বর ২০২৩",

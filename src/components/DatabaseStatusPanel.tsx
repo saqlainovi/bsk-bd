@@ -118,12 +118,12 @@ export const DatabaseStatusPanel: React.FC<DatabaseStatusPanelProps> = ({
             {isOnline ? (
               <>
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span className="text-xs font-bold text-emerald-300">ONLINE 🟢</span>
+                <span className="text-xs font-bold text-emerald-300">ONLINE \uD83D\uDFE2</span>
               </>
             ) : (
               <>
                 <XCircle className="h-4 w-4 text-rose-400 shrink-0" />
-                <span className="text-xs font-bold text-rose-300">OFFLINE 🔴</span>
+                <span className="text-xs font-bold text-rose-300">OFFLINE \uD83D\uDD34</span>
               </>
             )}
           </div>
@@ -138,7 +138,7 @@ export const DatabaseStatusPanel: React.FC<DatabaseStatusPanelProps> = ({
             {isMySQLVerified ? (
               <>
                 <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span className="text-xs font-bold text-emerald-300">VERIFIED 🟢</span>
+                <span className="text-xs font-bold text-emerald-300">VERIFIED \uD83D\uDFE2</span>
               </>
             ) : (
               <>
@@ -159,7 +159,7 @@ export const DatabaseStatusPanel: React.FC<DatabaseStatusPanelProps> = ({
           <div className="flex items-center gap-1.5">
             {hasAdminToken ? (
               <span className="text-xs font-bold text-emerald-300 flex items-center gap-1">
-                <span>YES 🛡️</span>
+                <span>YES \uD83D\uDEE1️</span>
               </span>
             ) : (
               <span className="text-xs font-bold text-stone-400">NO SESSION</span>

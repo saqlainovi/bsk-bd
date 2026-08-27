@@ -59,6 +59,9 @@ import {
   Heart,
   Lightbulb,
   BookMarked,
+  Edit3,
+  ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import {
   db,
@@ -424,7 +427,7 @@ function compressImage(
   });
 }
 
-export default function AdminCMS({ language, onClose }: AdminCMSProps) {
+export function AdminCMS({ language, onClose }: AdminCMSProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
       return (
@@ -679,7 +682,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     desc_bn: "",
     desc_en: "",
     imgUrl: "",
-    icon: "ğŸ“",
+    icon: "\uD83D\uDCCD",
   });
 
   // Additional fine-grain widgets CMS states
@@ -746,6 +749,55 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     (resizedBase64: string) => void
   >(() => () => {});
   const [isDirectUploading, setIsDirectUploading] = useState<boolean>(false);
+
+  
+  const handleOpenPage = (pageId: string, nameBn?: string, nameEn?: string) => {
+    const existingInPages = pages.find((p) => p.id === pageId);
+    if (existingInPages) {
+      setEditingPage(existingInPages);
+      return;
+    }
+    cpanelApi
+      .getDoc("website_pages", pageId)
+      .then((docData: any) => {
+        if (docData && docData.id) {
+          setEditingPage(docData);
+        } else {
+          const raw = websiteContentRaw.find((item: any) => item.id === pageId);
+          if (raw) {
+            setEditingPage({ ...raw });
+          } else {
+            setEditingPage({
+              id: pageId,
+              title_bn: nameBn || pageId,
+              title_en: nameEn || pageId,
+              html_title: nameBn || pageId,
+              paragraphs_bn: [],
+              paragraphs_en: [],
+              key_facts: [],
+              sections: [],
+            } as any);
+          }
+        }
+      })
+      .catch(() => {
+        const raw = websiteContentRaw.find((item: any) => item.id === pageId);
+        if (raw) {
+          setEditingPage({ ...raw });
+        } else {
+          setEditingPage({
+            id: pageId,
+            title_bn: nameBn || pageId,
+            title_en: nameEn || pageId,
+            html_title: nameBn || pageId,
+            paragraphs_bn: [],
+            paragraphs_en: [],
+            key_facts: [],
+            sections: [],
+          } as any);
+        }
+      });
+  };
 
   const openImageResizer = (
     preset: "banner" | "landscape" | "square" | "portrait" | "any",
@@ -1387,16 +1439,16 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       setIsDbConnected(true);
       setActionStatus(
         language === "bn"
-          ? "à¦¸à¦«à¦²! à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸ à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦¸à¦šà¦² à¦à¦¬à¦‚ à¦¸à¦‚à¦¯à§à¦•à§à¦¤ à¦°à§Ÿà§‡à¦›à§‡à¥¤ ğŸŸ¢"
-          : "Success! Database is active and connected. ğŸŸ¢",
+          ? "à¦¸à¦«à¦²! à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸ à¦¸à¦®à§à¦ªà§‚à¦°à§à¦£ à¦¸à¦šà¦² à¦à¦¬à¦‚ à¦¸à¦‚à¦¯à§à¦•à§à¦¤ à¦°à§Ÿà§‡à¦›à§‡à¥¤ \uD83D\uDFE2"
+          : "Success! Database is active and connected. \uD83D\uDFE2",
       );
     } catch (error) {
       console.error("Database connection error:", error);
       setIsDbConnected(false);
       setActionStatus(
         language === "bn"
-          ? "à¦¤à§à¦°à§à¦Ÿà¦¿! à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸ à¦¸à¦‚à¦¯à§‹à¦—à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦—à¦¿à§Ÿà§‡à¦›à§‡à¥¤ ğŸ”´"
-          : "Error! Database connection failure. ğŸ”´",
+          ? "à¦¤à§à¦°à§à¦Ÿà¦¿! à¦¡à¦¾à¦Ÿà¦¾à¦¬à§‡à¦¸ à¦¸à¦‚à¦¯à§‹à¦—à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦—à¦¿à§Ÿà§‡à¦›à§‡à¥¤ \uD83D\uDD34"
+          : "Error! Database connection failure. \uD83D\uDD34",
       );
     } finally {
       setCheckingDb(false);
@@ -1650,7 +1702,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
           const defaultNewsItems = [
             {
               id: "news-1",
-              icon: "ğŸ“¢",
+              icon: "\uD83D\uDCE2",
               tag_bn: "à¦¸à¦‚à¦¬à¦¾à¦¦",
               tag_en: "News",
               date_bn: "à§ª à¦…à¦•à§à¦Ÿà§‹à¦¬à¦° à§¨à§¦à§¨à§ª",
@@ -1662,7 +1714,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
             },
             {
               id: "news-2",
-              icon: "ğŸ†",
+              icon: "\uD83C\uDFC6",
               tag_bn: "à¦ªà§à¦°à¦¸à§à¦•à¦¾à¦°",
               tag_en: "Award",
               date_bn: "à§© à¦¡à¦¿à¦¸à§‡à¦®à§à¦¬à¦° à§¨à§¦à§¨à§©",
@@ -2623,16 +2675,16 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       });
       setActionStatus(
         language === "bn"
-          ? "âœ“ à¦†à¦®à¦°à¦¾ à¦•à¦¾à¦°à¦¾ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¸à¦‚à¦°à¦•à§à¦·à¦¿à¦¤!"
-          : "âœ“ Who We Are Saved Successfully!",
+          ? "\u2713 à¦†à¦®à¦°à¦¾ à¦•à¦¾à¦°à¦¾ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¸à¦‚à¦°à¦•à§à¦·à¦¿à¦¤!"
+          : "\u2713 Who We Are Saved Successfully!",
       );
       setTimeout(() => setActionStatus(""), 2500);
     } catch (err: any) {
       console.error("Error saving who_we_are:", err);
       setActionStatus(
         language === "bn"
-          ? "âœ• à¦¸à¦‚à¦°à¦•à§à¦·à¦£à§‡ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡!"
-          : "âœ• Error saving Who We Are",
+          ? "\u2715 à¦¸à¦‚à¦°à¦•à§à¦·à¦£à§‡ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡!"
+          : "\u2715 Error saving Who We Are",
       );
       setTimeout(() => setActionStatus(""), 3000);
     } finally {
@@ -2891,7 +2943,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
         tag_en: "News",
         date_bn: "à§¨à§« à¦œà§à¦¨ à§¨à§¦à§¨à§¬",
         date_en: "25 Jun 2026",
-        icon: "ğŸ“°",
+        icon: "\uD83D\uDCF0",
         fileUrl: "",
         fileType: "",
         fileName: "",
@@ -3030,7 +3082,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
               />
               <div className="flex justify-between items-center px-1 text-[10px]">
                 <p className="text-[#B8862A] font-sans flex items-center gap-1">
-                  <span>ğŸ’¡</span>
+                  <span>\uD83D\uDCA1</span>
                   <span>
                     {language === "bn" ? "à¦Ÿà§‡à¦¸à§à¦Ÿ à¦ªà¦¿à¦¨: à§«à§¬à§«à§¬" : "Test Pin: 5656"}
                   </span>
@@ -3551,7 +3603,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="p-2 bg-[#B8862A]/10 text-[#B8862A] rounded-xl font-bold">
-                            ğŸŒ
+                            \uD83C\uDF10
                           </span>
                           <h3 className="text-xl font-serif font-extrabold text-stone-900">
                             {language === "bn"
@@ -3594,7 +3646,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-100/60"
                         }`}
                       >
-                        <span>ğŸ“¢</span>
+                        <span>\uD83D\uDCE2</span>
                         <span>
                           {language === "bn"
                             ? "à§§. à¦…à§à¦¯à¦¾à¦¨à¦¾à¦‰à¦¨à§à¦¸à¦®à§‡à¦¨à§à¦Ÿ à¦¬à¦¾à¦°"
@@ -3610,7 +3662,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-100/60"
                         }`}
                       >
-                        <span>ğŸ§­</span>
+                        <span>\uD83E\uDDED</span>
                         <span>
                           {language === "bn"
                             ? "à§¨. à¦¨à§à¦¯à¦¾à¦ªà¦¬à¦¾à¦° à¦“ à¦²à§‹à¦—à§‹"
@@ -3626,7 +3678,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-100/60"
                         }`}
                       >
-                        <span>ğŸ¦¶</span>
+                        <span>\uD83E\uDDB6</span>
                         <span>
                           {language === "bn"
                             ? "à§©. à¦«à§à¦Ÿà¦¾à¦° à¦“ à¦¸à¦¾à¦®à¦¾à¦œà¦¿à¦• à¦²à¦¿à¦‚à¦•"
@@ -3642,7 +3694,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-100/60"
                         }`}
                       >
-                        <span>ğŸ“</span>
+                        <span>\uD83D\uDCCD</span>
                         <span>
                           {language === "bn"
                             ? "à§ª. à¦—à§à¦—à¦² à¦®à§à¦¯à¦¾à¦ª à¦…à¦¬à¦¸à§à¦¥à¦¾à¦¨"
@@ -4522,7 +4574,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                 </div>
                                 <div className="p-4 flex items-center justify-between border-t border-stone-100 bg-stone-50/50">
                                   <span className="text-[10px] font-sans font-semibold text-stone-600 bg-stone-200/50 px-2.5 py-0.5 rounded-full">
-                                    ğŸ¯{" "}
+                                    \uD83C\uDFAF{" "}
                                     {language === "bn"
                                       ? `à¦•à§à¦°à¦®: ${slide.order}`
                                       : `Priority Order: ${slide.order}`}
@@ -4598,7 +4650,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                           {/* BN text items */}
                           <div className="p-4 bg-[#FAF7F2]/50 border border-[#E8DDD0]/50 rounded-xl space-y-3">
                             <h5 className="text-[10px] uppercase font-bold tracking-wider text-[#2E5942] border-b pb-1">
-                              ğŸ‡§ğŸ‡©{" "}
+                              \uD83C\uDDE7\uD83C\uDDE9{" "}
                               {language === "bn"
                                 ? "à¦¬à¦¾à¦‚à¦²à¦¾ à¦¸à¦‚à¦¸à§à¦•à¦°à¦£ à¦•à¦ªà¦¿"
                                 : "Bengali Translations Copy"}
@@ -4664,7 +4716,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                           {/* EN text items */}
                           <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-3">
                             <h5 className="text-[10px] uppercase font-bold tracking-wider text-stone-600 border-b pb-1">
-                              ğŸ‡¬ğŸ‡§{" "}
+                              \uD83C\uDDEC\uD83C\uDDE7{" "}
                               {language === "bn"
                                 ? "à¦‡à¦‚à¦°à§‡à¦œà¦¿ à¦¸à¦‚à¦¸à§à¦•à¦°à¦£ à¦•à¦ªà¦¿"
                                 : "English Translations Copy"}
@@ -5352,12 +5404,12 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                 </div>
                                 <div className="p-4 space-y-2 border-t border-stone-100 bg-stone-50/50">
                                   <div className="text-[10px] text-stone-500 font-sans flex items-center justify-between">
-                                    <span>ğŸ“… {act.date_bn}</span>
-                                    <span>ğŸ“ {act.loc_bn}</span>
+                                    <span>\uD83D\uDCC5 {act.date_bn}</span>
+                                    <span>\uD83D\uDCCD {act.loc_bn}</span>
                                   </div>
                                   <div className="flex items-center justify-between pt-2 border-t border-stone-200/50">
                                     <span className="text-[10px] font-sans font-semibold text-stone-600">
-                                      ğŸ¯{" "}
+                                      \uD83C\uDFAF{" "}
                                       {language === "bn"
                                         ? `à¦•à§à¦°à¦®: ${act.order}`
                                         : `Priority: ${act.order}`}
@@ -5439,7 +5491,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                           {/* BN Inputs */}
                           <div className="p-4 bg-[#FAF7F2]/50 border border-[#E8DDD0]/50 rounded-xl space-y-3">
                             <h5 className="text-[10px] uppercase font-bold tracking-wider text-[#2E5942] border-b pb-1">
-                              ğŸ‡§ğŸ‡©{" "}
+                              \uD83C\uDDE7\uD83C\uDDE9{" "}
                               {language === "bn"
                                 ? "à¦¬à¦¾à¦‚à¦²à¦¾ à¦•à¦ªà¦¿ à¦à¦¡à¦¿à¦Ÿ"
                                 : "Bengali Translations"}
@@ -5565,7 +5617,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                           {/* EN Inputs */}
                           <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-3">
                             <h5 className="text-[10px] uppercase font-bold tracking-wider text-stone-600 border-b pb-1">
-                              ğŸ‡¬ğŸ‡§{" "}
+                              \uD83C\uDDEC\uD83C\uDDE7{" "}
                               {language === "bn"
                                 ? "à¦‡à¦‚à¦°à§‡à¦œà¦¿ à¦•à¦ªà¦¿ à¦à¦¡à¦¿à¦Ÿ"
                                 : "English Translations"}
@@ -5906,7 +5958,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                     </span>
                                     {isOverridden ? (
                                       <span className="text-[#2E5942] font-semibold bg-[#2E5942]/10 px-1.5 py-0.5 rounded-sm">
-                                        âœ“{" "}
+                                        \u2713{" "}
                                         {language === "bn"
                                           ? "à¦•à¦¾à¦¸à§à¦Ÿà¦®à¦¾à¦‡à¦œà¦¡"
                                           : "Custom Live"}
@@ -9324,38 +9376,28 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                                   <div className="space-y-1">
                                                     <label className="text-[10px] font-bold text-stone-600 block">
                                                       {language === "bn"
-                                                        ? "à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® (à¦‡à¦‚à¦°à§‡à¦œà¦¿)"
-                                                        : "Title (EN)"}
-                                                    </label>
-                                                    <input
-                                                      type="text"
-                                                      value={
-                                                        editingPage.founder_magsaysay_title_en ||
-                                                        ""
-                                                      }
-                                                      onChange={(e) =>
-                                                        setEditingPage({
-                                                          ...editingPage,
-                                                          founder_magsaysay_title_en:
-                                                            e.target.value,
-                                                        })
-                                                      }
-                                                      className="w-full p-2 border border-stone-200 rounded-lg text-xs"
-                                                      placeholder="Ramon Magsaysay Citation"
-                                                    />
-                                                  </div>
-                                                  <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold text-stone-600 block">
-                                           xœì]ëoÛÈµÿŞ¿b®Rlì^I¶d;›Õ•ºe×mâ¤–wûÁ0JKl(R—¤ü¨j Ğ],m?Fq÷.nnÑDöMó0ò!õ…ó¯èO¹gf8Iñ1¤q²Yâc8sæ<çÌ!çÕW%­Õ“ZU*”ih™Ÿ ”¯OQf88N†ƒ¯‡ƒÇÃx3"şexğ'zÅc4E¯y8Ñ3ßo§Ó?¹„2KŠ%YŠ®¡5¼c¡©ÚÊtf/U{åUj`õçén¶àé’¥”C1ôm³ÒŸK×s„¶$µ‡+ıÔtÄ²b)Zë.°C~Sïi26îu¤–)íÂ¿{dl÷°†~÷»ÔÈ¤ã´Ñµ¥608e
-O£JºY%/[µu¦ÒÓ¡|>ï"tö-…ÎQéä‡[ØÊS~JßÁ½éí¦*™æŠÔÁ•Ìvn³§ª¨›+¢†n ‘ì?9ÓÒ5œ+ÎÎ‚°êÉ9µ…Ùr;&T³r&6”ÍtŒ:“†ÁÊ3²²•üÆT·¥¸É¾åTõ.^ı™Ÿ¡/Vjõ¥;hIï`Mé™ès]ÓÔä¶BÆ–¤¨&úÙL2+EÜÌfv¥&Îíææ3‰ç£½ànÈÃ‡]•g2ıxvÄ œŸU‡ÃsëW¯_¿V¬n ®š+ä÷æŒÜâ<Ë#jã¿€ÚøcjıÁø‘?ƒ—ôè!XşáàÕpğ/ê8Ã¹gÃÁ ®@ÎDšş€{0Ÿã…ê¶dÈˆû‰½…òL{!ñlûø¦e(2"o¹¦®š¹êÈ¥Ñ×"jIİÜ<j´rÛmÅÂˆ|q)­½–bÖÃøy.E[á­RµíQ‡lLLÖ³İ`Q¹¢ÒPõæƒ”<{¿øåsğv¿¥<lı’8ÁÏéGğƒ_Ã‡ÓyÀkŠ¥b4µø<_Eëö¬”ı·v»ö¬¦¥Àyx¾=›MıEèz¯1ñ{/Ÿßë›¡‰×›ÊëMË›]ôz4/6*™SÚú©áÜ9 ÿ^¦Ôƒé|O¬œÿ•ı9CÃçƒ~Ş•üğ ®^	¦0±—Øş±	š˜¿	èvÛ$Àó¿.(À;Û,‡ã½«ìÆãMr—ØÆÙ341rï.ÆDÓ/¿Íœ,ÿk’©ÿĞÃµ‰)»Ä¦l’£Ÿ„kg{Sâ[Ş0½'ÿï»u“"£#ÖÊúè#t^²¤Ø·&¦WL%‰Ï¶7Z¹õ+7«7?¾YÜğ±•“Ÿ™qÖaÀÄ]‚k	íóØãÙ£ãÏ,Î¢n#EÄ]nÏ»àª ğ;öwıJ¡Z(Î~ˆŠwbá™kbÍJŒr!¿àöL®§K×»’ñ@Å¦»oíÜ<´½Mßí®Ø£Ï¤»2LŠ–FZ=,¨A×|‰Æã±Ã®l_Àññë9¹",Ï¤Xy¦=ÎZá,+[À’»Èdâ&ñùLB¾õé|GêNMÁÁ,2—åbò	½«³ğn¥OÙói$5hˆÄ'Üş8Ğpà	ÏĞôXĞpå§”şèßQaa÷Áï¿_g,à½œZ÷´XH Ó,D.2)ã q÷¥÷{› ¤êueÉÂ2ª upƒ£$yã?R?Ê~È:á†xTŸ¸ÜƒYD‰Sòy»h/ıCı‚ßÍG||%‡{Ói·w¡Nòé°	"“ø¨134·ı–¾Ÿ¡ôpxğ‡áà;ªGÿ›jÏA@œÂ#ĞWğÕŞó<öü)¢›ŒŸæ×g7~Œú‘=ª	¼`?Æ£?åô¡Êd²@ŸÓ=N³¡+>e{¾úİC‰s¢Ö£Ôú‡|LO',Ã?ÔC´]±F…iL !¡±Š­íğëqXá7=ÓR6wsX“)Ä0‡º©\g,m¥©Q/7z\.@0æ³ËE$¬ª4€1 ¶À§:4K¡yr¤»ƒíîYnÙƒ,€ ·õ-l”œCD¦}Ë9¼¢-iwê®¸áON+4‚jöS7r]]!Ä²sFø2à¡<¡Íkæ ˜N°Åå6'g?×f¯ÑQ„b/ï$-8“´~¥X[ød¾¸1š¤õ+…ÚÜbqiƒÍ
-ƒB&(brÌ¶$ëÛ¹ì›¦p0îl&°\—¶°Œ›£`¼¢o	ğ¶ÔÉHÊTÏ¨kÌ}dâ?aÙG,¼`EÃGÔg^ñ¬II@¤1ÏòEá8Q~Ğ¼å™MİèD]¯™Éú¶ÕåÏ>_+¡[Ë_ÖĞİÕÚ—Ëµ_Ç,fóërµUjêjP€ à(Æ]déİÜ5aL, gÂã‚ØÃ€øâ¬K`V'Ä‰[¥¶¶1ÖƒÍw¹¢ˆ	J¿8/DØ…BÍrm7LÓ¡ê§’k&±G£Ò}"¡¯s¤RÀ®x‰XüJ¿¼ EıD¤Ù-/èû7ÔrÜRˆxxKÁÛg,™"kñ(Â °EbfÈnû0S˜åDçƒNsG×t‡Á©+ï°…Ğ$÷“&Äh!æõù$§#íäÚ¹õk³”Änª ‘»9©géqè9qtºnÏgavfAÄÁóç	+<á§Bù€òMvıš¡€nÆ¨+‘ ßÕğâ]qX{ODj¦a…z@Â1ÁÇëÚŠ´¥´ 
-å>hO¬Sql"dzb.‰¹ òtHCï	Î+Ë¶V]DŸ”À¨İùlµz»–à°eëKÙoá5©ÁX¨kè-Cê˜÷š3"›†@†'€CíÉs))F»nìÌN„€”ÛscZ
-„/Ğì|â1;‘R¦Ú÷¹ö’ú_	LItö1]¶_ •şqXó5 ÿd¹ zä	Sù¤8>ıe8ø='¨Ú¿kOúÕ»¸©Hªò[,S?Í$óa
-@±ÏEªd]ÔYp¨C<÷E´{BEÊ¥ßníN(ÁX¢ì%ıúw·e|n_GElcñèê¿èûk–7Cœş‡Ü1>!	8òN‘uÛW8ö”>ë-[/ÏRo¬xïŸìĞ3zÕÿÒ÷£4]|G&õ+ò`’ªÛwÍ¥}ËŞ¯“Ñ³î#Ú±§¬=¶Pÿ!eoi_=üğé“h2Ü–4BuÓÅ64˜§T²â™šYdIÃ_I“IàNô,qÈ´Xÿ%Üa€0ÚÜ–d«n¨GúİÉ•† ÚÓã©éè|P•H²à•"ãI¹Å!Jäà€ìöVbtË¸F)äÑm½¡¨İR†dìzK´J‰/¤(³¶í¦¡5‹¹ìºÇÈ ^Æ›ROµ<wŞ,iÏ/‘Ì†û{°ƒĞëªº$/wàËš^Çxd•~ÀÁ=`ùN×À¦IWú¯‘.E\|ù£àÚÃ|*ŒÂŒf ³óhÌi ¥¶¢YÒÙr+oœµˆ]½·^¿N8’½Â8òÿòghß0é\s¥CTé–šm à*–d˜õ³eVû!ö31«÷ÖËÁ¬‰O¦Œ„
-³$ªÕ“ÅA`RAá23Í’^ÑVnTúr"Ü.Ö(1W±	Œö	¥nZ
-JèF>UëµD’’‰Ï=X‹È_/<ÒW1ÅÂñ9Ñ¼Øx>ì†M•z¯”šºJ<ğy5~µ”«ßg*5,¥…~Ú—=] “Å»šòª'…3Ê×\]vÕ1>x6Ä0\İ‹¨?¯64Ú3ªZO8<úœm‡‚ø–(]*ú±'Û§ßİ••t4|.P>*ª‰ËO\$ÏàP©6Ş9×8y?ùæ/®ÕxÌ1`ñ:s¼<Rãc}_¸Dê¹~ç,Âzñ~òÇ_Îñ_¹TÉk/ƒTéHÓsG´“©µ#×õ”Æ Wß•4¬†`ç«x\vUU+ıMl5É§ªÜQ4æ†:m¡L£5ÄúÍ%/Y¾!YŸl6ëép:&íRZ·¬XBKwVÖªKkhyåW_,¯.×D}3 Â¡Ë‹ády})çX0:=—,@xà5+¥ºÃşl»&lë6²›…åNÜ¨İ‰«‚ãÄ)`†iC¡eí?{
-D”·!bâª1¢¡şó ûÃIñÈ•ê~î^)(èÍÈÍĞóc±<÷÷NTMöµãP¹ŸL6Y_rd‰~xú„Rï&ÆrCj> ·b°c¸‰ADd´iè´¥˜$x„º#ÁîødŸ?exàB\’Ü“³ĞÑI6l›yk-«½:Q#øP€ë¢sê1¶ÎßKÚµÙÈÄu„ö¹.aQ:ÚšÆÇù|íGº [«Ewkv|zÄ.DÎ
-1{§G›£WtdkrälÄÈ»ØŠÎÔDe›#sôéö¼rM+]£_³¤ßb«G+Ù-ñk Ë"·81Ó4èEQãU‚UR‚5Õ	‘ÕÌÏ	é2]’Ï&¦Û(ğC™ª¦k»½".º86ÀŠ¬
-¤ì%È’"»¸#)*ïH·—Ñ. sÓ3¤jÖy¼Xzd¥’«£ó‚K·éš&ëª½†·8ŠxÊsb:oé·ô¦¤br®nŠÖš5‘[¼‘!²&² ç,Ë”â,şÇ‹¯2¼:g`UÚÁ"UX”,¶mux¬×ønZ|rùY;K€X.ˆyÔ"ˆ¬½)Ì•Ğjmiõ‹åµÛµ•5ğæ~qgQÔsínô«C(6ñŞ/Ä{wí­Ì]÷ç¶KJöÿplà	3æXŠóÄNÑc_qXa@ª®‰¼¯æ‘0€Ş@KŠÑì©’ñşøò‡dÌ´Å?dæœ»Üš}z!«S8bpÊ·rë©i±Iø=«o€O?¸ı %©›ô„¥ô]û>Bi˜÷[*?V6ã*iJÆä·Kì	 «¥…sš¬UmHêvU¥I÷×:·° Y‰ŒKF¯%õqE\¶ò"8k›Mnyj¦!$ÙÎâşË(ZÕY9-â©\w{*)|î@yµÙâ9ç¹§”E9ÌñÌF~Y&²ãàıQÅõÁc{•eÆ<T€«TGGÛEøPB2K*‰i)?'óYÛ%à È”î‘õìNlÿŒ´p`ş?xÖo?}âKÔÙ3vğ{§Hä˜Ÿ;vt,]
->ª„: Fš¾ÿÃIá³Ç=d‹Ê¹¢ zåk';²wÙ¨·#ºÜ¥JŒTRœ¯h R$5g)œGU¦L4Ë$±UWÈ´Œ^Óê¼ÉJK±$Õ£uà ˜Kİ=]^¢S1®Ì|	Õk«_./Õê`ÆnV—–o-¯‰ã`–·”&ûé¢Ú9nÆ®c*•Ì9à1ª-ŞçuVmş¥Ÿ©«Û¤'Ó&5U±xp7Ö¹üUÃû®±çà%ÓañªŸ×|ö«Oì“Ï©öpÔ¹uÀ«xOìkö]^Æ?˜šxäÜÊ~ãµ£§ºlÈ‰S÷æ*ûüÕV­Ôùë}ßñ2º@w&N+Ù®ÎbOQI(—eé*İPz,ZÔõ¨ŞÖ»Y´$mbVLŞ”m2şØå?êv!õ¿B?àÁ;ıõ(¶BŠDiØÔÈd‘½•Y)–ì¹vOË[æûóV0i…Msb{D,ƒö¢¶”´{&9³ãë[(ïÂ×üªCÇXï;¥mNx€¨Ï%Uì^¸dœhA2ñµóâşÂò:`‡şük²¡SëGxÔ¾õõ…¢¥qá;`aÆØÔz§K‚øós› #ğiBŒo†¦:áùøC‰¤‰=TÖ5ö»zŞgS?ÊI5½õ$Dœ}rd¿a7HV‘ôº]İ°";²ao1glÅÂ¶®mäŒ-²ï4 ­½œÜÿƒŒîâÖ[V›º5ú
-´Üdğ|¯ÄÒèÖ¢1¯xä5æº|£„øtÄcjBÛ$Ù&ÂW¸¿]Û«§#YÍ6İˆ¬4ó›Š&OuI]¾Â‘išà‹SÛ¸<ÁW®JÛH"aı.Ù 1úV&dì€½I•0×òÃXóL¦{'œõ‘-wüûcèF‡Vÿšõ´å}ØZš­r?{*#5ôu¯ãD«™Øb7á	ÊZú÷&ÙüAx?Ğµß‘ıÃÉøV…“5áKÀÙòïˆåŞ·§HÜ»qÔhg–8&.‚ù‹lƒ‡#ãç3.”ĞÊ5;d¬®¬Üùbe©FpÑ¨QÓ-ˆ\î5tÉ/oÔø¡àÄ¯`+ÇŞ0DÍÁËşæø$ØaÉìA<êf§°É\B°A~1ØAÓ€ÌMª¨Ş ü{.Â6å!V6Ô+·€^ø´CTÌ•xp 3©¾	„¼ïöªb¶QÏhä’‰’ILWGÑ$Ã^ÿ‰·ıÏ±øåìë`Yªuo3Z¹+}uLXúİ‹<ÔCøæà>{6ª>íjôšµçß%œìc¹¢­–'«ãádÊ@UYFŒÄñÖét%¯iªLú6CßRL‹…)p b‘“Q°¢¶¾$¾6$¾ˆ"@ü^7ÉöcáÖ«àßÇjGN´™…<IšÙ»½;_Ù&ïÎ?±¡‚‡¤Å/ñİ’ÂH-ìï´VjtûÎÆ26ÊØzä¼ã4«Ô«£[é€!z‚¡ÚÕ,TÆ²(”Lî™%Š[=~UÁ V¼æŞıX˜=“½üh+™tœ§(ÖÉl“+æ÷Ï—¿VB‹·î|–`Y`CÕ[“tF¡;D²EI4‡}È·õcŞàˆ)z {îê¦E0Şªò§^ò³“![~½ï.ø©ñ+şõ‹íüH—¹ÇXF’M©,20˜sìd]¥!“9M³Z&àó.Ö¼Úê:h«ë—µÀÃ#¡ £^ÑiŞw(’ ’Rƒ‘|p¹@õ]ˆ>ås-å8ı˜#7¨¿p$bÀ¥é³%Œ¿cD#`*Z`ND€$>Ü‚Aë˜¦Ww‘	DlºF66¸ØZ¡k}×]ã;à6ÄğİÆ²"9ÛãjÜÖeI5=°¯˜ô:û2*a>ƒWv_@›ğtK1ÉM•€†¼İ'šnb×JĞå±;¦6¡~WT×ê˜ÌŸ½ÁÍTÏP!yeMu\®Ñ-ìo*X•§ğûKió~äÙ?aQ÷ŞëÃ¨Öá¹ÎÏx&Ó¦şh’iÓ{?ù   ÿÿ Có¡
+ xœì\[oÛF~ß_1pÔ.D_c·Iå.lEI¼/Ô.ºAŒ¤‘Äš"Y’ò%n€¶@SAw7Ø4X·h"ëyH`‘üı”=3CGIQŒ›Äk‰-RÃòÜ¾ïœB©~şŠ†:ígöËNûIg÷v§½×i¿è´Ğp§ı]§ı;îC“‘¡¿¤¡óh¨¤:AÃù¥‘¡›©úÉi¸L´Ò]¬êfËIyÿÎ¦If‡²á¤•ÀÖZdv+µüHUuT½¾‚ëd´f´ô*±®7qİÆ›ğïºCE{èèË/S0”öÑÒ)!CÏ5°^©“4›N­ôÇ&NŞÏpz!#4::*I:ó
+=E+éü+ô
+†0ê`«NœQfQéïğæÈkVwEÃ¶½„›àHëJ­¥iÈT&QÙ°@JîÅv(“ããÈbâ«*ZQ·S6ì´æij¸B†ıÏpÓĞÑ¢§”Sì¨†®ó±46›«ªk©.„ëd)Ú&<˜²©L½ùŞ ?›å™Ş®NŒ›×ÀtG)ƒ¸6¹g@ÏeÍ¨¬¦¡-H<ÍÎÎ¢¡rJ=Ò†ƒ‡û ívæ,î!ï`»³ûk±sôĞè™!*tŞDRİ`‹à”bëöìÖTÚ ñ'C$<Û)B¾åÉut
+© ’Y›Xjíí‡³T—¥¸hàK¼` æ#ÉL#›H	:ëßQŸNÜ§‹m³5ö*â52–ÃzÀEÃpÀ`ç±i!“¢³1Ğ{c}ÆÓQÎz¦ïôú@M#HuHÓV*D§£~Ş²µ¶©”‰³N Ú×±I{¨»M#zìùÎ††š2Ó—~dË-®ï+o&òÆı]¢»¦VV!¸ÓØŒÑ:€*–…µfnÒ˜Q—„Ô0Öˆu^œš‚SûÀ;ôâ#irp±°n«ŒœTZ–mXŠi¨TÖı°¿÷²7ÎÂö{ÀjOe^”h}dlˆ‘%fg}	RvŒ+âh•k·ÊM5A [/3B/Wß™ÌOŸ;;yÍ×ËÕw&òSó“¹k\ë°èÄ:±¸j¬+Íjˆ3PãŸ>r½e©»ËOØ Ã[WÎ%A,$}uB¢¬ã7Î¹¹]ì1RÎ	ºûQ’Nï5vãÔ½Pä
+RJ@³³cIî8™µõE‹>²cR›QßÇ\ùUHˆ	mí‚ià_\ş4¿˜_*¡1´ryáÊrqyåòg(·Xõ[¸â¨k¤„Ë\§Mp&Õ:s‡Ü]À[¸{˜Ê´pˆIãQ,Éup$/¿=í³©äµŒmº£èãÓ­(ÄØğÔ2ÛYƒP÷˜e›ö / şÚÙı
+î°nûÌºÛìø7Ö¬VÎŒû"çÓh¥¡j†m˜MtÍM%5;ÂÎ³c©q˜=Ò !J˜€X4€ "m›	æ9+A/g¿Ÿ wÙ-Ö“ïC–â»"Hló,_´9d§(ê°s‡"ÚĞN¿÷Ê œ«•Ã½Ü“F #îğ‘×ø)kµ-ÂÑwôyü›É Ö„·ıƒı~ì×f'Ún=‚}Iï¾[>Ş³îòüæCM…V÷»âbçáƒh€UQN‚LaR/mC¦eÔTØ„õ*jª¶Mñè‹°?›1?§AĞ:)P‘ÑHû3#Ì/”“ğ¬ »‚<ºª‘e“èŒ]¹÷;”á„#µ.h‹î³Ÿ‘\o(’»E16Ÿ$¢ôÂD[‹ “áâ‹DjSƒA?üh®'E¶;AGö±ş_ö/ÌvzQ™h˜ÔİŒCğ8Ü Í(dXxyy1¿2w)V
+Ë—
+s€Å¿/¬ä‰á<ªná¦}âàbÔ7‚ê¿`ÊåalÛ³°y0å%Ú_Dì§fó€¹‘>3ÃXÄªV\©¢âºj‚PÎ v°fÔ&A&ø¨ˆb¢[¡¦Aÿ±wÀ&swo÷ë>kş¿–µ»Ã°¥øsÏ—Ì1éå/Ùñ÷–"ÑHÅA¹fÏ+ÁŠ¨J¬j .e\Y­3ÛFjZ¸xÓPëş;öàØğ¢º¥Vı¥TÍV&P³zŞ?œdqr
+™ËH•^|Ò-¤VÏSª[°T4µlakPƒÏ–õóTÅ¿{
+yáöcÒE’Í{Ñ’™ÈİŒ.pº#[WU½®4p×ÀÀœüÌ~ÿîŸ9àñ”jı¯¬àØí2¿½—ğF08¥¨vcÕ0´àÜ¢OI-–Z8ŸzÙfvô4y×&vá4Û¹xäg½H2Dœkªu½Ò @í‚ÃÖ¿%×¤cİcŸö<yñJò3-p kSq®4 ïQ¥oCY÷.é|æF
+NièÈ”˜
+.½ÿªw§³	¬uµJ²Q!šFô
+	Ş£GÀÖ8‰÷¸4¿Óï;»ÿ”îá¸ÈsO×F›Ø6ñÃQşÓ¿ğ³J6g·ÌQµW%HZô‹'¤t”2G=qÅ–şd
+	¡I.oJœĞ¥“cã‘|ÀmÍOûTâ˜İ4Rs¢–2l´Xbk!”µ…!n(ù @A¶|YÆ@w¬\ƒ¬Y†^ ÂoùHBB±•®~¥ ‘İFÖhä¡ç?CÅÒ\i¡XZÈï,,]¤„tå2=LBDm;'…²bûŠ»R0}$ÅÏC—	}ëÅ¤û£j2E:¯¾P±As „W¼mA&âùƒåˆC¶<âG‰Q„G|Á#{/Ø£Ë,Xo‡tš‰£FíJò{à)>ç?{#âšgì©w¥´,Ğ@¶P{ùÀˆ,ŠÜHo5ËÄry,öm5i9…ê2§ı³ë%Ò}òšI—x ¢{N¿î²ôÓJˆwMl%$èRwú¹G Aë[!‘”‚¤¸ôfj$óW–sSpº8·PHJl¥ØÉC¥ÈI®}¯²íË#Öæ¶(]?õÊ —&aÉõ<!+‘h_Äªu\qH Í·^("Áôƒ¸ÙA_p‘ùëæ]ÉéºÙˆ/ó¹çnsŒë*\vù¨_Ê‰vØ~ ³ˆu*6“©kåV RSX›|9¥-eÃXE5Ğ1éà G½„Ş¼Bo>$ÑÓOA%û‰’ù–ªÑ¢H°ómÉTx±ŸšØïlT/&‡ÛÃi:zš¦£ÁsòÅl)ÍÍ4r½2Àtˆ‡ÛQºb(B×š°¾!2®eY™÷
+¯òÂSâeX‘º‘VÒÎnIÑŞÖ½Jlv«û8ú:ngğF·m™š«´Ú^2ŠÄ§œİ
+9ÕC„1Æ-Oùó5³Â«§%^<=UM·tŞ¨jæİÒzUÖOUÓ-#
+ÃÅ|áÓ…\~°0àµ¦VÈ`aøÿ%óÉ÷ŒîûdÓ'„</³/ÄdT“k#|â“•&¿¸¢j`‡„§áÇ¦*Â“;»_uvwT:å_?dR¹Ë‰rWOí<ãk’¼TŒÿyéËt—gG=ãe|=d7İõÔ}}ywGLHßK½ÜÉ8oÙ Ï·D&™`aiÊ”-üÓhª7x+#&²m€¢jK¬¡rç¼Ùâ©ùâÇÈö¥&åx¤o”x[X‹šïNk?h8Ç;F.ÅI4qÚ*CªÃßóŒš4í2FäMÿH†WüëíDÒäÕnfXîšØÀÑğ<Mà‹ĞO²A#rZ>_®¶ï½âø\ªÆ?ßsÃÔçİşİŒo¯ÁÛIá¨ÛböÏµ7P[Ídª¨àZÏ,ô¶”Á?b#îˆio©¨=—Bö¨â¸N“ûÓäş'÷KË% •h~y®p!1«Ô`ízÙÀVõÄ±Ê=VÈŞáA™W£o{õã_Ü0lÓ™0Z¹Ä¤Šæ©Téd³\ó=.¼2âÁeŠÆázWÌ…m].Å.IË3ÕbÑ¾¼P?êÕ¢õiª÷Ül>,k
+UUÛÔğ&©B»—ĞógğVĞSÉİg’ù§':/C¿æ–y:ì_;íıÏÙ§î…Ï=›S$˜	vC{í8q]&Âçk›¿²|i JDY3ê'²
+!f+ïŠ5T›‡‡‰U4ò¬5 {"—‰Zœ42E+†íĞ“%²¦’õc]²	bEx—ê·z%uGÌÑî{Wì²ŒôkŞ6fM¦Ä
+zoŠ7üı¯ÄK‰¨ÑóeñØe…‚–ÍŒ”eqeñÚ»ÊAßjêoá"ú,òÛVTkô˜á)2ˆk¼,Õmï)ÊU>ğĞõ>ôk€B>Wød¡ÄŞNŠ©X-Õ9‘o‹snsíG.7ŠÉ5'îµR=%*‰(ø"Lø›QFŸâ
+Ö+êñ©M"© fô¼ñtË{?ªİ¿ŞWz3M,Kİ{}á¦ŸƒÒÖ˜Ò6½4#ÃNZä‹–jñ4Ã]|jš^a“ÁÌ[²ÏÇg2|Kê?dÂ{ì®ê¬S•ÌıƒÄ5}²“nùÉQç ÑJ!_,ğ.±SO‰É¤yv…Ş½ßjd€÷°)ç±Õt:xæf¸ö”Zny©4—KßĞ*œ:qØ-‚ÏñÙV?‹—xE
+²ï¿VËŞ‚ç[qÉ¡îÿÂötÅp'µ	2§‰ğWyïëìñÈàõÍ¦‡Å:QºT4ƒ¼Dî®ØßC0¤ß¹ßøë©ù8]ï´ğÙº”ÓÀŸ˜UÖlÔj´ú‚«UêÄ@GSu¶¢~‹·CH«ÇéK†Q×jbÎ–IAûÕ·«=ÿÎD=ıÂµäS´×Ä¢mxè8
+ÌõBÊÁÛs€sÅ|bÈÇÁ4>¿YÔ½àŞE~ÃÔºCß‘µo»®6ï»}aS/,Ò×l€×,ü#_@‹Ëæ®H’ÎÊl@t§ÚÔ™g·,~øƒSç7l"mWXğ›×°f“¹5İkó¾ªó ¶™³ìJy÷YCw;¡­m?”Ú…æ7¸é·dÛ&©8
+š”@G<*?ôZ}$KhÎÅ…Ââ\iay	]È_É—ò=òÜ‚ØWS­æ¢QÅZ·}­²¦n@WuOG7”«çèÏ5ãÊ®¬ÍŒ³M/ª–aÂ™–Å\ä´·{h¨N¤/È<ª‰7¶w ØovÆgN;Ä.¬«ÀFˆ¢ê¨†«ìïÃhÂ_åÜ4ª¶,ÆO”‰éñ€Kõ%4üNñ oÁíÎŒ»èíÄäHA›OH;äÒGñèìœF,§d©`&Z`;Ãˆ¢aÎ*ã!Ñ;ÔŸÊX›r¹¼é·û¯ ü*MŠºIÙ}±O&7IÎ<ù¯ö†^–òl!„ÑnÊ„ñ}™0"ÍİrÄ"cïyÔĞ•=h´	Ì¾¿^ÖáIB¿‘C¿ksPó\ˆ Å«Ş¦"ö›3ÀFÏ¥z÷}ÍIµñküF¯½½Nvoôú~ìF¯tõMÒ^“nº\£xÆ‘H;lës°/ÛA”qÀ³Ïv›\Î?¹0TuayßÃ!ßİì§éi¡i7úz¦'„ZâĞmcñà‰ÑéşV-YØnLvGÒ©Ñiˆ¥ğ;”Ç“ßçR†ö5_äKÇİªê‘û
+ oOŸÑJç¢'ò…æpÛê‰x}hV×9P*/²aİ¶ª†[šƒæªMUrûá_ş  ÿÿ nÀ¿¾

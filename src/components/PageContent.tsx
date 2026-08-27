@@ -1525,7 +1525,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                                   </h3>
                                   {sec.period && (
                                     <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#B8862A]/10 border border-[#B8862A]/30 text-[#8B621B] text-xs font-bold font-sans">
-                                      <span>📅</span>
+                                      <span>\uD83D\uDCC5</span>
                                       <span>{language === 'bn' ? `সময়কাল: ${sec.period}` : `Tenure: ${sec.period}`}</span>
                                     </div>
                                   )}
@@ -2180,7 +2180,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
                                   <div className="relative z-10 text-[9px] text-white/80 font-sans border-t border-white/20 pt-1 flex items-center justify-between">
                                     <span className="truncate max-w-[70%]">{language === 'bn' ? book.authorBn : book.authorEn}</span>
-                                    <span>📖</span>
+                                    <span>\uD83D\uDCD6</span>
                                   </div>
                                 </div>
 
@@ -2491,7 +2491,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
                           <div className="relative z-10 text-[9px] text-white/80 font-sans border-t border-white/20 pt-1 flex items-center justify-between">
                             <span className="truncate max-w-[70%]">{language === 'bn' ? pubSelectedBook.authorBn : pubSelectedBook.authorEn}</span>
-                            <span>📖</span>
+                            <span>\uD83D\uDCD6</span>
                           </div>
                         </div>
                       </div>
@@ -2580,10 +2580,10 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               // 2. Stats (Section 2)
               const hasSec1 = sections.length > 1 && sections[1];
               const defaultStats = [
-                { val: language === 'bn' ? '📚 ৮৫,০০০+' : '📚 85,000+', lbl: language === 'bn' ? 'বইয়ের সংগ্রহ' : 'Books Collection', sub: language === 'bn' ? 'দেশি-বিদেশী দুর্লভ বই' : 'Local & Global Classics', icon: BookOpen },
-                { val: language === 'bn' ? '👥 ১৫,০০০+' : '👥 15,000+', lbl: language === 'bn' ? 'সক্রিয় সদস্য' : 'Active Members', sub: language === 'bn' ? 'পাঠক ও গবেষকবৃন্দ' : 'Avid Readers & Scholars', icon: HeartHandshake },
-                { val: language === 'bn' ? '🏛️ কেন্দ্রীয় পাঠাগার' : '🏛️ Central Library', lbl: language === 'bn' ? 'প্রধান ভবন' : 'HQ Reading Hall', sub: language === 'bn' ? 'বাংলামোটর, ঢাকা' : 'Banglamotor, Dhaka', icon: Landmark },
-                { val: language === 'bn' ? '🕒 সকাল ১০টা - রাত ৮টা' : '🕒 10 AM - 8 PM', lbl: language === 'bn' ? 'সেবা সময়সীমা' : 'Service Hours', sub: language === 'bn' ? 'শনিবার থেকে বৃহস্পতিবার' : 'Saturday to Thursday', icon: Calendar }
+                { val: language === 'bn' ? '\uD83D\uDCDA ৮৫,০০০+' : '\uD83D\uDCDA 85,000+', lbl: language === 'bn' ? 'বইয়ের সংগ্রহ' : 'Books Collection', sub: language === 'bn' ? 'দেশি-বিদেশী দুর্লভ বই' : 'Local & Global Classics', icon: BookOpen },
+                { val: language === 'bn' ? '\uD83D\uDC65 ১৫,০০০+' : '\uD83D\uDC65 15,000+', lbl: language === 'bn' ? 'সক্রিয় সদস্য' : 'Active Members', sub: language === 'bn' ? 'পাঠক ও গবেষকবৃন্দ' : 'Avid Readers & Scholars', icon: HeartHandshake },
+                { val: language === 'bn' ? '\uD83C\uDFDB️ কেন্দ্রীয় পাঠাগার' : '\uD83C\uDFDB️ Central Library', lbl: language === 'bn' ? 'প্রধান ভবন' : 'HQ Reading Hall', sub: language === 'bn' ? 'বাংলামোটর, ঢাকা' : 'Banglamotor, Dhaka', icon: Landmark },
+                { val: language === 'bn' ? '\uD83D\uDD52 সকাল ১০টা - রাত ৮টা' : '\uD83D\uDD52 10 AM - 8 PM', lbl: language === 'bn' ? 'সেবা সময়সীমা' : 'Service Hours', sub: language === 'bn' ? 'শনিবার থেকে বৃহস্পতিবার' : 'Saturday to Thursday', icon: Calendar }
               ];
               
               let parsedStats = defaultStats;
@@ -3042,7 +3042,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-65" />
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] bg-black/45 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/10 text-center">
                         <p className="text-[10px] md:text-xs font-semibold text-[#F0CC7A] font-sans">
-                          {language === 'bn' ? '📖 তরুণ শিক্ষার্থীদের নতুন বইয়ের আনন্দ' : '📖 Eager students celebrating books'}
+                          {language === 'bn' ? '\uD83D\uDCD6 তরুণ শিক্ষার্থীদের নতুন বইয়ের আনন্দ' : '\uD83D\uDCD6 Eager students celebrating books'}
                         </p>
                       </div>
                     </div>
@@ -3252,7 +3252,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-white/10 text-left">
                   <p className="text-xs md:text-sm font-bold text-white font-sans">
-                    {language === 'bn' ? '🚍  মাধ্যমিক বিদ্যালয় প্রাঙ্গণ ও পাঠাগারসমূহে জ্ঞানের নিরব বিপ্লব' : '🚍 A silent educational revolution in secondary schools'}
+                    {language === 'bn' ? '\uD83D\uDE8D  মাধ্যমিক বিদ্যালয় প্রাঙ্গণ ও পাঠাগারসমূহে জ্ঞানের নিরব বিপ্লব' : '\uD83D\uDE8D A silent educational revolution in secondary schools'}
                   </p>
                 </div>
               </div>
@@ -3727,7 +3727,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     </div>
                   ) : (
                     <div className="h-44 w-full bg-[#FAF7F2] border-b border-[#E8DDD0] flex items-center justify-center text-[#B8862A]">
-                      <div className="text-4xl">{card.icon || '📍'}</div>
+                      <div className="text-4xl">{card.icon || '\uD83D\uDCCD'}</div>
                     </div>
                   )}
                   
@@ -3831,7 +3831,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           </span>
                           {circ.dept_bn && (
                             <span className="bg-stone-50 text-stone-600 border border-stone-100 px-2.5 py-0.5 rounded-full text-[9px] font-bold">
-                              💼 {language === 'bn' ? circ.dept_bn : circ.dept_en}
+                              \uD83D\uDCBC {language === 'bn' ? circ.dept_bn : circ.dept_en}
                             </span>
                           )}
                         </div>
@@ -3848,7 +3848,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
                           {circ.deadline_bn && (
                             <div className="flex items-center gap-1.5 text-xs text-[#8B3A1E] font-medium font-sans">
-                              <span>📅</span>
+                              <span>\uD83D\uDCC5</span>
                               <span>
                                 <span className="font-bold">{language === 'bn' ? 'শেষ তারিখ: ' : 'Deadline: '}</span>
                                 {language === 'bn' ? circ.deadline_bn : circ.deadline_en}
@@ -4793,7 +4793,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                             {language === 'bn' ? 'নতুন' : 'New'}
                           </span>
                         )}
-                        <span className="text-[11px] text-[#6B5135] font-sans">📅 {language === 'bn' ? not.date_bn : not.date_en}</span>
+                        <span className="text-[11px] text-[#6B5135] font-sans">\uD83D\uDCC5 {language === 'bn' ? not.date_bn : not.date_en}</span>
                       </div>
                       <h5 className="text-sm md:text-base font-bold text-[#1A1207] leading-relaxed hover:text-[#B8862A] transition">
                         {language === 'bn' ? not.title_bn : not.title_en}
@@ -4827,7 +4827,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                               {language === 'bn' ? 'নতুন' : 'New'}
                             </span>
                           )}
-                          <span className="text-[11px] text-[#6B5135] font-sans">📅 {language === 'bn' ? not.date_bn : not.date_en}</span>
+                          <span className="text-[11px] text-[#6B5135] font-sans">\uD83D\uDCC5 {language === 'bn' ? not.date_bn : not.date_en}</span>
                         </div>
                         <h5 className="text-sm md:text-base font-bold text-[#1A1207] leading-relaxed hover:text-[#B8862A] transition">
                           {language === 'bn' ? not.title_bn : not.title_en}
@@ -4886,7 +4886,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           </span>
                           {circ.dept_bn && (
                             <span className="bg-[#FAF7F2] text-[#6B5135] border border-[#E8DDD0] px-2 py-0.5 rounded-full text-[9px] font-bold">
-                              💼 {language === 'bn' ? circ.dept_bn : circ.dept_en}
+                              \uD83D\uDCBC {language === 'bn' ? circ.dept_bn : circ.dept_en}
                             </span>
                           )}
                         </div>
@@ -4985,8 +4985,8 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       {language === 'bn' ? ev.title_bn : ev.title_en}
                     </h5>
                     <div className="flex flex-col gap-0.5 text-xs text-[#6B5135] mt-2">
-                      <span>🕒 {language === 'bn' ? ev.time_bn : ev.time_en}</span>
-                      <span className="truncate">🏢 {language === 'bn' ? ev.loc_bn : ev.loc_en}</span>
+                      <span>\uD83D\uDD52 {language === 'bn' ? ev.time_bn : ev.time_en}</span>
+                      <span className="truncate">\uD83C\uDFE2 {language === 'bn' ? ev.loc_bn : ev.loc_en}</span>
                     </div>
                   </div>
                 </div>
@@ -5119,7 +5119,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       {/* Content */}
                       <div className="p-5 space-y-3">
                         <div className="flex items-center gap-3 text-[11px] text-[#6B5135] font-sans">
-                          <span>📅 {language === 'bn' ? (post.date_bn || '১৫ মে ২০২৪') : (post.date_en || '15 May 2024')}</span>
+                          <span>\uD83D\uDCC5 {language === 'bn' ? (post.date_bn || '১৫ মে ২০২৪') : (post.date_en || '15 May 2024')}</span>
                           <span>•</span>
                           <span>⏱️ {language === 'bn' ? (post.read_time_bn || '৫ মিনিট পাঠ') : (post.read_time_en || '5 min read')}</span>
                         </div>
@@ -5263,7 +5263,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           <p className="font-bold text-stone-900 leading-tight">{rev.reviewerName}</p>
                           <p className="text-[10px] text-stone-500">{rev.reviewerRole || 'পাঠক'}</p>
                         </div>
-                        <span className="text-[10px] text-stone-400 font-sans">📅 {rev.date}</span>
+                        <span className="text-[10px] text-stone-400 font-sans">\uD83D\uDCC5 {rev.date}</span>
                       </div>
                     </div>
                   ))}
@@ -5507,7 +5507,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   onClick={() => setActiveModalNotice(null)}
                   className="absolute top-4 right-4 text-stone-200 hover:text-white hover:scale-110 transition cursor-pointer p-1"
                 >
-                  <span className="text-xl font-bold font-sans">✕</span>
+                  <span className="text-xl font-bold font-sans">\u2715</span>
                 </button>
 
                 <div className="space-y-2">
@@ -5531,19 +5531,19 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   {/* Dates/Timings/Location displays */}
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#FAF7F2]/80 font-sans pt-1">
                     {activeModalNotice.type === 'notice' && (
-                      <span>📅 {language === 'bn' ? activeModalNotice.date_bn : activeModalNotice.date_en}</span>
+                      <span>\uD83D\uDCC5 {language === 'bn' ? activeModalNotice.date_bn : activeModalNotice.date_en}</span>
                     )}
                     {activeModalNotice.type === 'event' && (
                       <>
-                        <span>📅 {language === 'bn' ? `${activeModalNotice.day} ${activeModalNotice.month}` : `${activeModalNotice.dayEn} ${activeModalNotice.monthEn}`}</span>
-                        <span>🕒 {language === 'bn' ? activeModalNotice.time_bn : activeModalNotice.time_en}</span>
-                        <span>🏢 {language === 'bn' ? activeModalNotice.loc_bn : activeModalNotice.loc_en}</span>
+                        <span>\uD83D\uDCC5 {language === 'bn' ? `${activeModalNotice.day} ${activeModalNotice.month}` : `${activeModalNotice.dayEn} ${activeModalNotice.monthEn}`}</span>
+                        <span>\uD83D\uDD52 {language === 'bn' ? activeModalNotice.time_bn : activeModalNotice.time_en}</span>
+                        <span>\uD83C\uDFE2 {language === 'bn' ? activeModalNotice.loc_bn : activeModalNotice.loc_en}</span>
                       </>
                     )}
                     {activeModalNotice.type === 'news' && (
                       <>
-                        <span>📅 {language === 'bn' ? activeModalNotice.date_bn : activeModalNotice.date_en}</span>
-                        <span>🏷️ {language === 'bn' ? activeModalNotice.tag_bn : activeModalNotice.tag_en}</span>
+                        <span>\uD83D\uDCC5 {language === 'bn' ? activeModalNotice.date_bn : activeModalNotice.date_en}</span>
+                        <span>\uD83C\uDFF7️ {language === 'bn' ? activeModalNotice.tag_bn : activeModalNotice.tag_en}</span>
                       </>
                     )}
                   </div>
@@ -5583,7 +5583,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           referrerPolicy="no-referrer"
                         />
                         <div className="mt-2 text-xs font-medium text-stone-500 truncate px-2">
-                          📸 {activeModalNotice.fileName || (language === 'bn' ? 'সংযুক্ত ছবি.jpg' : 'Attached Image.jpg')}
+                          \uD83D\uDCF8 {activeModalNotice.fileName || (language === 'bn' ? 'সংযুক্ত ছবি.jpg' : 'Attached Image.jpg')}
                         </div>
                       </div>
                     ) : (
@@ -5678,7 +5678,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   onClick={() => setActiveModalBlogPost(null)}
                   className="absolute top-4 right-4 bg-stone-900/80 text-white hover:bg-stone-900 hover:scale-110 transition cursor-pointer p-2 rounded-full z-20 shadow-lg"
                 >
-                  <span className="text-base font-bold font-sans">✕</span>
+                  <span className="text-base font-bold font-sans">\u2715</span>
                 </button>
 
                 <div className="absolute bottom-4 left-6 right-6 space-y-2 text-white">
@@ -5691,7 +5691,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   <div className="flex items-center gap-3 text-xs text-stone-300 font-sans">
                     <span>✍️ {language === 'bn' ? (activeModalBlogPost.author_bn || 'আব্দুল্লাহ আবু সায়ীদ') : (activeModalBlogPost.author_en || 'Abdullah Abu Sayeed')}</span>
                     <span>•</span>
-                    <span>📅 {language === 'bn' ? (activeModalBlogPost.date_bn || '১৫ মে ২০২৪') : (activeModalBlogPost.date_en || '15 May 2024')}</span>
+                    <span>\uD83D\uDCC5 {language === 'bn' ? (activeModalBlogPost.date_bn || '১৫ মে ২০২৪') : (activeModalBlogPost.date_en || '15 May 2024')}</span>
                   </div>
                 </div>
               </div>
@@ -5822,7 +5822,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       onClick={() => setCatalogSearchQuery('')}
                       className="absolute right-3.5 top-3 w-5 h-5 flex items-center justify-center text-stone-400 hover:text-stone-700 bg-stone-100 rounded-full text-xs font-sans"
                     >
-                      ✕
+                      \u2715
                     </button>
                   )}
                 </div>
@@ -6251,7 +6251,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     </span>
                     {activeModalCircular.dept_bn && (
                       <span className="bg-white/10 text-stone-200 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                        💼 {language === 'bn' ? activeModalCircular.dept_bn : activeModalCircular.dept_en}
+                        \uD83D\uDCBC {language === 'bn' ? activeModalCircular.dept_bn : activeModalCircular.dept_en}
                       </span>
                     )}
                     <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
@@ -6278,7 +6278,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     )}
                     {activeModalCircular.deadline_bn && (
                       <p className="text-amber-400 font-bold">
-                        📅 {language === 'bn' ? `আবেদনের শেষ তারিখ: ${activeModalCircular.deadline_bn}` : `Deadline: ${activeModalCircular.deadline_en}`}
+                        \uD83D\uDCC5 {language === 'bn' ? `আবেদনের শেষ তারিখ: ${activeModalCircular.deadline_bn}` : `Deadline: ${activeModalCircular.deadline_en}`}
                       </p>
                     )}
                   </div>

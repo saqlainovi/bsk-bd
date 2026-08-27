@@ -314,7 +314,7 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-xs p-3 rounded-xl border border-white/10">
                   <p className="text-xs font-bold text-[#F0CC7A] font-serif">
-                    {language === 'bn' ? '🏢 বিশ্বসাহিত্য কেন্দ্র প্রধান ভবন, ঢাকা' : '🏢 Bishwo Shahitto Kendro Complex, Dhaka'}
+                    {language === 'bn' ? '\uD83C\uDFE2 বিশ্বসাহিত্য কেন্দ্র প্রধান ভবন, ঢাকা' : '\uD83C\uDFE2 Bishwo Shahitto Kendro Complex, Dhaka'}
                   </p>
                   <p className="text-[10px] text-stone-300 font-sans mt-0.5">
                     {language === 'bn' ? 'বাংলামোটর, ঢাকা-১০০০' : '17 Mymensingh Road, Banglamotor'}

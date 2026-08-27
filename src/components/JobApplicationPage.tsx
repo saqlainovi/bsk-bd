@@ -620,7 +620,7 @@ export default function JobApplicationPage({
                 {language === 'bn' ? 'আবেদন ট্র্যাকিং স্লিপ' : 'Application Tracking Slip'}
               </span>
               <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                ✓ RECEIVED
+                \u2713 RECEIVED
               </span>
             </div>
 
@@ -739,7 +739,7 @@ export default function JobApplicationPage({
                   {selectedCircular.deadline_bn && (
                     <div className="bg-white p-3 rounded-xl border border-[#E8DDD0]">
                       <span className="text-stone-500 block text-[10px] uppercase font-bold text-[#8B3A1E]">{language === 'bn' ? 'আবেদনের শেষ তারিখ:' : 'Deadline:'}</span>
-                      <span className="font-bold text-[#8B3A1E]">📅 {language === 'bn' ? selectedCircular.deadline_bn : selectedCircular.deadline_en}</span>
+                      <span className="font-bold text-[#8B3A1E]">\uD83D\uDCC5 {language === 'bn' ? selectedCircular.deadline_bn : selectedCircular.deadline_en}</span>
                     </div>
                   )}
                   {selectedCircular.title_bn && (
@@ -1483,7 +1483,7 @@ export default function JobApplicationPage({
                           onClick={() => setFormData({ ...formData, photo_url: '' })}
                           className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full text-xs"
                         >
-                          ✕
+                          \u2715
                         </button>
                       </div>
                     ) : (
@@ -1509,7 +1509,7 @@ export default function JobApplicationPage({
                           onClick={() => setFormData({ ...formData, signature_url: '' })}
                           className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full text-xs"
                         >
-                          ✕
+                          \u2715
                         </button>
                       </div>
                     ) : (
@@ -1529,7 +1529,7 @@ export default function JobApplicationPage({
                     {formData.resume_url ? (
                       <div className="p-3 bg-white rounded-xl border border-stone-300 space-y-1 text-left">
                         <span className="font-bold text-stone-800 block text-xs truncate">{formData.resume_name}</span>
-                        <span className="text-[10px] text-emerald-700 font-bold">✓ ফাইল যুক্ত হয়েছে</span>
+                        <span className="text-[10px] text-emerald-700 font-bold">\u2713 ফাইল যুক্ত হয়েছে</span>
                       </div>
                     ) : (
                       <div className="w-full h-20 border-2 border-dashed border-stone-300 rounded-xl flex flex-col items-center justify-center text-stone-400 bg-white">

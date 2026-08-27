@@ -14,7 +14,7 @@ import { cpanelApi } from '../services/cpanelApi';
 const cleanTextEmoji = (str?: string) => {
   if (!str) return '';
   return str
-    .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}🟢🔴⚡🔥✨⭐📌📍🏷️●•↗↘↙↖→←↑↓]/gu, '')
+    .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\uD83D\uDFE2\uD83D\uDD34⚡\uD83D\uDD25✨⭐\uD83D\uDCCC\uD83D\uDCCD\uD83C\uDFF7️●•↗↘↙↖→←↑↓]/gu, '')
     .trim();
 };
 

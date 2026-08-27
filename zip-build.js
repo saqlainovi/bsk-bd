@@ -71,7 +71,7 @@ if (fs.existsSync(distDir)) {
   cmsDirectZip.writeZip(cmsZipPath);
   console.log(`Successfully packed cms.zip (for cms.bskbd.org)! Path: ${cmsZipPath}`);
 
-  // Pack v6 zips specifically requested by user
+  // Pack v6 and v7 zips specifically requested by user
   const websiteV6Path = path.join(process.cwd(), 'website v6.zip');
   websiteZip.writeZip(websiteV6Path);
   console.log(`Successfully packed website v6.zip! Path: ${websiteV6Path}`);
@@ -80,12 +80,37 @@ if (fs.existsSync(distDir)) {
   cmsZip.writeZip(cmsV6Path);
   console.log(`Successfully packed cms v6.zip! Path: ${cmsV6Path}`);
 
-  // Copy zip files to public/ for direct web downloads
-  const generatedZips = ['build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip', 'website v6.zip', 'cms v6.zip'];
+  const v7ZipPath = path.join(process.cwd(), 'v7.zip');
+  universalZip.writeZip(v7ZipPath);
+
+  const websiteV7Path = path.join(process.cwd(), 'website v7.zip');
+  websiteZip.writeZip(websiteV7Path);
+
+  const cmsV7Path = path.join(process.cwd(), 'cms v7.zip');
+  cmsZip.writeZip(cmsV7Path);
+
+  const websiteV7HyphenPath = path.join(process.cwd(), 'website-v7.zip');
+  websiteZip.writeZip(websiteV7HyphenPath);
+
+  const cmsV7HyphenPath = path.join(process.cwd(), 'cms-v7.zip');
+  cmsZip.writeZip(cmsV7HyphenPath);
+
+  const bskbdV7Path = path.join(process.cwd(), 'bskbd-v7.zip');
+  universalZip.writeZip(bskbdV7Path);
+
+  console.log(`Successfully packed v7 zips!`);
+
+  // Copy zip files to public/ and dist/ for direct web downloads
+  const generatedZips = [
+    'build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip',
+    'website v6.zip', 'cms v6.zip',
+    'v7.zip', 'website v7.zip', 'cms v7.zip', 'website-v7.zip', 'cms-v7.zip', 'bskbd-v7.zip'
+  ];
   generatedZips.forEach(zipName => {
     const srcPath = path.join(process.cwd(), zipName);
     if (fs.existsSync(srcPath)) {
       fs.copyFileSync(srcPath, path.join(publicDir, zipName));
+      fs.copyFileSync(srcPath, path.join(distDir, zipName));
     }
   });
 

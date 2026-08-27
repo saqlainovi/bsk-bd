@@ -278,7 +278,7 @@ export default function MediaLibraryModal({
                 : "text-stone-600 hover:text-stone-900 border-transparent"
             }`}
           >
-            <span>🏛️ {language === "bn" ? "কেন্দ্র ও কর্মসূচি আর্কাইভ" : "BSK Campus & Programs"}</span>
+            <span>\uD83C\uDFDB️ {language === "bn" ? "কেন্দ্র ও কর্মসূচি আর্কাইভ" : "BSK Campus & Programs"}</span>
           </button>
 
           <button
@@ -290,7 +290,7 @@ export default function MediaLibraryModal({
                 : "text-stone-600 hover:text-stone-900 border-transparent"
             }`}
           >
-            <span>📚 {language === "bn" ? "ব্যানার প্রিসেট (HD)" : "Curated HD Themes"}</span>
+            <span>\uD83D\uDCDA {language === "bn" ? "ব্যানার প্রিসেট (HD)" : "Curated HD Themes"}</span>
           </button>
 
           <button
@@ -302,7 +302,7 @@ export default function MediaLibraryModal({
                 : "text-stone-600 hover:text-stone-900 border-transparent"
             }`}
           >
-            <span>🔗 {language === "bn" ? "সরাসরি লিঙ্ক (URL)" : "Direct URL"}</span>
+            <span>\uD83D\uDD17 {language === "bn" ? "সরাসরি লিঙ্ক (URL)" : "Direct URL"}</span>
           </button>
         </div>
 
@@ -505,7 +505,7 @@ export default function MediaLibraryModal({
             <div className="space-y-6">
               <div>
                 <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <span>🏛️ {language === "bn" ? "কেন্দ্র ও লাইব্রেরি আলোকচিত্র" : "BSK Center & Library"}</span>
+                  <span>\uD83C\uDFDB️ {language === "bn" ? "কেন্দ্র ও লাইব্রেরি আলোকচিত্র" : "BSK Center & Library"}</span>
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {staticBskLibraryImages.map((imgItem, idx) => (
@@ -540,7 +540,7 @@ export default function MediaLibraryModal({
           {activeTab === "presets" && (
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <span>📚 {language === "bn" ? "কিউরেটেড বইপড়া ও সাহিত্য থিম (Ultra HD)" : "Curated Literary Art (Ultra HD)"}</span>
+                <span>\uD83D\uDCDA {language === "bn" ? "কিউরেটেড বইপড়া ও সাহিত্য থিম (Ultra HD)" : "Curated Literary Art (Ultra HD)"}</span>
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                 {curatedLiteraryThemes.map((imgItem, idx) => (
