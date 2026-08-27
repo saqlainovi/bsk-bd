@@ -3410,6 +3410,15 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             setActivePhotoIndex={setActivePhotoIndex}
             setActiveAlbumPhotos={setActiveAlbumPhotos}
           />
+        ) : (page.id === 'bangalir_chinta' || page.id === 'bangalir-chinta') ? (
+          <BangalirChintaPage
+            page={page}
+            language={language}
+            onNavigate={onNavigate}
+            setActivePhoto={setActivePhoto}
+            setActivePhotoIndex={setActivePhotoIndex}
+            setActiveAlbumPhotos={setActiveAlbumPhotos}
+          />
         ) : (
           <div className="space-y-6 w-full">
             {page.id !== 'press' && page.id !== 'notice' && page.id !== 'blog' && page.id !== 'central-library' && page.id !== 'ataglance' && page.id !== 'auditorium' && page.id !== 'facilities' && page.id !== 'building' && page.id !== 'cafe' && page.id !== 'bookshop' && Array.isArray(page.sections) && page.sections.map((sec, sIdx) => {

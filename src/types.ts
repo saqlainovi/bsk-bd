@@ -518,6 +518,7 @@ export interface RecruitmentCircular {
   dept_en?: string;
   vacancies_bn?: string;
   vacancies_en?: string;
+  vacancy?: string;
   salary_scale_bn?: string;
   salary_scale_en?: string;
   age_limit_bn?: string;
@@ -528,10 +529,17 @@ export interface RecruitmentCircular {
   experience_req_en?: string;
   terms_bn?: string;
   terms_en?: string;
-  deadline_bn: string;
-  deadline_en: string;
+  deadline_bn?: string;
+  deadline_en?: string;
+  deadline?: string;
+  location_bn?: string;
+  location_en?: string;
   desc_bn?: string;
   desc_en?: string;
+  description_bn?: string;
+  description_en?: string;
+  requirements_bn?: string;
+  requirements_en?: string;
   status: 'active' | 'expired' | string;
   fileUrl?: string;
   fileType?: string;
@@ -541,6 +549,7 @@ export interface RecruitmentCircular {
   applyFileName?: string;
   createdAt?: any;
   updatedAt?: any;
+  [key: string]: any;
 }
 
 // Specialized Pages Interfaces
@@ -788,5 +797,12 @@ export interface BookFairSchedule {
   statusBn?: string;
   statusEn?: string;
 }
+
+export type WebsitePage = ParsedPage;
+export type JobCircular = RecruitmentCircular;
+export type HeroSlide = any;
+export type RecentActivity = any;
+export type GlobalSettings = any;
+
 
 

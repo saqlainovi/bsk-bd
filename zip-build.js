@@ -21,6 +21,13 @@ if (fs.existsSync(distDir)) {
     }
   });
 
+  // Remove any stray zip files inside distDir before packing
+  fs.readdirSync(distDir).forEach(file => {
+    if (file.endsWith('.zip')) {
+      fs.unlinkSync(path.join(distDir, file));
+    }
+  });
+
   // 1. Universal Build Zip
   const universalZip = new AdmZip();
   universalZip.addLocalFolder(distDir);
@@ -64,13 +71,21 @@ if (fs.existsSync(distDir)) {
   cmsDirectZip.writeZip(cmsZipPath);
   console.log(`Successfully packed cms.zip (for cms.bskbd.org)! Path: ${cmsZipPath}`);
 
-  // Copy zip files to public/ and dist/ for direct web downloads
-  const generatedZips = ['build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip'];
+  // Pack v6 zips specifically requested by user
+  const websiteV6Path = path.join(process.cwd(), 'website v6.zip');
+  websiteZip.writeZip(websiteV6Path);
+  console.log(`Successfully packed website v6.zip! Path: ${websiteV6Path}`);
+
+  const cmsV6Path = path.join(process.cwd(), 'cms v6.zip');
+  cmsZip.writeZip(cmsV6Path);
+  console.log(`Successfully packed cms v6.zip! Path: ${cmsV6Path}`);
+
+  // Copy zip files to public/ for direct web downloads
+  const generatedZips = ['build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip', 'website v6.zip', 'cms v6.zip'];
   generatedZips.forEach(zipName => {
     const srcPath = path.join(process.cwd(), zipName);
     if (fs.existsSync(srcPath)) {
       fs.copyFileSync(srcPath, path.join(publicDir, zipName));
-      fs.copyFileSync(srcPath, path.join(distDir, zipName));
     }
   });
 

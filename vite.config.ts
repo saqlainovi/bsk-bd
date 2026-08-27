@@ -10,8 +10,30 @@ function serveRootAssetsPlugin() {
     name: 'serve-root-assets',
     configureServer(server: any) {
       server.middlewares.use((req: any, res: any, next: any) => {
+        const decodedUrl = decodeURIComponent(req.url || '').split('?')[0];
+
+        // Direct zip download endpoint
+        if (decodedUrl.endsWith('.zip')) {
+          const zipName = path.basename(decodedUrl);
+          const candidatePaths = [
+            path.join(process.cwd(), zipName),
+            path.join(process.cwd(), 'for_me', zipName),
+            path.join(process.cwd(), 'public', zipName)
+          ];
+          for (const cp of candidatePaths) {
+            if (fs.existsSync(cp) && fs.statSync(cp).isFile()) {
+              const stat = fs.statSync(cp);
+              res.setHeader('Content-Type', 'application/zip');
+              res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+              res.setHeader('Content-Length', stat.size);
+              const readStream = fs.createReadStream(cp);
+              readStream.pipe(res);
+              return;
+            }
+          }
+        }
+
         if (req.url && req.url.startsWith('/assets/')) {
-          const decodedUrl = decodeURIComponent(req.url);
           const filePath = path.join(process.cwd(), decodedUrl);
           if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
             const ext = path.extname(filePath).toLowerCase();

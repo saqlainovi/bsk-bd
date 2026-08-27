@@ -1,3 +1,5 @@
+import { getApiUrl } from '../services/cpanelApi';
+
 export function normalizeImageUrl(url: string | null | undefined): string {
   if (!url) return '';
   let normalized = url.trim();
@@ -25,3 +27,32 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   
   return normalized;
 }
+
+export function resolveImageUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string' || !url.trim()) return '';
+  let trimmed = url.trim();
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('./')) {
+    trimmed = trimmed.substring(2);
+  } else if (trimmed.startsWith('/')) {
+    trimmed = trimmed.substring(1);
+  }
+
+  if (trimmed.startsWith('uploads/')) {
+    try {
+      const apiUrl = getApiUrl();
+      if (apiUrl.startsWith('http://') || apiUrl.startsWith('https://')) {
+        const baseUrl = apiUrl.substring(0, apiUrl.lastIndexOf('/'));
+        return `${baseUrl}/${trimmed}`;
+      }
+    } catch (_) {}
+    return '/' + trimmed;
+  }
+
+  return normalizeImageUrl('/' + trimmed);
+}
+

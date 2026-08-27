@@ -6,6 +6,7 @@ import {
   FileText,
   Plus,
   Edit2,
+  Edit,
   Trash2,
   Save,
   X,
@@ -92,6 +93,8 @@ import {
 import ImageResizer from "./ImageResizer";
 import MediaLibraryModal from "./MediaLibraryModal";
 import PressCMS from "./PressCMS";
+import FounderTribute from "./FounderTribute";
+import PageContent from "./PageContent";
 import websiteContentRaw from "../data/website_content.json";
 import {
   defaultPublicationPageData,
@@ -561,6 +564,8 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
   // cPanel DB status
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [isHeroGalleryOpen, setIsHeroGalleryOpen] = useState<boolean>(false);
+  const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState<boolean>(false);
+  const [mediaLibraryTargetField, setMediaLibraryTargetField] = useState<((url: string) => void) | null>(null);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>(
     [],
   );
@@ -5846,43 +5851,38 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         {/* List of default pages to select & edit */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {[
-                            {
-                              id: "home",
-                              name_bn:
-                                "à¦¬à¦¿à¦¶à§à¦¬à¦¸à¦¾à¦¹à¦¿à¦¤à§à¦¯ à¦•à§‡à¦¨à§à¦¦à§à¦° à¦ªà¦°à¦¿à¦šà¦¿à¦¤à¦¿ (à¦¸à¦¾à¦¥à§‡ à¦¬à§à¦°à¦¤, à¦²à¦•à§à¦·à§à¦¯, à¦‡à¦¤à¦¿à¦¹à¦¾à¦¸ à¦“ à¦…à¦°à§à¦œà¦¨)",
-                              name_en:
-                                "About BSK (with Mission, History & Achievements)",
-                            },
-                            {
-                              id: "mission",
-                              name_bn: "à¦¬à§à¦°à¦¤, à¦²à¦•à§à¦·à§à¦¯ à¦“ à¦‰à¦¦à§à¦¦à§‡à¦¶à§à¦¯",
-                              name_en: "Mission & Vision",
-                            },
-                            {
-                              id: "founder",
-                              name_bn: "à¦ªà§à¦°à¦¤à¦¿à¦·à§à¦ à¦¾à¦¤à¦¾ à¦“ à¦¸à¦­à¦¾à¦ªà¦¤à¦¿",
-                              name_en: "Founder Profile",
-                            },
-                            {
-                              id: "ataglance",
-                              name_bn: "à¦à¦• à¦¨à¦œà¦°à§‡ à¦•à§‡à¦¨à§à¦¦à§à¦°",
-                              name_en: "BSK at a Glance",
-                            },
-                            {
-                              id: "trustees",
-                              name_bn: "à¦Ÿà§à¦°à¦¾à¦¸à§à¦Ÿà¦¿ à¦¬à§‹à¦°à§à¦¡",
-                              name_en: "Board of Trustees",
-                            },
-                            {
-                              id: "organogram",
-                              name_bn: "à¦ªà§à¦°à¦¶à¦¾à¦¸à¦¨à¦¿à¦• à¦•à¦¾à¦ à¦¾à¦®à§‹ à¦“ à¦…à¦°à§à¦—à¦¾à¦¨à§‹à¦—à§à¦°à¦¾à¦®",
-                              name_en: "Administrative Structure",
-                            },
-                            {
-                              id: "press_contact",
-                              name_bn: "à¦®à¦¿à¦¡à¦¿à§Ÿà¦¾ à¦“ à¦ªà§à¦°à§‡à¦¸ à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦— (à¦¸à§‡à¦•à¦¶à¦¨ à§«)",
-                              name_en: "Media & Press Contact (Section 5)",
-                            },
+                            { id: "home", name_bn: "à¦¬à¦¿à¦¶à§à¦¬à¦¸à¦¾à¦¹à¦¿à¦¤à§à¦¯ à¦•à§‡à¦¨à§à¦¦à§à¦° à¦ªà¦°à¦¿à¦šà¦¿à¦¤à¦¿ (à¦¸à¦¾à¦¥à§‡ à¦¬à§à¦°à¦¤, à¦²à¦•à§à¦·à§à¦¯, à¦‡à¦¤à¦¿à¦¹à¦¾à¦¸ à¦“ à¦…à¦°à§à¦œà¦¨)", name_en: "About BSK (with Mission, History & Achievements)" },
+                            { id: "mission", name_bn: "à¦¬à§à¦°à¦¤, à¦²à¦•à§à¦·à§à¦¯ à¦“ à¦‰à¦¦à§à¦¦à§‡à¦¶à§à¦¯", name_en: "Mission & Vision" },
+                            { id: "founder", name_bn: "à¦ªà§à¦°à¦¤à¦¿à¦·à§à¦ à¦¾à¦¤à¦¾ à¦“ à¦¸à¦­à¦¾à¦ªà¦¤à¦¿", name_en: "Founder Profile" },
+                            { id: "ataglance", name_bn: "à¦à¦• à¦¨à¦œà¦°à§‡ à¦•à§‡à¦¨à§à¦¦à§à¦°", name_en: "BSK at a Glance" },
+                            { id: "achievement", name_bn: "à¦…à¦°à§à¦œà¦¨à¦¸à¦®à§‚à¦¹", name_en: "Achievements" },
+                            { id: "bsk-history", name_bn: "à¦‡à¦¤à¦¿à¦¹à¦¾à¦¸", name_en: "BSK History" },
+                            { id: "governance", name_bn: "à¦ªà¦°à¦¿à¦šà¦¾à¦²à¦¨à¦¾ à¦“ à¦¬à§à¦¯à¦¬à¦¸à§à¦¥à¦¾à¦ªà¦¨à¦¾", name_en: "Governance & Management" },
+                            { id: "trustees", name_bn: "à¦Ÿà§à¦°à¦¾à¦¸à§à¦Ÿà¦¿ à¦¬à§‹à¦°à§à¦¡", name_en: "Board of Trustees" },
+                            { id: "organogram", name_bn: "à¦ªà§à¦°à¦¶à¦¾à¦¸à¦¨à¦¿à¦• à¦•à¦¾à¦ à¦¾à¦®à§‹ à¦“ à¦…à¦°à§à¦—à¦¾à¦¨à§‹à¦—à§à¦°à¦¾à¦®", name_en: "Administrative Structure" },
+
+                            { id: "mobile-library", name_bn: "à¦­à§à¦°à¦¾à¦®à§à¦¯à¦®à¦¾à¦£ à¦²à¦¾à¦‡à¦¬à§à¦°à§‡à¦°à¦¿", name_en: "Mobile Library Program" },
+                            { id: "central-library", name_bn: "à¦•à§‡à¦¨à§à¦¦à§à¦° à¦²à¦¾à¦‡à¦¬à§à¦°à§‡à¦°à¦¿", name_en: "Central Library" },
+                            { id: "reading-habit", name_bn: "à¦ªà¦¾à¦ à¦¾à¦­à§à¦¯à¦¾à¦¸ à¦‰à¦¨à§à¦¨à¦¯à¦¼à¦¨ à¦•à¦°à§à¦®à¦¸à§‚à¦šà¦¿", name_en: "Reading Development Program" },
+                            { id: "primary-teacher", name_bn: "à¦ªà§à¦°à¦¾à¦¥à¦®à¦¿à¦• à¦¶à¦¿à¦•à§à¦·à¦•à¦¦à§‡à¦° à¦¬à¦‡à¦ªà¦¡à¦¼à¦¾ à¦•à¦°à§à¦®à¦¸à§‚à¦šà¦¿", name_en: "Primary Teacher Reading" },
+                            { id: "nationwide-excellence", name_bn: "à¦¦à§‡à¦¶à¦­à¦¿à¦¤à§à¦¤à¦¿à¦• à¦‰à§à¦•à¦°à§à¦· à¦•à¦¾à¦°à§à¦¯à¦•à§à¦°à¦®", name_en: "Nationwide Excellence" },
+                            { id: "aalor-ishkool", name_bn: "à¦†à¦²à§‹à¦° à¦‡à¦¶à¦•à§à¦²", name_en: "Aalor Ishkool" },
+                            { id: "aalor-pathshala", name_bn: "à¦†à¦²à§‹à¦° à¦ªà¦¾à¦ à¦¶à¦¾à¦²à¦¾", name_en: "Aalor Pathshala" },
+                            { id: "bangalir_chinta", name_bn: "à¦¬à¦¾à¦™à¦¾à¦²à¦¿à¦° à¦šà¦¿à¦¨à§à¦¤à¦¾ à¦•à¦°à§à¦®à¦¸à§‚à¦šà¦¿", name_en: "Bangalir Chinta Program" },
+
+                            { id: "publication", name_bn: "à¦ªà§à¦°à¦•à¦¾à¦¶à¦¨à¦¾ à¦¶à¦¾à¦–à¦¾", name_en: "Publications" },
+                            { id: "bookshop", name_bn: "à¦¬à¦‡ à¦¬à¦¿à¦•à§à¦°à§Ÿ à¦•à§‡à¦¨à§à¦¦à§à¦°", name_en: "Book Shop" },
+                            { id: "book-fair", name_bn: "à¦¬à¦‡à¦®à§‡à¦²à¦¾ à¦“ à¦‰à§à¦¸à¦¬", name_en: "Book Fair" },
+
+                            { id: "building", name_bn: "à¦•à§‡à¦¨à§à¦¦à§à¦° à¦­à¦¬à¦¨ à¦“ à¦ªà¦°à¦¿à¦šà¦¿à¦¤à¦¿", name_en: "BSK Building & Facilities" },
+                            { id: "facilities", name_bn: "à¦®à¦¿à¦²à¦¨à¦¾à¦¯à¦¼à¦¤à¦¨ à¦“ à¦¸à§‡à¦®à¦¿à¦¨à¦¾à¦° à¦•à¦•à§à¦·", name_en: "Auditoriums & Facilities" },
+
+                            { id: "contact", name_bn: "à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦—", name_en: "Contact Information" },
+                            { id: "press", name_bn: "à¦ªà§à¦°à§‡à¦¸ à¦°à¦¿à¦²à¦¿à¦œ à¦“ à¦¸à¦‚à¦¬à¦¾à¦¦", name_en: "Press Releases & News" },
+                            { id: "notice", name_bn: "à¦¬à¦¿à¦œà§à¦à¦ªà§à¦¤à¦¿ à¦“ à¦…à¦¡à¦¿à¦¶à¦¨", name_en: "Notices & Announcements" },
+                            { id: "blog", name_bn: "à¦¬à§à¦²à¦— à¦“ à¦°à¦¿à¦­à¦¿à¦‰", name_en: "Blog & Book Reviews" },
+                            { id: "recruitment", name_bn: "à¦¬à¦¿à¦œà§à¦à¦ªà§à¦¤à¦¿ à¦“ à¦¨à¦¿à§Ÿà§‹à¦— à¦¸à§à¦¯à§‹à¦—à¦¸à¦®à§‚à¦¹", name_en: "Recruitment & Careers" },
+                            { id: "press_contact", name_bn: "à¦®à¦¿à¦¡à¦¿à§Ÿà¦¾ à¦“ à¦ªà§à¦°à§‡à¦¸ à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦— (à¦¸à§‡à¦•à¦¶à¦¨ à§«)", name_en: "Media & Press Contact (Section 5)" },
                           ].map((pageInfo) => {
                             // Find if we already customized this page in cPanel Database
                             const isOverridden =
@@ -9346,39 +9346,16 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                                   </div>
                                                   <div className="space-y-1">
                                                     <label className="text-[10px] font-bold text-stone-600 block">
-                                                      {language === "bn"
-                                                        ? "à¦¸à¦¾à¦‡à¦Ÿà§‡à¦¶à¦¨ à¦Ÿà§‡à¦•à§à¦¸à¦Ÿ (à¦‡à¦‚à¦°à§‡à¦œà¦¿)"
-                                                        : "Citation Text (EN)"}
-                                                    </label>
-                                                    <textarea
-                                                      rows={3}
-                                                      value={
-                                                        editingPage.founder_magsaysay_text_en ||
-                                                        ""
-                                                      }
-                                                      onChange={(e) =>
-                                                        setEditingPage({
-                                                          ...editingPage,
-                                                          founder_magsaysay_text_en:
-                                                            e.target.value,
-                                                        })
-                                                      }
-                                                      className="w-full p-2 border border-stone-200 rounded-lg text-xs font-serif"
-                                                    />
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-
-                                            {/* UNESCO Comenius Honor citation details */}
-                                            <div className="space-y-4">
-                                              <h5 className="text-xs font-bold text-stone-700 font-serif border-l-2 border-[#B8862A] pl-1.5">
-                                                {language === "bn"
-                                                  ? "à§ª. à¦‡à¦‰à¦¨à§‡à¦¸à§à¦•à§‹ à¦•à¦®à§‡à¦¨à¦¿à¦¯à¦¼à¦¾à¦¸ à¦ªà¦¦à¦• à¦¸à¦¾à¦‡à¦Ÿà§‡à¦¶à¦¨"
-                                                  : "4. UNESCO Comenius Award Citation"}
-                                              </h5>
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border border-stone-200">
-                                               <div className="gxœìZKoÛF¾ûWÔ‹”’,YFëH)RÁ—¢q8=†ÁÇJbM‘wiIp|h5‚¢è¡ğ­€QÔ¥Œ6qR(’¿ÂŸÒá®dË²ëµ;A"¹»³œÇ~ßWmA-°-Íôª-AÃZ½¸ÌCM÷µe0jZ³n3ÉEà…®E,Í©á	z?eK´|.—z¸ ×=J–½¦£Sº®7H9E}İ$Z[+¨/nIM
-ttƒ8ƒ"i1íéRÎomBÕs™fxü®°ÄJ.†ã™Ûªsì:º[õr¹)ÃM©JøRqô&ŞÅQ7îüGÇqô6N`1^òÓçqtŠ'éL²
-©'6s,~¹Ní)Ú:Ë­ê)ÛõC¦ªkû=ß*[aGwBRŞU7"±lf»µoÑï™*_mÁVèjz[,1î–áÂ³gêòSÊª):Às+ue4Ë"ICYyA PÂÖ.ì³x3d2™[zQcü´z™	¦5Â2<¦nğ€{é÷îò¨ljÕĞq=òã(cU8„¶¨rúb}Á˜e„¼ı8z‘€]OÎâÎÏqt€ğqô½c<ûaCâ$­ÉÅ>ÇGÄÊ×qôï˜´ıGö@ÈìtâÎkş9QÅË¬³e‘Úæœ8CN<ãîE‡r·¿1!.xÀ`ÃYÓdÅf:³= uî’.ïèÑUµ	¼&-ï”qâVéu›³åıgKá¦9Y*“¥@[J»úA°‘ò¸y™8âx_eâ>'¿.gFÌŞÍ¦R\›WŠªÇÔJ‘Ì¹ï¾s_ÏOsò»ãJñ»õµÊ7ğ•îÂ£†G¡â5ˆk‡Kw Ÿ¯ô:g¶Ç5‹½“İP½ww¤÷Ñ×{sÎ»÷œ'Ü4§¼y½7óQJ3)ºö´|°”¤#)TN „0I­‡³ŸiËPuH¾)³«m¸ß\.ô£I%	%#d¸,¤”š ·H‡ÛÜFNPxL]\¦’öT½…ªûí1«»0auJ§êŞ	VZïV1fP/Ğ|Ïv	dô”‹­«™—H Ä;ğ#ş‚à4Å3İ5‰#•Í”²Â·ãj[²¿ì¡bÏC5íé'ùµâçËùÍSã­Âr±PØÎÿ„˜è4Z×-¯);7¨f’Ä;<â—2Å[sZiCß!ƒºÕ1øšÚrJîKX'¸Çùş¬—÷2åâè±a†Yò˜Iópà òšÚ+e¹Ä™Æ†•²U/hLî%!hÉœÚªé9Z¢Fb™¹İæùÚÊTüuş¯š~,µœ±€ˆ(6ø_p®óÖ³T/N:„,¶óÎt‘XLˆßŞóàZ^¸×Ú£SÌ~¾è$ãtr”öK¼W|Ç6‰Ô.‡«WüûğÆã8ú›7œœ‚<|¿¶1|¼‡
-Z"y»'Ã¥l½(ÑË¿RD_öÂÊ%/HYw2XŸˆë·‰–‰®]èé˜&Q’mî^Ìßøòıñ_âèwn±Cşı8 tÅf¸°)¿Õé™ú ßØó%?¿ÆQ[¿*½]õŸE¼v>Â¶“8îÏ#î”„†)4t‹ G«pH•A²Â¡icöV“n¥¼M–Vècªï ‡g$ª”õ§ãÊtÌ˜ÖeJ‡±IÆ„q#ÇŒé¥ïˆ~—úµ_º¸8?M?XØ[X -ßX¤ª‡ƒGVÃv+7,ü  ÿÿ ?SËÃ
+                                           xœì]ëoÛÈµÿŞ¿b®Rlì^I¶d;›Õ•ºe×mâ¤–wûÁ0JKl(R—¤ü¨j Ğ],m?Fq÷.nnÑDöMó0ò!õ…ó¯èO¹gf8Iñ1¤q²Yâc8sæ<çÌ!çÕW%­Õ“ZU*”ih™Ÿ ”¯OQf88N†ƒ¯‡ƒÇÃx3"şexğ'zÅc4E¯y8Ñ3ßo§Ó?¹„2KŠ%YŠ®¡5¼c¡©ÚÊtf/U{åUj`õçén¶àé’¥”C1ôm³ÒŸK×s„¶$µ‡+ıÔtÄ²b)Zë.°C~Sïi26îu¤–)íÂ¿{dl÷°†~÷»ÔÈ¤ã´Ñµ¥608e
+O£JºY%/[µu¦ÒÓ¡|>ï"tö-…ÎQéä‡[ØÊS~JßÁ½éí¦*™æŠÔÁ•Ìvn³§ª¨›+¢†n ‘ì?9ÓÒ5œ+ÎÎ‚°êÉ9µ…Ùr;&T³r&6”ÍtŒ:“†ÁÊ3²²•üÆT·¥¸É¾åTõ.^ı™Ÿ¡/Vjõ¥;hIï`Mé™ès]ÓÔä¶BÆ–¤¨&úÙL2+EÜÌfv¥&Îíææ3‰ç£½ànÈÃ‡]•g2ıxvÄ œŸU‡ÃsëW¯_¿V¬n ®š+ä÷æŒÜâ<Ë#jã¿€ÚøcjıÁø‘?ƒ—ôè!XşáàÕpğ/ê8Ã¹gÃÁ ®@ÎDšş€{0Ÿã…ê¶dÈˆû‰½…òL{!ñlûø¦e(2"o¹¦®š¹êÈ¥Ñ×"jIİÜ<j´rÛmÅÂˆ|q)­½–bÖÃøy.E[á­RµíQ‡lLLÖ³İ`Q¹¢ÒPõæƒ”<{¿øåsğv¿¥<lı’8ÁÏéGğƒ_Ã‡ÓyÀkŠ¥b4µø<_Eëö¬”ı·v»ö¬¦¥Àyx¾=›MıEèz¯1ñ{/Ÿßë›¡‰×›ÊëMË›]ôz4/6*™SÚú©áÜ9 ÿ^¦Ôƒé|O¬œÿ•ı9CÃçƒ~Ş•üğ ®^	¦0±—Øş±	š˜¿	èvÛ$Àó¿.(À;Û,‡ã½«ìÆãMr—ØÆÙ341rï.ÆDÓ/¿Íœ,ÿk’©ÿĞÃµ‰)»Ä¦l’£Ÿ„kg{Sâ[Ş0½'ÿï»u“"£#ÖÊúè#t^²¤Ø·&¦WL%‰Ï¶7Z¹õ+7«7?¾YÜğ±•“Ÿ™qÖaÀÄ]‚k	íóØãÙ£ãÏ,Î¢n#EÄ]nÏ»àª ğ;öwıJ¡Z(Î~ˆŠwbá™kbÍJŒr!¿àöL®§K×»’ñ@Å¦»oíÜ<´½Mßí®Ø£Ï¤»2LŠ–FZ=,¨A×|‰Æã±Ã®l_Àññë9¹",Ï¤Xy¦=ÎZá,+[À’»Èdâ&ñùLB¾õé|GêNMÁÁ,2—åbò	½«³ğn¥OÙói$5hˆÄ'Üş8Ğpà	ÏĞôXĞpå§”şèßQaa÷Áï¿_g,à½œZ÷´XH Ó,D.2)ã q÷¥÷{› ¤êueÉÂ2ª upƒ£$yã?R?Ê~È:á†xTŸ¸ÜƒYD‰Sòy»h/ıCı‚ßÍG||%‡{Ói·w¡Nòé°	"“ø¨134·ı–¾Ÿ¡ôpxğ‡áà;ªGÿ›jÏA@œÂ#ĞWğÕŞó<öü)¢›ŒŸæ×g7~Œú‘=ª	¼`?Æ£?åô¡Êd²@ŸÓ=N³¡+>e{¾úİC‰s¢Ö£Ôú‡|LO',Ã?ÔC´]±F…iL !¡±Š­íğëqXá7=ÓR6wsX“)Ä0‡º©\g,m¥©Q/7z\.@0æ³ËE$¬ª4€1 ¶À§:4K¡yr¤»ƒíîYnÙƒ,€ ·õ-l”œCD¦}Ë9¼¢-iwê®¸áON+4‚jöS7r]]!Ä²sFø2à¡<¡Íkæ ˜N°Åå6'g?×f¯ÑQ„b/ï$-8“´~¥X[ød¾¸1š¤õ+…ÚÜbqiƒÍ
+ƒB&(brÌ¶$ëÛ¹ì›¦p0îl&°\—¶°Œ›£`¼¢o	ğ¶ÔÉHÊTÏ¨kÌ}dâ?aÙG,¼`EÃGÔg^ñ¬II@¤1ÏòEá8Q~Ğ¼å™MİèD]¯™Éú¶ÕåÏ>_+¡[Ë_ÖĞİÕÚ—Ëµ_Ç,fóërµUjêjP€ à(Æ]déİÜ5aL, gÂã‚ØÃ€øâ¬K`V'Ä‰[¥¶¶1ÖƒÍw¹¢ˆ	J¿8/DØ…BÍrm7LÓ¡ê§’k&±G£Ò}"¡¯s¤RÀ®x‰XüJ¿¼ EıD¤Ù-/èû7ÔrÜRˆxxKÁÛg,™"kñ(Â °EbfÈnû0S˜åDçƒNsG×t‡Á©+ï°…Ğ$÷“&Äh!æõù$§#íäÚ¹õk³”Änª ‘»9©géqè9qtºnÏgavfAÄÁóç	+<á§Bù€òMvıš¡€nÆ¨+‘ ßÕğâ]qX{ODj¦a…z@Â1ÁÇëÚŠ´¥´ 
+å>hO¬Sql"dzb.‰¹ òtHCï	Î+Ë¶V]DŸ”À¨İùlµz»–à°eëKÙoá5©ÁX¨kè-Cê˜÷š3"›†@†'€CíÉs))F»nìÌN„€”ÛscZ
+„/Ğì|â1;‘R¦Ú÷¹ö’ú_	LItö1]¶_ •şqXó5 ÿd¹ zä	Sù¤8>ıe8ø='¨Ú¿kOúÕ»¸©Hªò[,S?Í$óa
+@±ÏEªd]ÔYp¨C<÷E´{BEÊ¥ßníN(ÁX¢ì%ıúw·e|n_GElcñèê¿èûk–7Cœş‡Ü1>!	8òN‘uÛW8ö”>ë-[/ÏRo¬xïŸìĞ3zÕÿÒ÷£4]|G&õ+ò`’ªÛwÍ¥}ËŞ¯“Ñ³î#Ú±§¬=¶Pÿ!eoi_=üğé“h2Ü–4BuÓÅ64˜§T²â™šYdIÃ_I“IàNô,qÈ´Xÿ%Üa€0ÚÜ–d«n¨GúİÉ•† ÚÓã©éè|P•H²à•"ãI¹Å!Jäà€ìöVbtË¸F)äÑm½¡¨İR†dìzK´J‰/¤(³¶í¦¡5‹¹ìºÇÈ ^Æ›ROµ<wŞ,iÏ/‘Ì†û{°ƒĞëªº$/wàËš^Çxd•~ÀÁ=`ùN×À¦IWú¯‘.E\|ù£àÚÃ|*ŒÂŒf ³óhÌi ¥¶¢YÒÙr+oœµˆ]½·^¿N8’½Â8òÿòghß0é\s¥CTé–šm à*–d˜õ³eVû!ö31«÷ÖËÁ¬‰O¦Œ„
+³$ªÕ“ÅA`RAá23Í’^ÑVnTúr"Ü.Ö(1W±	Œö	¥nZ
+JèF>UëµD’’‰Ï=X‹È_/<ÒW1ÅÂñ9Ñ¼Øx>ì†M•z¯”šºJ<ğy5~µ”«ßg*5,¥…~Ú—=] “Å»šòª'…3Ê×\]vÕ1>x6Ä0\İ‹¨?¯64Ú3ªZO8<úœm‡‚ø–(]*ú±'Û§ßİ••t4|.P>*ª‰ËO\$ÏàP©6Ş9×8y?ùæ/®ÕxÌ1`ñ:s¼<Rãc}_¸Dê¹~ç,Âzñ~òÇ_Îñ_¹TÉk/ƒTéHÓsG´“©µ#×õ”Æ Wß•4¬†`ç«x\vUU+ıMl5É§ªÜQ4æ†:m¡L£5ÄúÍ%/Y¾!YŸl6ëép:&íRZ·¬XBKwVÖªKkhyåW_,¯.×D}3 Â¡Ë‹ády})çX0:=—,@xà5+¥ºÃşl»&lë6²›…åNÜ¨İ‰«‚ãÄ)`†iC¡eí?{
+D”·!bâª1¢¡şó ûÃIñÈ•ê~î^)(èÍÈÍĞóc±<÷÷NTMöµãP¹ŸL6Y_rd‰~xú„Rï&ÆrCj> ·b°c¸‰ADd´iè´¥˜$x„º#ÁîødŸ?exàB\’Ü“³ĞÑI6l›yk-«½:Q#øP€ë¢sê1¶ÎßKÚµÙÈÄu„ö¹.aQ:ÚšÆÇù|íGº [«Ewkv|zÄ.DÎ
+1{§G›£WtdkrälÄÈ»ØŠÎÔDe›#sôéö¼rM+]£_³¤ßb«G+Ù-ñk Ë"·81Ó4èEQãU‚UR‚5Õ	‘ÕÌÏ	é2]’Ï&¦Û(ğC™ª¦k»½".º86ÀŠ¬
+¤ì%È’"»¸#)*ïH·—Ñ. sÓ3¤jÖy¼Xzd¥’«£ó‚K·éš&ëª½†·8ŠxÊsb:oé·ô¦¤br®nŠÖš5‘[¼‘!²&² ç,Ë”â,şÇ‹¯2¼:g`UÚÁ"UX”,¶mux¬×ønZ|rùY;K€X.ˆyÔ"ˆ¬½)Ì•Ğjmiõ‹åµÛµ•5ğæ~qgQÔsínô«C(6ñŞ/Ä{wí­Ì]÷ç¶KJöÿplà	3æXŠóÄNÑc_qXa@ª®‰¼¯æ‘0€Ş@KŠÑì©’ñşøò‡dÌ´Å?dæœ»Üš}z!«S8bpÊ·rë©i±Iø=«o€O?¸ı %©›ô„¥ô]û>Bi˜÷[*?V6ã*iJÆä·Kì	 «¥…sš¬UmHêvU¥I÷×:·° Y‰ŒKF¯%õqE\¶ò"8k›Mnyj¦!$ÙÎâşË(ZÕY9-â©\w{*)|î@yµÙâ9ç¹§”E9ÌñÌF~Y&²ãàıQÅõÁc{•eÆ<T€«TGGÛEøPB2K*‰i)?'óYÛ%à È”î‘õìNlÿŒ´p`ş?xÖo?}âKÔÙ3vğ{§Hä˜Ÿ;vt,]
+>ª„: Fš¾ÿÃIá³Ç=d‹Ê¹¢ zåk';²wÙ¨·#ºÜ¥JŒTRœ¯h R$5g)œGU¦L4Ë$±UWÈ´Œ^Óê¼ÉJK±$Õ£uà ˜Kİ=]^¢S1®Ì|	Õk«_./Õê`ÆnV—–o-¯‰ã`–·”&ûé¢Ú9nÆ®c*•Ì9à1ª-ŞçuVmş¥Ÿ©«Û¤'Ó&5U±xp7Ö¹üUÃû®±çà%ÓañªŸ×|ö«Oì“Ï©öpÔ¹uÀ«xOìkö]^Æ?˜šxäÜÊ~ãµ£§ºlÈ‰S÷æ*ûüÕV­Ôùë}ßñ2º@w&N+Ù®ÎbOQI(—eé*İPz,ZÔõ¨ŞÖ»Y´$mbVLŞ”m2şØå?êv!õ¿B?àÁ;ıõ(¶BŠDiØÔÈd‘½•Y)–ì¹vOË[æûóV0i…Msb{D,ƒö¢¶”´{&9³ãë[(ïÂ×üªCÇXï;¥mNx€¨Ï%Uì^¸dœhA2ñµóâşÂò:`‡şük²¡SëGxÔ¾õõ…¢¥qá;`aÆØÔz§K‚øós› #ğiBŒo†¦:áùøC‰¤‰=TÖ5ö»zŞgS?ÊI5½õ$Dœ}rd¿a7HV‘ôº]İ°";²ao1glÅÂ¶®mäŒ-²ï4 ­½œÜÿƒŒîâÖ[V›º5ú
+´Üdğ|¯ÄÒèÖ¢1¯xä5æº|£„øtÄcjBÛ$Ù&ÂW¸¿]Û«§#YÍ6İˆ¬4ó›Š&OuI]¾Â‘išà‹SÛ¸<ÁW®JÛH"aı.Ù 1úV&dì€½I•0×òÃXóL¦{'œõ‘-wüûcèF‡Vÿšõ´å}ØZš­r?{*#5ôu¯ãD«™Øb7á	ÊZú÷&ÙüAx?Ğµß‘ıÃÉøV…“5áKÀÙòïˆåŞ·§HÜ»qÔhg–8&.‚ù‹lƒ‡#ãç3.”ĞÊ5;d¬®¬Üùbe©FpÑ¨QÓ-ˆ\î5tÉ/oÔø¡àÄ¯`+ÇŞ0DÍÁËşæø$ØaÉìA<êf§°É\B°A~1ØAÓ€ÌMª¨Ş ü{.Â6å!V6Ô+·€^ø´CTÌ•xp 3©¾	„¼ïöªb¶QÏhä’‰’ILWGÑ$Ã^ÿ‰·ıÏ±øåìë`Yªuo3Z¹+}uLXúİ‹<ÔCøæà>{6ª>íjôšµçß%œìc¹¢­–'«ãádÊ@UYFŒÄñÖét%¯iªLú6CßRL‹…)p b‘“Q°¢¶¾$¾6$¾ˆ"@ü^7ÉöcáÖ«àßÇjGN´™…<IšÙ»½;_Ù&ïÎ?±¡‚‡¤Å/ñİ’ÂH-ìï´VjtûÎÆ26ÊØzä¼ã4«Ô«£[é€!z‚¡ÚÕ,TÆ²(”Lî™%Š[=~UÁ V¼æŞıX˜=“½üh+™tœ§(ÖÉl“+æ÷Ï—¿VB‹·î|–`Y`CÕ[“tF¡;D²EI4‡}È·õcŞàˆ)z {îê¦E0Şªò§^ò³“![~½ï.ø©ñ+şõ‹íüH—¹ÇXF’M©,20˜sìd]¥!“9M³Z&àó.Ö¼Úê:h«ë—µÀÃ#¡ £^ÑiŞw(’ ’Rƒ‘|p¹@õ]ˆ>ås-å8ı˜#7¨¿p$bÀ¥é³%Œ¿cD#`*Z`ND€$>Ü‚Aë˜¦Ww‘	DlºF66¸ØZ¡k}×]ã;à6ÄğİÆ²"9ÛãjÜÖeI5=°¯˜ô:û2*a>ƒWv_@›ğtK1ÉM•€†¼İ'šnb×JĞå±;¦6¡~WT×ê˜ÌŸ½ÁÍTÏP!yeMu\®Ñ-ìo*X•§ğûKió~äÙ?aQ÷ŞëÃ¨Öá¹ÎÏx&Ó¦şh’iÓ{?ù   ÿÿ Có¡

@@ -42,7 +42,7 @@ AddDefaultCharset UTF-8
   Options -Indexes
 </IfModule>
 
-# Protect hidden config files (.env, .git, .htaccess, etc.)
+# Protect hidden config files (.env, .git, .htaccess, etc.) and database/backup files (.sql, .zip)
 <FilesMatch "^\.">
   <IfModule mod_authz_core.c>
     Require all denied
@@ -53,8 +53,8 @@ AddDefaultCharset UTF-8
   </IfModule>
 </FilesMatch>
 
-# Allow public .htaccess itself if needed by server but keep env files blocked
-<FilesMatch "^(\.env|\.git|\.lock|package\.json|tsconfig\.json)">
+# Allow public .htaccess itself if needed by server but keep env, config, sql, and zip files blocked
+<FilesMatch "^(\.env|\.git|\.lock|package\.json|tsconfig\.json)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -63,6 +63,18 @@ AddDefaultCharset UTF-8
     Deny from all
   </IfModule>
 </FilesMatch>
+
+# Explicitly block direct download of database dumps and zip backups
+<FilesMatch "\.(sql|zip|tar|gz|bak|env|db)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
 
 # Gzip / Brotli Compression Headers
 <IfModule mod_deflate.c>
