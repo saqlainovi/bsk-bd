@@ -578,11 +578,11 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="flex flex-wrap gap-2">
             {[
               { id: 'all', bn: 'সব ৪০টি বিষয়', en: 'All 40 Courses' },
-              { id: 'philosophy', bn: '\uD83E\uDDE0 দর্শন ও চিন্তা', en: 'Philosophy' },
-              { id: 'arts', bn: '\uD83C\uDFA8 কলা, সংগীত ও চলচ্চিত্র', en: 'Arts & Cinema' },
-              { id: 'history', bn: '\uD83D\uDCDC ইতিহাস ও ঐতিহ্য', en: 'History' },
-              { id: 'literature', bn: '\uD83D\uDCDA সাহিত্য ও ভাষা', en: 'Literature' },
-              { id: 'science', bn: '\uD83D\uDD2C বিজ্ঞান ও বিশ্বজগৎ', en: 'Science' }
+              { id: 'philosophy', bn: 'দর্শন ও চিন্তা', en: 'Philosophy' },
+              { id: 'arts', bn: 'কলা, সংগীত ও চলচ্চিত্র', en: 'Arts & Cinema' },
+              { id: 'history', bn: 'ইতিহাস ও ঐতিহ্য', en: 'History' },
+              { id: 'literature', bn: 'সাহিত্য ও ভাষা', en: 'Literature' },
+              { id: 'science', bn: 'বিজ্ঞান ও বিশ্বজগৎ', en: 'Science' }
             ].map(cat => (
               <button
                 key={cat.id}
@@ -708,7 +708,7 @@ export const AalorIshkoolPage: React.FC<AalorIshkoolPageProps> = ({
           <div className="lg:col-span-5 bg-amber-950 text-amber-50 p-6 md:p-8 rounded-3xl border border-amber-800 shadow-xl space-y-6">
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                \uD83D\uDCCC {language === 'bn' ? (pageData.admission_info_badge_bn || 'ভর্তির নিয়মাবলি ও আমানত') : (pageData.admission_info_badge_en || 'Admission Rules & Fees')}
+                {language === 'bn' ? (pageData.admission_info_badge_bn || 'ভর্তির নিয়মাবলি ও আমানত') : (pageData.admission_info_badge_en || 'Admission Rules & Fees')}
               </span>
               <h3 className="font-serif font-bold text-2xl text-amber-100">
                 {language === 'bn' ? (pageData.admission_info_title_bn || 'আলোর ইশকুল সদস্যপদ') : (pageData.admission_info_title_en || 'Membership Guidelines')}

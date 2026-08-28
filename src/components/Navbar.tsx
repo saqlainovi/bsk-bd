@@ -94,7 +94,7 @@ export default function Navbar({
 
   const annBar = globalSettings?.announcement_bar;
   const navSet = globalSettings?.navbar_settings;
-  const logoUrl = navSet?.logo_url || "https://bskbd.org/assets/img/logo_bn2.png";
+  const logoUrl = navSet?.logo_url || "/assets/logo.png";
 
   const bcrsUrl = portals?.bcrs?.url || "https://bcrs.bskbd.org/";
   const bcrsTitle = language === 'bn' ? (portals?.bcrs?.title_bn || 'বাঙালির চিন্তা') : (portals?.bcrs?.title_en || 'BCRS');

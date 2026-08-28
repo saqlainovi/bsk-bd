@@ -217,7 +217,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
       title_en: 'BSK Official Logo (PNG)',
       fileType: 'PNG',
       fileSize: '1.2 MB',
-      fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png'
+      fileUrl: '/assets/logo.png'
     },
     {
       id: 'dl-2',
@@ -225,7 +225,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
       title_en: 'BSK Logo Vector (SVG)',
       fileType: 'SVG',
       fileSize: '45 KB',
-      fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png'
+      fileUrl: '/assets/logo.png'
     },
     {
       id: 'dl-3',
@@ -241,7 +241,7 @@ export default function PressCMS({ language, db, openImageResizer }: PressCMSPro
       title_en: 'Media Kit Resources (ZIP Bundle)',
       fileType: 'ZIP',
       fileSize: '45.8 MB',
-      fileUrl: 'https://bskbd.org/assets/img/logo_bn2.png'
+      fileUrl: '/assets/logo.png'
     }
   ]);
   const [editingDownloadItem, setEditingDownloadItem] = useState<any | null>(null);

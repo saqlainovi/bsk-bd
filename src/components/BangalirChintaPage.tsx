@@ -215,41 +215,45 @@ export const BangalirChintaPage: React.FC<BangalirChintaPageProps> = ({
                   
                   {/* Book Mockup */}
                   <div 
-                    className={`relative w-48 h-68 rounded-r-lg bg-gradient-to-br ${activeSubject.coverColor || 'from-[#4E2F1D] to-[#3D2517]'} text-white p-5 flex flex-col justify-between border-l-4 border-black/30 shadow-md transform transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-102 overflow-hidden`}
+                    className={`relative w-48 h-68 rounded-r-lg ${activeSubject.coverImage ? 'bg-stone-900' : (activeSubject.coverColor || 'bg-gradient-to-br from-[#4E2F1D] to-[#3D2517]')} text-white p-5 flex flex-col justify-between border-l-4 border-black/40 shadow-xl transform transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-102 overflow-hidden`}
                   >
-                    {/* Optional custom cover background image if provided */}
-                    {activeSubject.coverImage && (
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
-                        style={{ backgroundImage: `url('${activeSubject.coverImage}')` }}
-                      />
-                    )}
+                    {/* If custom cover image is uploaded, display high-clarity book cover */}
+                    {activeSubject.coverImage ? (
+                      <>
+                        <img 
+                          src={activeSubject.coverImage} 
+                          alt={activeSubject.title}
+                          className="absolute inset-0 w-full h-full object-cover" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+                      </>
+                    ) : null}
 
                     {/* Spine reflection */}
-                    <div className="absolute top-0 left-0 bottom-0 w-2 bg-gradient-to-r from-white/10 to-transparent" />
+                    <div className="absolute top-0 left-0 bottom-0 w-2.5 bg-gradient-to-r from-white/20 to-transparent z-20 pointer-events-none" />
                     
                     <div className="relative z-10 space-y-1.5 text-center pt-2">
-                      <span className="text-[9px] font-bold text-[#F0CC7A]/80 tracking-widest uppercase block border-b border-white/10 pb-1.5 font-sans">
+                      <span className="text-[9px] font-bold text-[#F0CC7A] tracking-widest uppercase block border-b border-white/20 pb-1.5 font-sans drop-shadow-md">
                         {bookTopLabel}
                       </span>
                     </div>
 
                     <div className="relative z-10 text-center py-4 space-y-1 flex-1 flex flex-col justify-center">
-                      <h4 className="font-serif font-extrabold text-lg tracking-wide text-white leading-snug">
+                      <h4 className="font-serif font-extrabold text-lg tracking-wide text-white leading-snug drop-shadow-lg">
                         {language === 'bn' ? activeSubject.title : (activeSubject.en || activeSubject.title)}
                       </h4>
                       {activeSubject.en && (
-                        <span className="text-[10px] font-mono text-stone-300 tracking-wider block">
+                        <span className="text-[10px] font-mono text-[#F0CC7A] tracking-wider block drop-shadow-md font-bold">
                           {activeSubject.en}
                         </span>
                       )}
                     </div>
 
                     <div className="relative z-10 space-y-1 text-center pb-2">
-                      <div className="text-[10px] text-[#F0CC7A] font-bold">
+                      <div className="text-[10px] text-[#F0CC7A] font-bold drop-shadow-md">
                         {language === 'bn' ? (activeSubject.vols || activeSubject.volsEn) : (activeSubject.volsEn || activeSubject.vols)}
                       </div>
-                      <div className="text-[8px] text-stone-300 leading-tight">
+                      <div className="text-[8px] text-stone-200 leading-tight drop-shadow-md">
                         {bookFooterLabel}
                       </div>
                     </div>

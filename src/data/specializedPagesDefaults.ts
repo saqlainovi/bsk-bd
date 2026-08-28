@@ -1580,3 +1580,63 @@ export const defaultBookFairData = {
   fair_hours_en: "Daily 3:00 PM - 9:00 PM (Holidays 11:00 AM - 9:00 PM)",
   fair_hotline: "০১৭৩০০০০০১৬"
 };
+
+export const defaultReadingHabitData = {
+  badge_bn: "দেশব্যাপী আলোর কাফেলা",
+  badge_en: "Nationwide Enlightened Society",
+  title_bn: "পাঠাভ্যাস উন্নয়ন কর্মসূচি",
+  title_en: "Reading Habit Development Program",
+  subtitle_bn: "কেন্দ্রের পাঠাভ্যাস উন্নয়ন কর্মসূচি শুরু হয়েছে ২০১০ সালে। এই কার্যক্রমটি কেন্দ্রের দেশভিত্তিক উৎকর্ষ কার্যক্রমের ষষ্ঠ থেকে দশম শ্রেণির পাঠক কর্মসূচির অনুরূপ, কিন্তু আকারে অনেক বড়। গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের শিক্ষা মন্ত্রণালয়ের পক্ষে বিশ্বসাহিত্য কেন্দ্র এটি দেশব্যাপী অত্যন্ত সফলতার সাথে পরিচালনা করছে।",
+  subtitle_en: "BSK's Reading Habit Development Program started in 2010. It aligns closely with the Elite Book Assessment programs for grades 6 to 10 but operates on a massive nationwide scale, conducted by BSK on behalf of the Ministry of Education.",
+  hero_desc_bn: "এই কর্মসূচির মূল উদ্দেশ্য শিক্ষার্থীদের মধ্যে স্বাধীনতা, দেশ ও কৃষ্টি, সাহিত্য-সংস্কৃতির বিষয়ে কিশোর উপযোগী সুখপাঠ্য মননশীল বই পড়ার অভ্যাস গড়ে তোলা; যা তাদের সুস্থ ও উদার মানসিকতার বিকাশ ঘটাবে এবং শিক্ষার প্রকৃত লক্ষ্য অর্জনে সহায়ক হবে।",
+  hero_desc_en: "The key objective is to cultivate early reading habits with diverse, age-appropriate, and high-value literature that builds a balanced state of mind, strong moral values, and creative thinking among youths.",
+  hero_image: "/assets/IMGS/700224535_1396309085853902_3026706898645620199_n.jpg",
+  circle_caption_bn: "তরুণ শিক্ষার্থীদের নতুন বইয়ের আনন্দ",
+  circle_caption_en: "Eager students celebrating books",
+  rules_pdf_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+  stats: [
+    { value: "২৫০+ টি", label_bn: "সক্রিয় উপজেলা", label_en: "Active Upazilas", subtext_bn: "দেশজুড়ে বিস্তৃত কার্যক্রম", subtext_en: "Expanding across sub-districts" },
+    { value: "১২,৯১৭+ টি", label_bn: "স্কুল ও মাদ্রাসা", label_en: "Schools & Madrasas", subtext_bn: "যার মধ্যে ৩৩% মাদ্রাসা অন্তর্ভুক্ত", subtext_en: "Comprising 33% madrasas" },
+    { value: "২০.৯ লক্ষ+", label_bn: "বার্ষিক নিয়মিত পাঠক", label_en: "Annual Active Readers", subtext_bn: "৬০% মেয়েদের স্বতঃস্ফূর্ত অংশগ্রহণ", subtext_en: "60% female student ratio" },
+    { value: "৮৩ লক্ষ+", label_bn: "মোট উপকৃত শিক্ষার্থী", label_en: "Total Beneficiaries", subtext_bn: "২০১০ সাল থেকে এ পর্যন্ত", subtext_en: "Empowered since year 2010" }
+  ],
+  insights: [
+    {
+      title_bn: "বৃহত্তম বইপড়া আন্দোলন",
+      title_en: "The Largest Reading Campaign",
+      tag_bn: "কর্মসূচির গুরুত্ব",
+      tag_en: "Program Impact",
+      desc_bn: "পাঠাভ্যাস উন্নয়ন কার্যক্রমটি এই মুহূর্তে বিশ্বসাহিত্য কেন্দ্রের বৃহত্তম এবং অন্যতম মর্যাদাপূর্ণ দেশব্যাপী কর্মসূচি। মাধ্যমিক স্তরের শিক্ষার্থীদের মাঝে নৈতিক মূল্যবোধ, পরিশীলিত দৃষ্টিভঙ্গি এবং সাহিত্য-সংস্কৃতির প্রতি অনুরাগ সৃষ্টিতে এই কার্যক্রম অত্যন্ত সফল ভূমিকা পালন করছে।",
+      desc_en: "The Reading Habit Development Program is currently BSK's largest and most expansive nationwide initiative. It plays a highly successful role in instilling moral values, refined perspectives, and a genuine love for arts and culture in secondary level students."
+    },
+    {
+      title_bn: "মাদ্রাসা অন্তর্ভুক্তি ও নারী জাগরণ",
+      title_en: "Madrasa Integration & Female Empowerment",
+      tag_bn: "মাদ্রাসা ও নারী শিক্ষা",
+      tag_en: "Inclusiveness",
+      desc_bn: "এই কর্মসূচির অন্যতম বড় বৈশিষ্ট্য হলো সাধারণ স্কুলের পাশাপাশি দেশের প্রায় ৩৩ শতাংশ মাদ্রাসা এই কার্যক্রমে যুক্ত। এছাড়াও বইপড়া কার্যক্রমে মেয়েদের স্বতঃস্ফূর্ত অংশগ্রহণের হার প্রায় ৬০%, যা দেশের নারী শিক্ষা এবং জেন্ডার সমতায় এক নতুন বিপ্লবের সূচনা করেছে।",
+      desc_en: "One of the hallmark traits of the program is its exceptional inclusivity, with over 33% of the target institutions being Madrasas. Furthermore, female students represent over 60% of all participants, driving a silent educational and cultural awakening."
+    }
+  ],
+  opportunities: [
+    { title_bn: "১. অনুকূল পরিবেশ সৃষ্টি", title_en: "1. Favorable Environment", desc_bn: "প্রকল্পভুক্ত সকল মাধ্যমিক বিদ্যালয়ে ও মাদ্রাসায় ৬ষ্ঠ থেকে ১০ম শ্রেণির শিক্ষার্থীদের জন্য চমৎকার বইপড়ার অনুকূল পরিবেশ তৈরি করা হয়।", desc_en: "Creating an attractive and healthy reading ecosystem inside schools for secondary students." },
+    { title_bn: "২. সুন্দর সুখপাঠ্য বইয়ের অভ্যাস", title_en: "2. Good Books Habits", desc_bn: "বয়স ও মন-উপযোগী অত্যন্ত মানসম্মত সুখপাঠ্য এবং উচ্চতর মূল্যবোধসম্পন্ন বাংলা ও ইংরেজি বই পড়ায় শিক্ষার্থীদের অভ্যস্ত করা হয়।", desc_en: "Developing regular habits of reading carefully-selected high-moral books in Bengali and English." },
+    { title_bn: "৩. শিক্ষক ও লাইব্রেরিয়ান প্রশিক্ষণ", title_en: "3. Professional Training", desc_bn: "কর্মসূচি যথাযথভাবে পরিচালনার জন্য প্রতিটি শিক্ষা প্রতিষ্ঠানের মনোনীত শিক্ষক ও লাইব্রেরিয়ানকে নিবিড় প্রশিক্ষণ প্রদান করা হয়।", desc_en: "Conducting specialized operational training for teachers and librarians in each school." },
+    { title_bn: "৪. সৃজনশীল মূল্যায়ন", title_en: "4. Creative Assessment", desc_bn: "পঠিত বইগুলোর চমৎকার ও আনন্দময় মূল্যায়নের মাধ্যমে শিক্ষার্থীদের মেধা, সৃজনশীলতা ও বোঝার ক্ষমতা পরিমাপ করা হয়।", desc_en: "Measuring comprehension and moral learning through interactive and non-threatening evaluation games." },
+    { title_bn: "৫. আকর্ষণীয় পুরস্কার বিতরণ", title_en: "5. Elite Prize Giving", desc_bn: "মূল্যায়ন শেষে সফল শিক্ষার্থীদের মেধার স্বীকৃতির স্বরূপ দর্শনীয় বইপড়া সনদ এবং আকর্ষণীয় মূল্যবান বই পুরস্বৃত করা হয়।", desc_en: "Rewarding high-achieving students with beautiful certificates and precious sets of illustrated books." }
+  ],
+  gallery_banner: "/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg",
+  gallery_banner_caption_bn: "মাধ্যমিক বিদ্যালয় প্রাঙ্গণ ও পাঠাগারসমূহে জ্ঞানের নিরব বিপ্লব",
+  gallery_banner_caption_en: "A silent educational revolution in secondary schools",
+  gallery: [
+    { image: "/assets/IMGS/482986950_1054527260032088_5237943853609018055_n.jpg", caption_bn: "বইপড়া মূল্যায়ন উৎসব ও আনন্দ আয়োজন", caption_en: "Book Evaluation Festival" },
+    { image: "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg", caption_bn: "শিক্ষার্থীদের মাঝে পুরস্কার ও সনদ বিতরণ", caption_en: "Prize Giving Ceremony" },
+    { image: "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg", caption_bn: "শিক্ষক ও লাইব্রেরিয়ান কর্মশালা", caption_en: "Teachers & Librarians Workshop" },
+    { image: "/assets/IMGS/534826832_1175889297895883_7988975073499309288_n.jpg", caption_bn: "পাঠাগারে নিবিড় অধ্যয়নরত শিক্ষার্থী দল", caption_en: "Students reading diligently in library" }
+  ],
+  downloads: [
+    { id: "1", title_bn: "পাঠাভ্যাস উন্নয়ন কর্মসূচি নির্দেশিকা ও নিয়মাবলি", title_en: "Reading Habit Program Operational Guidelines", file_size: "২.৮ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+    { id: "2", title_bn: "শিক্ষা প্রতিষ্ঠান অংশগ্রহণ ও নিবন্ধন ফরম", title_en: "Institutional Participation & Registration Form", file_size: "১.২ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+    { id: "3", title_bn: "বার্ষিক বই তালিকা ও গ্রেডভিত্তিক সিলেবাস", title_en: "Annual Grade-wise Curated Book List", file_size: "৩.১ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+  ]
+};

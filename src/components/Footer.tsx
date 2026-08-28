@@ -66,7 +66,7 @@ export default function Footer({ language, onNavigate }: FooterProps) {
         <div className="space-y-3 text-left">
           <div className="flex flex-col gap-1 items-start w-[185px]">
             <img 
-              src="https://bskbd.org/assets/img/logo_bn2.png" 
+              src="/assets/logo.png" 
               alt="BSK Logo" 
               className="w-[185px] h-auto object-contain shrink-0"
               referrerPolicy="no-referrer"

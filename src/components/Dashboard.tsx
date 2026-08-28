@@ -1369,6 +1369,14 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
           ? (dbWhoWeAreBlock?.subtitle_bn || homeData.who_we_are_subtitle_bn || 'আলোকিত মানুষ ও উন্নত সমাজ বিনির্মাণের মহতী জাতীয় আন্দোলন') 
           : (dbWhoWeAreBlock?.subtitle_en || homeData.who_we_are_subtitle_en || 'A transformative nation-building movement cultivating enlightened minds and noble human values');
 
+        const mottoText = language === 'bn'
+          ? (dbWhoWeAreBlock?.motto_bn || 'মূল ব্রত: “আলোকিত মানুষ চাই”')
+          : (dbWhoWeAreBlock?.motto_en || 'Core Creed: “We Want Enlightened Humans”');
+
+        const estText = language === 'bn'
+          ? (dbWhoWeAreBlock?.established_bn || dbWhoWeAreBlock?.est_bn || 'প্রতিষ্ঠা: ১৭ ডিসেম্বর ১৯৭৮')
+          : (dbWhoWeAreBlock?.established_en || dbWhoWeAreBlock?.est_en || 'Established: December 17, 1978');
+
         const paragraphs: string[] = (language === 'bn' 
           ? (dbWhoWeAreBlock?.paragraphs_bn || homeData.who_we_are_paragraphs_bn) 
           : (dbWhoWeAreBlock?.paragraphs_en || homeData.who_we_are_paragraphs_en)) || [
@@ -1380,8 +1388,45 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
               : "Guided by our defining creed “We Want Enlightened Humans”, we believe true national progress stems from broad-minded, intellectually enriched, and deeply empathetic souls. Through nationwide reading programs, mobile libraries, literary circles, and creative arts, the Centre remains dedicated to awakening higher human values across generations."
           ];
 
+        const bannerImg = dbWhoWeAreBlock?.banner_image || dbWhoWeAreBlock?.image || '';
+
+        const defaultPillars = [
+          {
+            title_bn: 'দেশব্যাপী বইপড়া কর্মসূচি',
+            title_en: 'Nationwide Reading',
+            desc_bn: 'স্কুল-কলেজের শিক্ষার্থীদের মাঝে পাঠাভ্যাস ও মননশীলতা গড়ে তোলার প্রয়াস।',
+            desc_en: 'Cultivating habitual reading in school and college students.',
+            icon: '📚'
+          },
+          {
+            title_bn: 'ভ্রাম্যমাণ লাইব্রেরি সেবা',
+            title_en: 'Mobile Library Service',
+            desc_bn: 'দেশজুড়ে পাঠকের দোরগোড়ায় সমৃদ্ধ বইয়ের বিশাল সম্ভার পৌঁছে দেওয়া।',
+            desc_en: 'Delivering thousands of books right to reader doorsteps.',
+            icon: '🚐'
+          },
+          {
+            title_bn: 'পাঠচক্র ও উন্মুক্ত আলোচনা',
+            title_en: 'Study Circles & Dialogues',
+            desc_bn: 'বিশ্বের শ্রেষ্ঠ সাহিত্য ও দর্শন নিয়ে গভীর অধ্যয়ন এবং মুক্তচিন্তার বিকাশ।',
+            desc_en: 'Deep studies in global literature and critical thought.',
+            icon: '💡'
+          },
+          {
+            title_bn: 'সাংস্কৃতিক উৎকর্ষ ও নেতৃত্ব',
+            title_en: 'Cultural Excellence',
+            desc_bn: 'শিল্প, সংগীত, চলচ্চিত্র ও মানবীয় মূল্যবোধে জাগ্রত মানবিক নেতৃত্ব গঠন।',
+            desc_en: 'Developing leadership rooted in art and human dignity.',
+            icon: '✨'
+          }
+        ];
+
+        const rawPillars = Array.isArray(dbWhoWeAreBlock?.pillars) && dbWhoWeAreBlock.pillars.length > 0
+          ? dbWhoWeAreBlock.pillars
+          : defaultPillars;
+
         return (
-          <section className="py-6 md:py-10 text-center animate-fade-in">
+          <section className="py-6 md:py-10 text-center animate-fade-in space-y-6">
             <div className="max-w-4xl mx-auto px-4 space-y-4">
               {/* Centered Heading */}
               <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1A1207] tracking-tight">
@@ -1489,8 +1534,38 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
               );
             })()}
 
-            {/* Philosophy / Description details */}
+            {/* Quote Block (Renders ONLY if show_quote is not false and quote text exists) */}
             {(() => {
+              if (dbFounderBlock?.show_quote === false) return null;
+
+              const quoteText = dbFounderBlock
+                ? (language === 'bn' ? dbFounderBlock.quote_bn : dbFounderBlock.quote_en)
+                : (language === 'bn' 
+                    ? (founderPageData?.founder_quotes?.[0]?.text_bn || '“ক্ষুদ্র মানুষ আর বড় জাতি একসঙ্গে বাস করতে পারে না। যদি বড় জাতি গড়তে চাই, তবে বড় মনের মানুষ তৈরি করতে হবে। বই পড়ার মাধ্যমে মানুষের আত্মার পরিধি বৃদ্ধি পায় আর সেই আলোকিত মানুষই সমাজকে বদলে দিতে সমর্থ হয়।”') 
+                    : (founderPageData?.founder_quotes?.[0]?.text_en || '"Small minds and a grand nation cannot coexist. If we want to build a grand nation, we must nurture expanded souls first."'));
+              
+              if (!quoteText || !quoteText.trim()) return null;
+
+              const authorName = dbFounderBlock
+                ? (language === 'bn' ? dbFounderBlock.name_bn : dbFounderBlock.name_en)
+                : (language === 'bn' ? (founderPageData?.founder_name_bn || 'অধ্যাপক আবদুল্লাহ আবু সায়ীদ') : (founderPageData?.founder_name_en || 'Prof. Abdullah Abu Sayeed'));
+
+              return (
+                <div className="relative border-l-4 border-[#B8862A] pl-5 py-1.5 space-y-2.5 bg-[#FAF7F2]/50 rounded-r-xl pr-4">
+                  <p className="font-serif text-sm sm:text-base lg:text-lg text-stone-800 leading-relaxed italic font-medium">
+                    {quoteText}
+                  </p>
+                  {authorName && authorName.trim() && (
+                    <div className="text-xs text-stone-500 font-mono font-bold">— {authorName}</div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Philosophy / Description details (Renders ONLY if show_philosophy is not false) */}
+            {(() => {
+              if (dbFounderBlock?.show_philosophy === false) return null;
+
               const phil = language === 'bn' 
                 ? (dbFounderBlock?.philosophy_bn || '')
                 : (dbFounderBlock?.philosophy_en || dbFounderBlock?.philosophy_bn || '');
@@ -1502,8 +1577,10 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
               );
             })()}
 
-            {/* Badges / Awards */}
+            {/* Badges / Awards (Renders ONLY if show_badges is not false) */}
             {(() => {
+              if (dbFounderBlock?.show_badges === false) return null;
+
               const badgesList: string[] = [];
               if (dbFounderBlock) {
                 const b1 = (language === 'bn' ? dbFounderBlock.badge1_bn : dbFounderBlock.badge1_en) || '';
@@ -1535,13 +1612,15 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             {/* Biography Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-2 items-center">
               {(() => {
+                if (dbFounderBlock?.show_btn === false) return null;
+
                 const btnTxt = language === 'bn' 
                   ? (dbFounderBlock?.btn_text_bn !== undefined ? dbFounderBlock.btn_text_bn : 'জীবনী ও সাক্ষাৎকার পড়ুন')
                   : (dbFounderBlock?.btn_text_en !== undefined ? dbFounderBlock.btn_text_en : 'Read Biography & Interviews');
                 if (!btnTxt || !btnTxt.trim()) return null;
                 return (
                   <button
-                    onClick={() => onNavigate('founder')}
+                    onClick={() => onNavigate(dbFounderBlock?.btn_route || 'founder')}
                     className="px-6 py-2.5 bg-[#1A1207] hover:bg-stone-900 text-[#FAF7F2] hover:text-[#B8862A] font-extrabold text-xs transition duration-200 cursor-pointer flex items-center space-x-1.5 rounded-lg shadow-sm"
                   >
                     <span>{btnTxt}</span>
@@ -1550,13 +1629,13 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
                 );
               })()}
               
-              {/* Visitor Indicator Widget */}
-              {Boolean(dbFounderBlock?.visitor_count) && (
+              {/* Visitor Indicator Widget (Renders ONLY if show_visitor_counter is not false) */}
+              {dbFounderBlock?.show_visitor_counter !== false && Boolean(dbFounderBlock?.visitor_count) && (
                 <div className="px-3.5 py-2 bg-[#FAF7F2] border border-[#E8DDD0] rounded-lg flex items-center space-x-2 text-[10.5px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping shrink-0" />
                   <span className="font-mono text-stone-600 font-semibold">
                     {language === 'bn' 
-                      ? `${dbFounderBlock.visitor_count} জন ভিজিটর দেখেছেন` 
+                      ? `${dbFounderBlock.visitor_count} ${dbFounderBlock.visitor_label_bn || 'জন ভিজিটর দেখেছেন'}` 
                       : `Visited by ${dbFounderBlock.visitor_count_en || dbFounderBlock.visitor_count}`}
                   </span>
                 </div>

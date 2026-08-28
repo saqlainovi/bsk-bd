@@ -716,7 +716,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           </tr>
 
                           {/* Category Items */}
-                          {category.items.map((item, itemIdx) => {
+                          {(category?.items || []).map((item, itemIdx) => {
                             const labelText = language === 'bn' ? item.label : (labelTranslations[item.label] || item.label);
                             const valueText = language === 'bn' ? item.value : (valueTranslations[item.value] || item.value);
                             return (
@@ -1112,7 +1112,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
           {/* ────── ADDITIONAL DYNAMIC PARAGRAPHS/SECTIONS (extra_sections) ────── */}
           {page.extra_sections && page.extra_sections.length > 0 && (
             <div className="space-y-8 pt-6">
-              {page.extra_sections.map((extra, extIdx) => {
+              {(page?.extra_sections || []).map((extra, extIdx) => {
                 const title = (language === 'bn' ? extra.title_bn : extra.title_en) || '';
                 const rawContent = (language === 'bn' ? extra.content_bn : extra.content_en) as any;
                 const content = Array.isArray(rawContent) 
@@ -1384,7 +1384,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       </div>
 
                       <div className="grid grid-cols-1 gap-6">
-                        {currentTrustees.map((sec, idx) => {
+                        {(currentTrustees || []).map((sec, idx) => {
                           const trusteeName = sec.title;
                           let trusteeImg = sec.image || "";
                           if (!trusteeImg) {
@@ -1480,7 +1480,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       </div>
 
                       <div className="grid grid-cols-1 gap-6">
-                        {formerTrustees.map((sec, idx) => {
+                        {(formerTrustees || []).map((sec, idx) => {
                           const trusteeName = sec.title;
                           let trusteeImg = sec.image || "";
                           const initialLetter = trusteeName.trim().charAt(0) || 'T';
@@ -2041,7 +2041,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                     });
                   });
                 } else if (activeSeries && activeSeries.books) {
-                  displayedBooks = activeSeries.books.map((b: any) => ({ ...b, seriesIdx: currentTabIdx, seriesTitle: language === 'bn' ? activeSeries.titleBn : activeSeries.titleEn }));
+                  displayedBooks = (activeSeries?.books || []).map((b: any) => ({ ...b, seriesIdx: currentTabIdx, seriesTitle: language === 'bn' ? activeSeries.titleBn : activeSeries.titleEn }));
                 }
 
                 return (
@@ -2217,7 +2217,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {page.gallery.map((imgItem: any, gIdx: number) => {
+                  {(page?.gallery || []).map((imgItem: any, gIdx: number) => {
                     const imgSrc = typeof imgItem === 'string' ? imgItem : imgItem.image || imgItem.url;
                     const imgCaption = typeof imgItem === 'object' 
                       ? (language === 'bn' ? (imgItem.caption_bn || imgItem.caption) : (imgItem.caption_en || imgItem.caption))
@@ -2680,7 +2680,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
 
               let galleryServices = defaultServices;
               if (page.gallery && Array.isArray(page.gallery) && page.gallery.length > 0) {
-                galleryServices = page.gallery.map((g: any, idx: number) => ({
+                galleryServices = (page?.gallery || []).map((g: any, idx: number) => ({
                   title_bn: g.caption_bn || g.title_bn || g.title || defaultServices[idx]?.title_bn || `সেবা #${idx + 1}`,
                   title_en: g.caption_en || g.title_en || defaultServices[idx]?.title_en || `Service #${idx + 1}`,
                   img: g.image || g.img || g.url || defaultServices[idx]?.img || '/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg',
@@ -2987,7 +2987,8 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             </div>
           </div>
         ) : page.id === "reading-habit" ? (
-          <div className="space-y-12 w-full animate-fade-in text-left">
+          <div className="space-y-12 w-full animate-fade-in text-left font-sans">
+            {/* 1. Hero Banner */}
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#FAF8F5] to-[#FFFDF9] border border-[#B8862A]/15 text-[#1A1207] shadow-xl p-6 md:p-10">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 items-center">
                 <div className="lg:col-span-7 space-y-6">
@@ -3003,27 +3004,29 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   <p className="text-sm md:text-base text-stone-700 leading-relaxed font-sans font-light">
                     {language === 'bn' 
                       ? (page.subtitle_bn || page.sections?.[0]?.content?.[0] || 'কেন্দ্রের পাঠাভ্যাস উন্নয়ন কর্মসূচি শুরু হয়েছে ২০১০ সালে। এই কার্যক্রমটি কেন্দ্রের দেশভিত্তিক উৎকর্ষ কার্যক্রমের ষষ্ঠ থেকে দশম শ্রেণির পাঠক কর্মসূচির অনুরূপ, কিন্তু আকারে অনেক বড়। গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের শিক্ষা মন্ত্রণালয়ের পক্ষে বিশ্বসাহিত্য কেন্দ্র এটি দেশব্যাপী অত্যন্ত সফলতার সাথে পরিচালনা করছে।')
-                      : (page.subtitle_en || page.sections?.[0]?.content_en?.[0] || 'BSK\'s Reading Habit Development Program started in 2010. It aligns closely with the Elite Book Assessment programs for grades 6 to 10 but operates on a massive nationwide scale, conducted by BSK on behalf of the Ministry of Education.')}
+                      : (page.subtitle_en || page.sections?.[0]?.content_en?.[0] || "BSK's Reading Habit Development Program started in 2010. It aligns closely with the Elite Book Assessment programs for grades 6 to 10 but operates on a massive nationwide scale, conducted by BSK on behalf of the Ministry of Education.")}
                   </p>
 
                   <p className="text-sm md:text-base text-stone-700 leading-relaxed font-sans font-light">
                     {language === 'bn'
-                      ? (page.sections?.[0]?.content?.[1] || page.hero_desc_bn || 'এই কর্মসূচির মূল উদ্দেশ্য শিক্ষার্থীদের মধ্যে স্বাধীনতা, দেশ ও কৃষ্টি, সাহিত্য-সংস্কৃতির বিষয়ে কিশোর উপযোগী সুখপাঠ্য মননশীল বই পড়ার অভ্যাস গড়ে তোলা; যা তাদের সুস্থ ও উদার মানসিকতার বিকাশ ঘটাবে এবং শিক্ষার প্রকৃত লক্ষ্য অর্জনে সহায়ক হবে।')
-                      : (page.sections?.[0]?.content_en?.[1] || page.hero_desc_en || 'The key objective is to cultivate early reading habits with diverse, age-appropriate, and high-value literature that builds a balanced state of mind, strong moral values, and creative thinking among youths.')}
+                      ? (page.hero_desc_bn || page.sections?.[0]?.content?.[1] || 'এই কর্মসূচির মূল উদ্দেশ্য শিক্ষার্থীদের মধ্যে স্বাধীনতা, দেশ ও কৃষ্টি, সাহিত্য-সংস্কৃতির বিষয়ে কিশোর উপযোগী সুখপাঠ্য মননশীল বই পড়ার অভ্যাস গড়ে তোলা; যা তাদের সুস্থ ও উদার মানসিকতার বিকাশ ঘটাবে এবং শিক্ষার প্রকৃত লক্ষ্য অর্জনে সহায়ক হবে।')
+                      : (page.hero_desc_en || page.sections?.[0]?.content_en?.[1] || 'The key objective is to cultivate early reading habits with diverse, age-appropriate, and high-value literature that builds a balanced state of mind, strong moral values, and creative thinking among youths.')}
                   </p>
 
-                  {/* Rules buttons */}
-                  <div className="flex flex-wrap gap-3.5 pt-2">
-                    <a 
-                      href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-2 bg-[#B8862A] text-white px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold hover:bg-[#9A6D1F] hover:shadow-lg transition-all duration-200"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>{language === 'bn' ? 'কর্মসূচির বিবরণী ও নিয়মাবলি (PDF)' : 'Program Rules & Details (PDF)'}</span>
-                    </a>
-                  </div>
+                  {/* Rules button */}
+                  {(page.rules_pdf_url || page.downloads?.[0]?.file_url) && (
+                    <div className="flex flex-wrap gap-3.5 pt-2">
+                      <a 
+                        href={page.rules_pdf_url || page.downloads?.[0]?.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center space-x-2 bg-[#B8862A] text-white px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold hover:bg-[#9A6D1F] hover:shadow-lg transition-all duration-200"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>{language === 'bn' ? 'কর্মসূচির বিবরণী ও নিয়মাবলি (PDF)' : 'Program Rules & Details (PDF)'}</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column: Featured Circular Image Frame */}
@@ -3031,7 +3034,6 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   <div className="relative group max-w-sm w-full">
                     <div className="absolute inset-0 bg-gradient-to-tr from-[#B8862A]/20 to-transparent rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
                     
-                    {/* Beautiful circle container */}
                     <div className="relative w-72 h-72 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-[#B8862A]/25 shadow-2xl mx-auto bg-stone-100 flex items-center justify-center">
                       <img 
                         src={page.hero_image || "/assets/IMGS/700224535_1396309085853902_3026706898645620199_n.jpg"} 
@@ -3042,78 +3044,40 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-65" />
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] bg-black/45 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/10 text-center">
                         <p className="text-[10px] md:text-xs font-semibold text-[#F0CC7A] font-sans">
-                          {language === 'bn' ? '\uD83D\uDCD6 তরুণ শিক্ষার্থীদের নতুন বইয়ের আনন্দ' : '\uD83D\uDCD6 Eager students celebrating books'}
+                          {language === 'bn' ? (page.circle_caption_bn || 'তরুণ শিক্ষার্থীদের নতুন বইয়ের আনন্দ') : (page.circle_caption_en || 'Eager students celebrating books')}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* 2. Interactive Key Performance Statistics */}
+            {/* 2. Key Performance Statistics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { 
-                  bnVal: "২৫০+ টি", 
-                  enVal: "250+ Upazilas", 
-                  bnLbl: "সক্রিয় উপজেলা", 
-                  enLbl: "Active Upazilas", 
-                  bnSub: "দেশজুড়ে বিস্তৃত কার্যক্রম", 
-                  enSub: "Expanding across sub-districts", 
-                  icon: MapPin, 
-                  color: "bg-[#F7EFE5] text-[#8C6212]" 
-                },
-                { 
-                  bnVal: "১২,৯১৭+ টি", 
-                  enVal: "12,917+ Schools", 
-                  bnLbl: "স্কুল ও মাদ্রাসা", 
-                  enLbl: "Schools & Madrasas", 
-                  bnSub: "যার মধ্যে ৩৩% মাদ্রাসা অন্তর্ভুক্ত", 
-                  enSub: "Comprising 33% madrasas", 
-                  icon: Landmark, 
-                  color: "bg-[#E6F4EA] text-[#137333]" 
-                },
-                { 
-                  bnVal: "২০.৯ লক্ষ+", 
-                  enVal: "2.09 Million+", 
-                  bnLbl: "বার্ষিক নিয়মিত পাঠক", 
-                  enLbl: "Annual Active Readers", 
-                  bnSub: "৬০% মেয়েদের স্বতঃস্ফূর্ত অংশগ্রহণ", 
-                  enSub: "60% female student ratio", 
-                  icon: HeartHandshake, 
-                  color: "bg-[#E8F0FE] text-[#1A73E8]" 
-                },
-                { 
-                  bnVal: "৮৩ লক্ষ+", 
-                  enVal: "8.3 Million+", 
-                  bnLbl: "মোট উপকৃত শিক্ষার্থী", 
-                  enLbl: "Total Beneficiaries", 
-                  bnSub: "২০১০ সাল থেকে এ পর্যন্ত", 
-                  enSub: "Empowered since year 2010", 
-                  icon: Award, 
-                  color: "bg-[#FDF2F2] text-[#C5221F]" 
-                }
-              ].map((stat, sIndex) => {
-                const StatIcon = stat.icon;
+              {(page.stats && page.stats.length > 0 ? page.stats : [
+                { value: "২৫০+ টি", label_bn: "সক্রিয় উপজেলা", label_en: "Active Upazilas", subtext_bn: "দেশজুড়ে বিস্তৃত কার্যক্রম", subtext_en: "Expanding across sub-districts" },
+                { value: "১২,৯১৭+ টি", label_bn: "স্কুল ও মাদ্রাসা", label_en: "Schools & Madrasas", subtext_bn: "যার মধ্যে ৩৩% মাদ্রাসা অন্তর্ভুক্ত", subtext_en: "Comprising 33% madrasas" },
+                { value: "২০.৯ লক্ষ+", label_bn: "বার্ষিক নিয়মিত পাঠক", label_en: "Annual Active Readers", subtext_bn: "৬০% মেয়েদের স্বতঃস্ফূর্ত অংশগ্রহণ", subtext_en: "60% female student ratio" },
+                { value: "৮৩ লক্ষ+", label_bn: "মোট উপকৃত শিক্ষার্থী", label_en: "Total Beneficiaries", subtext_bn: "২০১০ সাল থেকে এ পর্যন্ত", subtext_en: "Empowered since year 2010" }
+              ]).map((stat, sIndex) => {
                 return (
                   <div 
                     key={sIndex}
                     className="p-4 md:p-5 bg-white border border-[#E8DDD0] rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center gap-4 hover:border-[#B8862A] hover:shadow-md transition duration-200"
                   >
-                    <div className={`p-3 rounded-xl shrink-0 ${stat.color}`}>
-                      <StatIcon className="w-5 h-5 md:w-6 md:h-6" />
+                    <div className="p-3 rounded-xl shrink-0 bg-[#FAF7F2] text-[#8C6212]">
+                      <Award className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <div className="space-y-1 text-left">
                       <span className="font-serif text-lg md:text-xl font-extrabold text-[#1A1207] block leading-none">
-                        {language === 'bn' ? stat.bnVal : stat.enVal}
+                        {language === 'bn' ? (stat.value || stat.bnVal) : (stat.label_en || stat.enVal)}
                       </span>
                       <span className="text-xs font-semibold text-stone-800 block">
-                        {language === 'bn' ? stat.bnLbl : stat.enLbl}
+                        {language === 'bn' ? (stat.label_bn || stat.bnLbl) : (stat.label_en || stat.enLbl)}
                       </span>
                       <span className="text-[10px] text-stone-500 block leading-tight font-sans">
-                        {language === 'bn' ? stat.bnSub : stat.enSub}
+                        {language === 'bn' ? (stat.subtext_bn || stat.bnSub) : (stat.subtext_en || stat.enSub)}
                       </span>
                     </div>
                   </div>
@@ -3162,64 +3126,33 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               </div>
             </div>
 
-            {/* 4. Beautiful Timeline Opportunities */}
+            {/* 4. Core Opportunities */}
             <div className="space-y-6">
               <div className="border-b border-[#E8DDD0] pb-3 text-left">
                 <h3 className="font-serif text-xl md:text-2xl font-extrabold text-[#1A1207] flex items-center space-x-2">
                   <BookOpenCheck className="w-5 h-5 text-[#B8862A]" />
                   <span>{language === 'bn' ? 'কর্মসূচির মূল সুযোগ ও সুফলসমূহ' : 'Core Opportunities & Deliverables'}</span>
                 </h3>
-                <p className="text-xs text-[#6B5135] mt-1">
-                  {language === 'bn' 
-                    ? 'পাঠাভ্যাস উন্নয়ন কর্মসূচির মাধ্যমে সারা দেশে যে সুবর্ণ সুযোগসমূহ তৈরি হয়েছে:'
-                    : 'The direct benefits and opportunities created nationwide by this milestone initiative:'}
-                </p>
               </div>
 
-              {/* Opportunities Grid */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {[
-                  {
-                    titleBn: "১. অনুকূল পরিবেশ সৃষ্টি",
-                    titleEn: "1. Favorable Environment",
-                    descBn: "প্রকল্পভুক্ত সকল মাধ্যমিক বিদ্যালয়ে ও মাদ্রাসায় ৬ষ্ঠ থেকে ১০ম শ্রেণির শিক্ষার্থীদের জন্য চমৎকার বইপড়ার অনুকূল পরিবেশ তৈরি করা হয়।",
-                    descEn: "Creating an attractive and healthy reading ecosystem inside schools for secondary students."
-                  },
-                  {
-                    titleBn: "২. সুন্দর সুখপাঠ্য বইয়ের অভ্যাস",
-                    titleEn: "2. Good Books Habits",
-                    descBn: "বয়স ও মন-উপযোগী অত্যন্ত মানসম্মত সুখপাঠ্য এবং উচ্চতর মূল্যবোধসম্পন্ন বাংলা ও ইংরেজি বই পড়ায় শিক্ষার্থীদের অভ্যস্ত করা হয়।",
-                    descEn: "Developing regular habits of reading carefully-selected high-moral books in Bengali and English."
-                  },
-                  {
-                    titleBn: "৩. শিক্ষক ও লাইব্রেরিয়ান প্রশিক্ষণ",
-                    titleEn: "3. Professional Training",
-                    descBn: "কর্মসূচি যথাযথভাবে পরিচালনার জন্য প্রতিটি শিক্ষা প্রতিষ্ঠানের মনোনীত শিক্ষক ও লাইব্রেরিয়ানকে নিবিড় প্রশিক্ষণ প্রদান করা হয়।",
-                    descEn: "Conducting specialized operational training for teachers and librarians in each school."
-                  },
-                  {
-                    titleBn: "৪. সৃজনশীল মূল্যায়ন",
-                    titleEn: "4. Creative Assessment",
-                    descBn: "পঠিত বইগুলোর চমৎকার ও আনন্দময় মূল্যায়নের মাধ্যমে শিক্ষার্থীদের মেধা, সৃজনশীলতা ও বোঝার ক্ষমতা পরিমাপ করা হয়।",
-                    descEn: "Measuring comprehension and moral learning through interactive and non-threatening evaluation games."
-                  },
-                  {
-                    titleBn: "৫. আকর্ষণীয় পুরস্কার বিতরণ",
-                    titleEn: "5. Elite Prize Giving",
-                    descBn: "মূল্যায়ন শেষে সফল শিক্ষার্থীদের মেধার স্বীকৃতির স্বরূপ দর্শনীয় বইপড়া সনদ এবং আকর্ষণীয় মূল্যবান বই পুরস্বৃত করা হয়।",
-                    descEn: "Rewarding high-achieving students with beautiful certificates and precious sets of illustrated books."
-                  }
-                ].map((item, idx) => (
+                {(page.opportunities && page.opportunities.length > 0 ? page.opportunities : [
+                  { titleBn: "১. অনুকূল পরিবেশ সৃষ্টি", titleEn: "1. Favorable Environment", descBn: "প্রকল্পভুক্ত সকল মাধ্যমিক বিদ্যালয়ে ও মাদ্রাসায় ৬ষ্ঠ থেকে ১০ম শ্রেণির শিক্ষার্থীদের জন্য চমৎকার বইপড়ার অনুকূল পরিবেশ তৈরি করা হয়।", descEn: "Creating an attractive and healthy reading ecosystem inside schools for secondary students." },
+                  { titleBn: "২. সুন্দর সুখপাঠ্য বইয়ের অভ্যাস", titleEn: "2. Good Books Habits", descBn: "বয়স ও মন-উপযোগী অত্যন্ত মানসম্মত সুখপাঠ্য এবং উচ্চতর মূল্যবোধসম্পন্ন বাংলা ও ইংরেজি বই পড়ায় শিক্ষার্থীদের অভ্যস্ত করা হয়।", descEn: "Developing regular habits of reading carefully-selected high-moral books in Bengali and English." },
+                  { titleBn: "৩. শিক্ষক ও লাইব্রেরিয়ান প্রশিক্ষণ", titleEn: "3. Professional Training", descBn: "কর্মসূচি যথাযথভাবে পরিচালনার জন্য প্রতিটি শিক্ষা প্রতিষ্ঠানের মনোনীত শিক্ষক ও লাইব্রেরিয়ানকে নিবিড় প্রশিক্ষণ প্রদান করা হয়।", descEn: "Conducting specialized operational training for teachers and librarians in each school." },
+                  { titleBn: "৪. সৃজনশীল মূল্যায়ন", titleEn: "4. Creative Assessment", descBn: "পঠিত বইগুলোর চমৎকার ও আনন্দময় মূল্যায়নের মাধ্যমে শিক্ষার্থীদের মেধা, সৃজনশীলতা ও বোঝার ক্ষমতা পরিমাপ করা হয়।", descEn: "Measuring comprehension and moral learning through interactive and non-threatening evaluation games." },
+                  { titleBn: "৫. আকর্ষণীয় পুরস্কার বিতরণ", titleEn: "5. Elite Prize Giving", descBn: "মূল্যায়ন শেষে সফল শিক্ষার্থীদের মেধার স্বীকৃতির স্বরূপ দর্শনীয় বইপড়া সনদ এবং আকর্ষণীয় মূল্যবান বই পুরস্বৃত করা হয়।", descEn: "Rewarding high-achieving students with beautiful certificates and precious sets of illustrated books." }
+                ]).map((item: any, idx: number) => (
                   <div 
                     key={idx}
                     className="p-5 bg-white rounded-2xl border border-[#E8DDD0] hover:border-[#B8862A]/60 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                   >
                     <div className="space-y-2">
                       <h4 className="font-sans text-sm font-bold text-[#8C6212] leading-snug">
-                        {language === 'bn' ? item.titleBn : item.titleEn}
+                        {language === 'bn' ? (item.title_bn || item.titleBn) : (item.title_en || item.titleEn)}
                       </h4>
                       <p className="text-xs text-stone-600 leading-relaxed font-sans font-light">
-                        {language === 'bn' ? item.descBn : item.descEn}
+                        {language === 'bn' ? (item.desc_bn || item.descBn) : (item.desc_en || item.descEn)}
                       </p>
                     </div>
                   </div>
@@ -3227,7 +3160,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               </div>
             </div>
 
-            {/* 5. Stunning Wide Feature Image & Photo Gallery Section */}
+            {/* 5. Photo Gallery & Feature Banner */}
             <div className="space-y-6">
               <div className="border-b border-[#E8DDD0] pb-3 text-left">
                 <h3 className="font-serif text-xl md:text-2xl font-extrabold text-[#1A1207] flex items-center space-x-2">
@@ -3242,88 +3175,83 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               </div>
 
               {/* Wide Banner Image Frame */}
-              <div className="relative rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-md aspect-video md:aspect-[21/9] w-full">
+              <div className="relative rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-md aspect-video md:aspect-[21/9] w-full bg-stone-100">
                 <img 
-                  src="/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg" 
-                  alt={language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র গ্রন্থাগারে নিবিড় অধ্যয়নরত শিক্ষার্থী দল' : 'Students reading at BSK Library'}
+                  src={page.gallery_banner || "/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg"} 
+                  alt={language === 'bn' ? (page.gallery_banner_caption_bn || 'পাঠাভ্যাস উন্নয়ন কর্মসূচি আলোকচিত্র') : 'Reading Habit Program Photos'}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
                 <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-white/10 text-left">
                   <p className="text-xs md:text-sm font-bold text-white font-sans">
-                    {language === 'bn' ? '\uD83D\uDE8D  মাধ্যমিক বিদ্যালয় প্রাঙ্গণ ও পাঠাগারসমূহে জ্ঞানের নিরব বিপ্লব' : '\uD83D\uDE8D A silent educational revolution in secondary schools'}
+                    {language === 'bn' ? (page.gallery_banner_caption_bn || 'মাধ্যমিক বিদ্যালয় প্রাঙ্গণ ও পাঠাগারসমূহে জ্ঞানের নিরব বিপ্লব') : (page.gallery_banner_caption_en || 'A silent educational revolution in secondary schools')}
                   </p>
                 </div>
               </div>
 
-              {/* Grid Gallery with Lightbox support */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                {[
-                  {
-                    url: "/assets/IMGS/482211665_1052017196949761_6208359942702643653_n.jpg",
-                    captionBn: "দেশভিত্তিক উৎকর্ষ ও পাঠাভ্যাস বই মূল্যায়ন পরীক্ষা ও পুরস্কার বিতরণ",
-                    captionEn: "Elite book evaluation assessments and creative reading rewards"
-                  },
-                  {
-                    url: "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg",
-                    captionBn: "জাতীয় গ্রন্থ ও বই বিতরণ উৎসব প্রাঙ্গণ",
-                    captionEn: "Eager students celebrating the books distribution carnival"
-                  },
-                  {
-                    url: "/assets/IMGS/704955917_1403269678491176_3561834860714546840_n.jpg",
-                    captionBn: "শিক্ষার্থীদের স্বতঃস্ফূর্ত বইপড়া সেমিনার",
-                    captionEn: "Book reading seminars and creative youth workshops"
-                  },
-                  {
-                    url: "/assets/IMGS/716885790_1415634970587980_7564637071825495839_n.jpg",
-                    captionBn: "বই বিতরণ ও পাঠকদের উচ্ছ্বসিত সমাবেশ",
-                    captionEn: "Magnificent reader assembly and active discussion"
-                  },
-                  {
-                    url: "/assets/IMGS/699105967_1396309219187222_3554275610071392150_n.jpg",
-                    captionBn: "শিক্ষকদের পাঠাভ্যাস কর্মসূচি সংক্রান্ত নিবিড় প্রশিক্ষণ কর্মশালা",
-                    captionEn: "Enthusiastic teacher and librarian training sessions"
-                  },
-                  {
-                    url: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
-                    captionBn: "গ্রন্থাগারে অধ্যয়নরত উৎসुक পাঠকবৃন্দ",
-                    captionEn: "Eager secondary students engrossed in library archives"
-                  }
-                ].map((img, idx, arr) => (
-                  <div 
-                    key={idx}
-                    onClick={() => {
-                      setActivePhoto(img.url);
-                      setActivePhotoIndex(idx);
-                      setActiveAlbumPhotos(arr.map(a => a.url));
-                    }}
-                    className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-[#E8DDD0] hover:border-[#B8862A] hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="relative aspect-video w-full overflow-hidden bg-stone-100">
-                      <img 
-                        src={img.url} 
-                        alt={language === 'bn' ? img.captionBn : img.captionEn} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors duration-300">
-                        <div className="opacity-0 group-hover:opacity-100 p-2 bg-white/90 text-[#1A1207] rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                          <Eye className="w-4 h-4 text-[#B8862A]" />
-                        </div>
-                      </div>
+              {/* Grid Gallery */}
+              {page.gallery && page.gallery.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {(page?.gallery || []).map((photo: any, gIdx: number) => (
+                    <div key={gIdx} className="bg-white p-2 rounded-xl border border-[#E8DDD0] shadow-xs space-y-2">
+                      <img src={photo.image} className="w-full h-36 object-cover rounded-lg" alt="Gallery item" />
+                      {photo.caption_bn && (
+                        <p className="text-[11px] font-bold text-stone-700 px-1 truncate font-sans">{language === 'bn' ? photo.caption_bn : (photo.caption_en || photo.caption_bn)}</p>
+                      )}
                     </div>
-                    <div className="p-3 bg-white text-left">
-                      <p className="text-[11px] font-medium text-stone-700 font-sans leading-relaxed line-clamp-2 group-hover:text-[#B8862A] transition-colors">
-                        {language === 'bn' ? img.captionBn : img.captionEn}
-                      </p>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {[
+                    { url: "/assets/IMGS/482986950_1054527260032088_5237943853609018055_n.jpg", captionBn: "জাতীয় গ্রন্থ ও বই বিতরণ উৎসব প্রাঙ্গণ", captionEn: "Books distribution carnival" },
+                    { url: "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg", captionBn: "শিক্ষার্থীদের স্বতঃস্ফূর্ত বইপড়া সেমিনার", captionEn: "Book reading seminars" },
+                    { url: "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg", captionBn: "শিক্ষকদের পাঠাভ্যাস কর্মসূচি কর্মশালা", captionEn: "Teacher training sessions" }
+                  ].map((img, idx) => (
+                    <div key={idx} className="bg-white p-2 rounded-xl border border-[#E8DDD0] shadow-xs space-y-2">
+                      <img src={img.url} className="w-full h-36 object-cover rounded-lg" alt="Default Gallery" />
+                      <p className="text-[11px] font-bold text-stone-700 px-1 truncate font-sans">{language === 'bn' ? img.captionBn : img.captionEn}</p>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 6. Downloadable Forms & Guidelines */}
+            <div className="space-y-4 pt-4">
+              <div className="border-b border-[#E8DDD0] pb-2 text-left">
+                <h3 className="font-serif text-xl font-bold text-[#1A1207] flex items-center space-x-2">
+                  <FileText className="w-5 h-5 text-[#B8862A]" />
+                  <span>{language === 'bn' ? 'ফরম ও নির্দেশিকা ডাউনলোড' : 'Forms & Guidelines Download'}</span>
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {(page.downloads && page.downloads.length > 0 ? page.downloads : [
+                  { id: "1", title_bn: "পাঠাভ্যাস উন্নয়ন কর্মসূচি নির্দেশিকা ও নিয়মাবলি", title_en: "Reading Habit Program Operational Guidelines", file_size: "২.৮ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+                  { id: "2", title_bn: "শিক্ষা প্রতিষ্ঠান অংশগ্রহণ ও নিবন্ধন ফরম", title_en: "Institutional Participation & Registration Form", file_size: "১.২ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+                  { id: "3", title_bn: "বার্ষিক বই তালিকা ও গ্রেডভিত্তিক সিলেবাস", title_en: "Annual Grade-wise Curated Book List", file_size: "৩.১ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+                ]).map((doc, dIdx) => (
+                  <div key={dIdx} className="p-4 bg-white rounded-xl border border-[#E8DDD0] shadow-xs flex items-center justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <h4 className="font-bold text-xs text-stone-900 truncate">{language === 'bn' ? doc.title_bn : (doc.title_en || doc.title_bn)}</h4>
+                      <p className="text-[10px] text-stone-500 font-mono">{doc.file_size || 'PDF Document'}</p>
+                    </div>
+                    <a 
+                      href={doc.file_url || doc.url || '#'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-lg transition flex items-center gap-1 shrink-0"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>{language === 'bn' ? 'ডাউনলোড' : 'Download'}</span>
+                    </a>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 6. Contact / Application Box */}
+            {/* 7. Contact / Application Box */}
             <div className="bg-gradient-to-br from-[#FAF8F5] to-[#F1ECE4] border border-[#B8862A]/15 text-[#1A1207] rounded-3xl p-6 md:p-10 relative overflow-hidden text-center space-y-4">
               <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 opacity-5">
                 <BookOpen className="w-64 h-64 text-[#B8862A]" />
@@ -3348,9 +3276,8 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 </div>
               </div>
             </div>
-
           </div>
-        ) : page.id === 'aalor-ishkool' ? (
+) : page.id === 'aalor-ishkool' ? (
           <AalorIshkoolPage
             page={page}
             language={language}
@@ -3456,7 +3383,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                       )}
                       
                       <div className="space-y-4">
-                        {Array.isArray(sec.content) && sec.content.map((pText, pIdx) => (
+                        {Array.isArray(sec.content) && (sec?.content || []).map((pText, pIdx) => (
                           <p 
                             key={pIdx} 
                             className="text-stone-800 leading-relaxed text-sm md:text-base font-sans drop-shadow-none"
@@ -3523,7 +3450,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                   )}
                   
                   <div className="space-y-4">
-                    {Array.isArray(sec.content) && sec.content.map((pText, pIdx) => (
+                    {Array.isArray(sec.content) && (sec?.content || []).map((pText, pIdx) => (
                       <p 
                         key={pIdx} 
                         className="text-stone-800 leading-relaxed text-sm md:text-base font-sans drop-shadow-none"

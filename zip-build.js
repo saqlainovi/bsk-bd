@@ -4,10 +4,6 @@ import fs from 'fs';
 
 const distDir = path.join(process.cwd(), 'dist');
 const publicDir = path.join(process.cwd(), 'public');
-const universalZipPath = path.join(process.cwd(), 'build.zip');
-const websiteZipPath = path.join(process.cwd(), 'website-build.zip');
-const cmsBuildZipPath = path.join(process.cwd(), 'cms-build.zip');
-const cmsZipPath = path.join(process.cwd(), 'cms.zip');
 
 if (fs.existsSync(distDir)) {
   // Guarantee special cPanel server files exist in dist/
@@ -21,26 +17,44 @@ if (fs.existsSync(distDir)) {
     }
   });
 
-  // Remove any stray zip files inside distDir before packing
-  fs.readdirSync(distDir).forEach(file => {
-    if (file.endsWith('.zip')) {
-      fs.unlinkSync(path.join(distDir, file));
+  // Read current version
+  const versionFilePath = path.join(process.cwd(), 'version.json');
+  let currentVersion = 10;
+  if (fs.existsSync(versionFilePath)) {
+    try {
+      const vData = JSON.parse(fs.readFileSync(versionFilePath, 'utf8'));
+      if (typeof vData.version === 'number') {
+        currentVersion = vData.version;
+      }
+    } catch (e) {}
+  }
+
+  const ver = currentVersion;
+  console.log(`\n========================================`);
+  console.log(`Packaging Clean Version: v${ver}`);
+  console.log(`========================================\n`);
+
+  // Clean old zip files from root, dist, and public
+  [process.cwd(), distDir, publicDir].forEach(dir => {
+    if (fs.existsSync(dir)) {
+      fs.readdirSync(dir).forEach(file => {
+        if (file.endsWith('.zip')) {
+          try {
+            fs.unlinkSync(path.join(dir, file));
+          } catch (_) {}
+        }
+      });
     }
   });
 
-  // 1. Universal Build Zip
-  const universalZip = new AdmZip();
-  universalZip.addLocalFolder(distDir);
-  universalZip.writeZip(universalZipPath);
-  console.log(`Successfully packed build.zip! Path: ${universalZipPath}`);
-
-  // 2. Website Build Zip (for new.bskbd.org)
+  // 1. Website Build Zip (for new.bskbd.org)
   const websiteZip = new AdmZip();
   websiteZip.addLocalFolder(distDir);
+  const websiteZipPath = path.join(process.cwd(), `website-v${ver}.zip`);
   websiteZip.writeZip(websiteZipPath);
-  console.log(`Successfully packed website-build.zip (for new.bskbd.org)! Path: ${websiteZipPath}`);
+  console.log(`✓ Successfully packed: website-v${ver}.zip (for new.bskbd.org)`);
 
-  // 3. Create Dedicated Standalone CMS Dist with embedded CMS mode
+  // 2. Standalone CMS Dist with embedded CMS mode (for cms.bskbd.org)
   const cmsDistDir = path.join(process.cwd(), 'dist-cms-temp');
   if (fs.existsSync(cmsDistDir)) {
     fs.rmSync(cmsDistDir, { recursive: true, force: true });
@@ -60,53 +74,22 @@ if (fs.existsSync(distDir)) {
     fs.writeFileSync(cmsIndexHtmlPath, indexHtmlContent, 'utf8');
   }
 
-  // Pack cms-build.zip and cms.zip
   const cmsZip = new AdmZip();
   cmsZip.addLocalFolder(cmsDistDir);
-  cmsZip.writeZip(cmsBuildZipPath);
-  console.log(`Successfully packed cms-build.zip (for cms.bskbd.org)! Path: ${cmsBuildZipPath}`);
+  const cmsZipPath = path.join(process.cwd(), `cms-v${ver}.zip`);
+  cmsZip.writeZip(cmsZipPath);
+  console.log(`✓ Successfully packed: cms-v${ver}.zip (for cms.bskbd.org)`);
 
-  const cmsDirectZip = new AdmZip();
-  cmsDirectZip.addLocalFolder(cmsDistDir);
-  cmsDirectZip.writeZip(cmsZipPath);
-  console.log(`Successfully packed cms.zip (for cms.bskbd.org)! Path: ${cmsZipPath}`);
+  // 3. Complete Project Unified Build Zip
+  const universalZip = new AdmZip();
+  universalZip.addLocalFolder(distDir);
+  const universalZipPath = path.join(process.cwd(), `bskbd-v${ver}.zip`);
+  universalZip.writeZip(universalZipPath);
+  console.log(`✓ Successfully packed: bskbd-v${ver}.zip (Complete unified build)`);
 
-  // Pack v6 and v7 zips specifically requested by user
-  const websiteV6Path = path.join(process.cwd(), 'website v6.zip');
-  websiteZip.writeZip(websiteV6Path);
-  console.log(`Successfully packed website v6.zip! Path: ${websiteV6Path}`);
-
-  const cmsV6Path = path.join(process.cwd(), 'cms v6.zip');
-  cmsZip.writeZip(cmsV6Path);
-  console.log(`Successfully packed cms v6.zip! Path: ${cmsV6Path}`);
-
-  const v7ZipPath = path.join(process.cwd(), 'v7.zip');
-  universalZip.writeZip(v7ZipPath);
-
-  const websiteV7Path = path.join(process.cwd(), 'website v7.zip');
-  websiteZip.writeZip(websiteV7Path);
-
-  const cmsV7Path = path.join(process.cwd(), 'cms v7.zip');
-  cmsZip.writeZip(cmsV7Path);
-
-  const websiteV7HyphenPath = path.join(process.cwd(), 'website-v7.zip');
-  websiteZip.writeZip(websiteV7HyphenPath);
-
-  const cmsV7HyphenPath = path.join(process.cwd(), 'cms-v7.zip');
-  cmsZip.writeZip(cmsV7HyphenPath);
-
-  const bskbdV7Path = path.join(process.cwd(), 'bskbd-v7.zip');
-  universalZip.writeZip(bskbdV7Path);
-
-  console.log(`Successfully packed v7 zips!`);
-
-  // Copy zip files to public/ and dist/ for direct web downloads
-  const generatedZips = [
-    'build.zip', 'website-build.zip', 'cms-build.zip', 'cms.zip',
-    'website v6.zip', 'cms v6.zip',
-    'v7.zip', 'website v7.zip', 'cms v7.zip', 'website-v7.zip', 'cms-v7.zip', 'bskbd-v7.zip'
-  ];
-  generatedZips.forEach(zipName => {
+  // Copy clean zips to dist/ and public/
+  const finalZips = [`website-v${ver}.zip`, `cms-v${ver}.zip`, `bskbd-v${ver}.zip`];
+  finalZips.forEach(zipName => {
     const srcPath = path.join(process.cwd(), zipName);
     if (fs.existsSync(srcPath)) {
       fs.copyFileSync(srcPath, path.join(publicDir, zipName));
@@ -116,6 +99,7 @@ if (fs.existsSync(distDir)) {
 
   // Clean up temp folder
   fs.rmSync(cmsDistDir, { recursive: true, force: true });
+  console.log(`\nAll v${ver} release packages are ready!`);
 } else {
   console.error('dist/ folder does not exist. Run build first!');
   process.exit(1);

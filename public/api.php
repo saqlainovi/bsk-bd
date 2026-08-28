@@ -112,11 +112,268 @@ function getDedicatedTableName($collection) {
     return 'bsk_' . $collection;
 }
 
+// Auto-create dedicated MySQL table if not exists
+function ensureTableExists($pdo, $tableName) {
+    if (!$pdo || empty($tableName)) return;
+    try {
+        switch ($tableName) {
+            case 'bsk_hero_slides':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_hero_slides` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `badge_bn` VARCHAR(255) NULL,
+                    `badge_en` VARCHAR(255) NULL,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `desc_bn` TEXT NULL,
+                    `desc_en` TEXT NULL,
+                    `caption_bn` TEXT NULL,
+                    `caption_en` TEXT NULL,
+                    `bg_image` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_recent_activities':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_recent_activities` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `desc_bn` TEXT NULL,
+                    `desc_en` TEXT NULL,
+                    `date_bn` VARCHAR(100) NULL,
+                    `date_en` VARCHAR(100) NULL,
+                    `location_bn` VARCHAR(255) NULL,
+                    `location_en` VARCHAR(255) NULL,
+                    `category_bn` VARCHAR(100) NULL,
+                    `category_en` VARCHAR(100) NULL,
+                    `image` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_programs':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_programs` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `desc_bn` TEXT NULL,
+                    `desc_en` TEXT NULL,
+                    `tag_bn` VARCHAR(100) NULL,
+                    `tag_en` VARCHAR(100) NULL,
+                    `color_class` VARCHAR(100) NULL,
+                    `icon` VARCHAR(100) NULL,
+                    `bg_image` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_website_pages':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_website_pages` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `sections` LONGTEXT NULL,
+                    `extra_data` LONGTEXT NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_notices':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_notices` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `desc_bn` TEXT NULL,
+                    `desc_en` TEXT NULL,
+                    `category` VARCHAR(100) DEFAULT 'general',
+                    `publish_date` VARCHAR(100) NULL,
+                    `pdf_file` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_events':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_events` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `desc_bn` TEXT NULL,
+                    `desc_en` TEXT NULL,
+                    `event_date` VARCHAR(100) NULL,
+                    `location_bn` VARCHAR(255) NULL,
+                    `location_en` VARCHAR(255) NULL,
+                    `image` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_news':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_news` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `sort_order` INT DEFAULT 0,
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `content_bn` LONGTEXT NULL,
+                    `content_en` LONGTEXT NULL,
+                    `summary_bn` TEXT NULL,
+                    `summary_en` TEXT NULL,
+                    `image` VARCHAR(500) NULL,
+                    `author` VARCHAR(255) NULL,
+                    `publish_date` VARCHAR(100) NULL,
+                    `category` VARCHAR(100) DEFAULT 'general',
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_press':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_press` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `content_bn` LONGTEXT NULL,
+                    `content_en` LONGTEXT NULL,
+                    `source` VARCHAR(255) NULL,
+                    `publish_date` VARCHAR(100) NULL,
+                    `image` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_photo_albums':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_photo_albums` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'published',
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `cover_image` VARCHAR(500) NULL,
+                    `photos` LONGTEXT NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_recruitment_circulars':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_recruitment_circulars` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'active',
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `position_bn` VARCHAR(255) NULL,
+                    `position_en` VARCHAR(255) NULL,
+                    `deadline` VARCHAR(100) NULL,
+                    `pdf_file` VARCHAR(500) NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_job_applications':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_job_applications` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `circular_id` VARCHAR(191) NULL,
+                    `name` VARCHAR(255) NOT NULL,
+                    `email` VARCHAR(255) NULL,
+                    `phone` VARCHAR(100) NULL,
+                    `cv_file` VARCHAR(500) NULL,
+                    `cover_letter` TEXT NULL,
+                    `status` VARCHAR(50) DEFAULT 'new',
+                    `submitted_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    `extra_data` LONGTEXT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_inquiries':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_inquiries` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `type` VARCHAR(100) DEFAULT 'general',
+                    `name` VARCHAR(255) NOT NULL,
+                    `phone` VARCHAR(100) NULL,
+                    `email` VARCHAR(255) NULL,
+                    `institution` VARCHAR(255) NULL,
+                    `message` TEXT NULL,
+                    `status` VARCHAR(50) DEFAULT 'new',
+                    `submitted_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    `extra_data` LONGTEXT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_homepage_blocks':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_homepage_blocks` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `data` LONGTEXT NOT NULL,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_blog_reviews':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_blog_reviews` (
+                    `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                    `status` VARCHAR(50) DEFAULT 'pending',
+                    `title_bn` VARCHAR(255) NULL,
+                    `title_en` VARCHAR(255) NULL,
+                    `content_bn` LONGTEXT NULL,
+                    `content_en` LONGTEXT NULL,
+                    `author_name` VARCHAR(255) NULL,
+                    `author_image` VARCHAR(500) NULL,
+                    `image` VARCHAR(500) NULL,
+                    `rating` INT NULL,
+                    `category` VARCHAR(100) DEFAULT 'বই সমালোচনা',
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            case 'bsk_admin_users':
+                $pdo->exec("CREATE TABLE IF NOT EXISTS `bsk_admin_users` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `username` VARCHAR(100) NOT NULL UNIQUE,
+                    `email` VARCHAR(191) NULL,
+                    `password_hash` VARCHAR(255) NOT NULL,
+                    `display_name` VARCHAR(255) NULL,
+                    `role` VARCHAR(50) DEFAULT 'admin',
+                    `is_active` TINYINT(1) DEFAULT 1,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                break;
+            default:
+                // Auto-create generic relational table for any custom collection
+                $cleanTable = preg_replace('/[^a-zA-Z0-9_]/', '', $tableName);
+                if (!empty($cleanTable)) {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS `{$cleanTable}` (
+                        `id` VARCHAR(191) NOT NULL PRIMARY KEY,
+                        `status` VARCHAR(50) DEFAULT 'published',
+                        `sort_order` INT DEFAULT 0,
+                        `title_bn` VARCHAR(255) NULL,
+                        `title_en` VARCHAR(255) NULL,
+                        `desc_bn` TEXT NULL,
+                        `desc_en` TEXT NULL,
+                        `image` VARCHAR(500) NULL,
+                        `data` LONGTEXT NOT NULL,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+                }
+                break;
+        }
+    } catch (Exception $ex) {
+        error_log("Table auto-create notice for {$tableName}: " . $ex->getMessage());
+    }
+}
+
 // Save directly into the specific dedicated relational MySQL table
 function saveToSpecificTable($pdo, $collection, $id, $docData) {
     if (!$pdo || !is_array($docData)) return;
 
     $tableName = getDedicatedTableName($collection);
+    ensureTableExists($pdo, $tableName);
     $extra_json = json_encode($docData, JSON_UNESCAPED_UNICODE);
 
     try {
@@ -1409,9 +1666,12 @@ switch ($action) {
         $uploadsDir = __DIR__ . '/uploads';
         if (!is_dir($uploadsDir)) {
             @mkdir($uploadsDir, 0755, true);
+            @file_put_contents($uploadsDir . '/.htaccess', "<IfModule mod_authz_core.c>\nRequire all granted\n</IfModule>\n<IfModule !mod_authz_core.c>\nOrder Allow,Deny\nAllow from all\n</IfModule>\n");
         }
 
         $savedUrl = '';
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
         
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
@@ -1421,7 +1681,8 @@ switch ($action) {
             $filename = 'img_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             $destPath = $uploadsDir . '/' . $filename;
             if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
-                $savedUrl = './uploads/' . $filename;
+                @chmod($destPath, 0644);
+                $savedUrl = (!empty($host)) ? $protocol . $host . '/uploads/' . $filename : '/uploads/' . $filename;
             }
         } 
         else {
@@ -1445,7 +1706,8 @@ switch ($action) {
                     $filename = 'img_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                     $destPath = $uploadsDir . '/' . $filename;
                     if (@file_put_contents($destPath, $decoded) !== false) {
-                        $savedUrl = './uploads/' . $filename;
+                        @chmod($destPath, 0644);
+                        $savedUrl = (!empty($host)) ? $protocol . $host . '/uploads/' . $filename : '/uploads/' . $filename;
                     }
                 }
             }
