@@ -64,6 +64,27 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   });
 
   const [activeServiceIndex, setActiveServiceIndex] = React.useState<number>(0);
+  const [dbPageDoc, setDbPageDoc] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const loadCurrentPageDoc = async () => {
+      try {
+        const data = await cpanelApi.getDoc('website_pages', page.id);
+        if (data) setDbPageDoc(data);
+      } catch (e) {
+        console.warn('Failed to fetch doc for ' + page.id, e);
+      }
+    };
+    loadCurrentPageDoc();
+
+    const handlePageUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        loadCurrentPageDoc();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handlePageUpdate);
+    return () => window.removeEventListener('bsk_db_updated', handlePageUpdate);
+  }, [page.id]);
 
   // Organogram interactive states
   const [organogramTab, setOrganogramTab] = React.useState<'chart' | 'leadership' | 'departments'>('chart');
@@ -2548,6 +2569,12 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
         ) : page.id === 'central-library' ? (
           <div className="space-y-8 md:space-y-12 w-full animate-fade-in text-left">
             {(() => {
+              const livePage = {
+                ...page,
+                ...(page.libraryData || {}),
+                ...(dbPageDoc || {}),
+                ...(dbPageDoc?.libraryData || {})
+              };
               const getTranslatedText = (text: string, currentLang: 'bn' | 'en'): string => {
                 if (!text) return '';
                 if (text.includes('--')) {
@@ -2561,11 +2588,11 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               
               // 1. About the Library / Mission (Section 1)
               const hasSec0 = sections.length > 0 && sections[0];
-              const aboutText = hasSec0 && sections[0].content && sections[0].content[0]
+              const aboutText = livePage.about_bn || (hasSec0 && sections[0].content && sections[0].content[0]
                 ? getTranslatedText(sections[0].content[0], language)
                 : (language === 'bn'
                   ? 'বিশ্বসাহিত্য কেন্দ্রের কেন্দ্র লাইব্রেরিটি দেশ-বিদেশের অমূল্য ও ঐতিহ্যবাহী গ্রন্থের এক বিশাল আধার। পাঠকদের মননশীল ও উন্নত দৃষ্টিভঙ্গি গঠনে এবং তাদের জ্ঞানের দিগন্ত প্রসারিত করতে এই পাঠাগার দীর্ঘ চার দশকেরও বেশি সময় ধরে নিরলস সেবা দিয়ে যাচ্ছে।'
-                  : 'The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature and rare academic volumes. Serving for more than four decades, it has shaped thousands of enlightened minds and continues to push intellectual boundaries.');
+                  : 'The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature and rare academic volumes. Serving for more than four decades, it has shaped thousands of enlightened minds and continues to push intellectual boundaries.'));
               
               const missionText = hasSec0 && sections[0].content && sections[0].content[1]
                 ? getTranslatedText(sections[0].content[1], language)
@@ -2580,10 +2607,10 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
               // 2. Stats (Section 2)
               const hasSec1 = sections.length > 1 && sections[1];
               const defaultStats = [
-                { val: language === 'bn' ? '\uD83D\uDCDA ৮৫,০০০+' : '\uD83D\uDCDA 85,000+', lbl: language === 'bn' ? 'বইয়ের সংগ্রহ' : 'Books Collection', sub: language === 'bn' ? 'দেশি-বিদেশী দুর্লভ বই' : 'Local & Global Classics', icon: BookOpen },
-                { val: language === 'bn' ? '\uD83D\uDC65 ১৫,০০০+' : '\uD83D\uDC65 15,000+', lbl: language === 'bn' ? 'সক্রিয় সদস্য' : 'Active Members', sub: language === 'bn' ? 'পাঠক ও গবেষকবৃন্দ' : 'Avid Readers & Scholars', icon: HeartHandshake },
-                { val: language === 'bn' ? '\uD83C\uDFDB️ কেন্দ্রীয় পাঠাগার' : '\uD83C\uDFDB️ Central Library', lbl: language === 'bn' ? 'প্রধান ভবন' : 'HQ Reading Hall', sub: language === 'bn' ? 'বাংলামোটর, ঢাকা' : 'Banglamotor, Dhaka', icon: Landmark },
-                { val: language === 'bn' ? '\uD83D\uDD52 সকাল ১০টা - রাত ৮টা' : '\uD83D\uDD52 10 AM - 8 PM', lbl: language === 'bn' ? 'সেবা সময়সীমা' : 'Service Hours', sub: language === 'bn' ? 'শনিবার থেকে বৃহস্পতিবার' : 'Saturday to Thursday', icon: Calendar }
+                { val: livePage.stat_books || (language === 'bn' ? '📚 ১,০০,০০০+' : '📚 100,000+'), lbl: language === 'bn' ? 'বইয়ের সংগ্রহ' : 'Books Collection', sub: language === 'bn' ? 'দেশি-বিদেশী দুর্লভ বই' : 'Local & Global Classics', icon: BookOpen },
+                { val: livePage.stat_members || (language === 'bn' ? '👥 ২৫,০০০+' : '👥 25,000+'), lbl: language === 'bn' ? 'সক্রিয় সদস্য' : 'Active Members', sub: language === 'bn' ? 'পাঠক ও গবেষকবৃন্দ' : 'Avid Readers & Scholars', icon: HeartHandshake },
+                { val: livePage.stat_seats || (language === 'bn' ? '🏛️ ৩০০+ আসন' : '🏛️ 300+ Seats'), lbl: language === 'bn' ? 'পাঠকক্ষ আসন' : 'Reading Hall Seats', sub: livePage.library_location_bn || (language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র ভবন (৭ম তলা)' : 'BSK Bhaban (7th Floor)'), icon: Landmark },
+                { val: livePage.stat_days || (language === 'bn' ? '🕒 ৬ দিন' : '🕒 6 Days'), lbl: language === 'bn' ? 'সেবা সময়সীমা' : 'Service Schedule', sub: livePage.library_hours_bn || (language === 'bn' ? 'সকাল ১০:০০ - রাত ৮:০০' : '10:00 AM - 8:00 PM'), icon: Calendar }
               ];
               
               let parsedStats = defaultStats;
@@ -2718,7 +2745,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                           <span>{language === 'bn' ? (page.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র') : (page.badge_en || 'Bishwo Shahitto Kendro')}</span>
                         </span>
                         <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1A1207] tracking-tight leading-tight">
-                          {language === 'bn' ? (page.title_bn || 'কেন্দ্র লাইব্রেরি') : (page.title_en || 'Central Library HQ')}
+                          {language === 'bn' ? (livePage.hero_title_bn || page.title_bn || 'কেন্দ্র লাইব্রেরি') : (livePage.hero_title_en || page.title_en || 'Central Library HQ')}
                         </h1>
                         <p className="text-stone-600 text-xs md:text-sm leading-relaxed font-sans">
                           {language === 'bn' 
@@ -2740,7 +2767,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                         <div className="absolute -inset-1.5 bg-gradient-to-r from-[#B8862A]/20 to-[#E8DDD0] rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300" />
                         <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-[#E8DDD0] bg-stone-100 shadow-lg">
                           <img 
-                            src={page.hero_image || "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg"} 
+                            src={livePage.hero_image || page.hero_image || "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg"} 
                             alt={language === 'bn' ? page.title_bn : page.title_en} 
                             className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
                             referrerPolicy="no-referrer"
@@ -2955,6 +2982,51 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
                 </>
               );
             })()}
+
+            {/* 4.5. Dynamic Membership Plans from CMS */}
+            {Array.isArray(livePage.membershipPlans) && livePage.membershipPlans.length > 0 && (
+              <div className="space-y-4 text-left">
+                <div className="border-b border-[#E8DDD0] pb-3">
+                  <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
+                    <span className="w-1.5 h-5 bg-[#B8862A] rounded-full inline-block" />
+                    <span>{language === 'bn' ? 'সদস্যপদ স্কিম ও ফি তালিকা' : 'Membership Plans & Fee Structure'}</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 font-sans mt-0.5">
+                    {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরির বিভিন্ন ক্যাটাগরির পাঠক সদস্যপদ' : 'Various reader membership categories of BSK Central Library'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {livePage.membershipPlans.map((plan: any, pIdx: number) => (
+                    <div key={pIdx} className="bg-white border border-[#E8DDD0] rounded-2xl p-5 space-y-3 hover:border-[#B8862A] hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                        <h4 className="font-serif font-bold text-stone-900 text-sm">{plan.titleBn}</h4>
+                        <span className="text-[10px] font-bold bg-[#2E5942]/10 text-[#2E5942] px-2 py-0.5 rounded-full">সক্রিয়</span>
+                      </div>
+                      <div className="space-y-1.5 text-xs text-stone-600">
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">ফেরতযোগ্য জামানত:</span>
+                          <span className="font-bold text-[#B8862A] font-mono">{plan.depositBn}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">মাসিক ফি:</span>
+                          <span className="font-bold text-stone-800 font-mono">{plan.feeBn}</span>
+                        </div>
+                        {plan.limitBn && (
+                          <div className="flex justify-between">
+                            <span className="text-stone-500">বই নেওয়ার সীমা:</span>
+                            <span className="font-bold text-stone-800">{plan.limitBn}</span>
+                          </div>
+                        )}
+                      </div>
+                      {plan.descBn && (
+                        <p className="text-[11px] text-stone-500 pt-1 border-t border-stone-100 leading-normal">{plan.descBn}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 5. Book Categories */}
             <div className="space-y-4 text-left">
