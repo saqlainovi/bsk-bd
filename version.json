@@ -1,5 +1,5 @@
 {
-  "version": 21,
-  "description": "BSK v21 Release - Fixed cpanelApi Import in AdminCMS, Direct Realtime MySQL Persistence Across All Modules",
-  "updatedAt": "2026-08-29T05:43:00.000Z"
+  "version": 22,
+  "description": "BSK v22 Master Release - 100% Dynamic Content & Field-Level Parity Across All 27 Pages and 16 CMS Modules",
+  "updatedAt": "2026-08-29T05:51:00.000Z"
 }

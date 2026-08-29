@@ -61,7 +61,7 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
     { value: '৪৫ বছর+', label_bn: 'অনবদ্য পথচলা', label_en: 'Years of Excellence', subtext_bn: '১৯৭৯ সাল থেকে নিরবচ্ছিন্ন', subtext_en: 'Unbroken Since 1979' },
   ];
 
-  const statsList = page.stats && page.stats.length > 0 ? page.stats : defaultStats;
+  const statsList = (Array.isArray(pageData.stats) && pageData.stats.length > 0) ? pageData.stats : (page.stats && page.stats.length > 0 ? page.stats : defaultStats);
 
   // Default Highlights
   const defaultHighlights = [
@@ -365,7 +365,7 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
           <div className="hidden lg:block absolute right-8 bottom-6 top-6 w-72 rounded-2xl overflow-hidden border-2 border-[#B8862A]/40 shadow-2xl z-10 group">
             <img 
               src={page.hero_image} 
-              alt={language === 'bn' ? page.title_bn : page.title_en}
+              alt={language === 'bn' ? (pageData.hero_title_bn || page.title_bn) : (pageData.hero_title_en || page.title_en)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
               referrerPolicy="no-referrer"
             />

@@ -100,7 +100,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
 
   // Complete Official BSK Hall Data from PDF Document or from CMS Page Prop
-  const defaultRoomsData: RoomOption[] = [
+  const rawDefaultRooms: RoomOption[] = [
     {
       id: 'r103',
       roomNo: '১০৩',
