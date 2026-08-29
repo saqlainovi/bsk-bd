@@ -100,7 +100,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
 
   // Complete Official BSK Hall Data from PDF Document or from CMS Page Prop
-  const rawDefaultRooms: RoomOption[] = [
+  const defaultRoomsData: RoomOption[] = [
     {
       id: 'r103',
       roomNo: '১০৩',
@@ -337,27 +337,22 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
     }
   ];
 
-  const liveAud = dbPageData?.auditoriumData || dbPageData || pageData?.auditoriumData || pageData || {};
-  const roomsData: RoomOption[] = (dbPageData?.halls && dbPageData.halls.length > 0)
-    ? dbPageData.halls
-    : (dbPageData?.rooms && dbPageData.rooms.length > 0)
-      ? dbPageData.rooms
-      : (liveAud?.rooms && liveAud.rooms.length > 0) 
-        ? liveAud.rooms 
-        : (liveAud?.halls && liveAud.halls.length > 0) 
-          ? liveAud.halls 
-          : rawDefaultRooms;
+  const roomsData: RoomOption[] = (page?.rooms && page.rooms.length > 0) 
+    ? page.rooms 
+    : (page?.roomsData && page.roomsData.length > 0) 
+      ? page.roomsData 
+      : defaultRoomsData;
 
   // Filtered rooms logic
   const filteredRooms = roomsData.filter((r) => {
     const matchesCat = selectedCategory === 'all' || r.category === selectedCategory;
     const q = searchQuery.toLowerCase();
     const matchesQuery = searchQuery === '' || 
-      (r.titleBn || (r as any).title_bn || '').toLowerCase().includes(q) ||
-      (r.titleEn || (r as any).title_en || '').toLowerCase().includes(q) ||
-      (r.roomNo || (r as any).room_no || '').includes(q) ||
-      (r.floorBn || (r as any).floor_bn || '').includes(q) ||
-      (r.floorEn || (r as any).floor_en || '').toLowerCase().includes(q);
+      r.titleBn.toLowerCase().includes(q) ||
+      r.titleEn.toLowerCase().includes(q) ||
+      r.roomNo.includes(q) ||
+      r.floorBn.includes(q) ||
+      r.floorEn.toLowerCase().includes(q);
     return matchesCat && matchesQuery;
   });
 
@@ -678,45 +673,45 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
 
                     <td className="p-3 border-r border-stone-200 space-y-0.5">
                       <div className="font-serif font-extrabold text-[#1A1207] text-sm">
-                        {language === 'bn' ? (room.titleBn || (room as any).title_bn || "") : (room.titleEn || (room as any).title_en || "")}
+                        {language === 'bn' ? room.titleBn : room.titleEn}
                       </div>
                       <div className="text-[11px] text-stone-500 font-mono">
-                        {language === 'bn' ? `রুম নং- ${(room.roomNo || (room as any).room_no || "")} (${(room.floorBn || (room as any).floor_bn || "")})` : `Room ${(room.roomNo || (room as any).room_no || "")} (${room.floorEn})`}
+                        {language === 'bn' ? `রুম নং- ${room.roomNo} (${room.floorBn})` : `Room ${room.roomNo} (${room.floorEn})`}
                       </div>
                     </td>
 
                     <td className="p-3 text-center border-r border-stone-200 font-bold text-[#8C6212] font-mono whitespace-nowrap">
-                      {language === 'bn' ? (room.capacityBn || (room as any).capacity_bn || "") : room.capacityEn}
+                      {language === 'bn' ? room.capacityBn : room.capacityEn}
                     </td>
 
                     <td className="p-3 text-center border-r border-stone-200 font-mono font-bold text-[#1A1207]">
-                      ৳{(Number(room.singleShiftNonAc) || 0).toLocaleString('bn-BD')}/-
+                      ৳{room.singleShiftNonAc.toLocaleString('bn-BD')}/-
                       {room.hasAcOption && (
                         <span className="block text-[10px] text-[#B8862A] font-sans font-semibold">
-                          (এসি: ৳{(Number(room.singleShiftAc) || 0).toLocaleString('bn-BD')}/-)
+                          (এসি: ৳{room.singleShiftAc.toLocaleString('bn-BD')}/-)
                         </span>
                       )}
                     </td>
 
                     <td className="p-3 text-center border-r border-stone-200 font-mono font-bold text-[#B8862A]">
-                      ৳{(Number(room.doubleShiftNonAc) || 0).toLocaleString('bn-BD')}/-
+                      ৳{room.doubleShiftNonAc.toLocaleString('bn-BD')}/-
                       {room.hasAcOption && (
                         <span className="block text-[10px] text-[#8C6212] font-sans font-semibold">
-                          (এসি: ৳{(Number(room.doubleShiftAc) || 0).toLocaleString('bn-BD')}/-)
+                          (এসি: ৳{room.doubleShiftAc.toLocaleString('bn-BD')}/-)
                         </span>
                       )}
                     </td>
 
                     <td className="p-3 text-center border-r border-stone-200 font-mono text-stone-700">
-                      {room.soundSystemCost > 0 ? `৳${(Number(room.soundSystemCost) || 0).toLocaleString('bn-BD')}/-` : '—'}
+                      {room.soundSystemCost > 0 ? `৳${room.soundSystemCost.toLocaleString('bn-BD')}/-` : '—'}
                     </td>
 
                     <td className="p-3 text-center border-r border-stone-200 font-mono text-stone-700">
-                      ৳{(Number(room.multimediaCost) || 0).toLocaleString('bn-BD')}/-
+                      ৳{room.multimediaCost.toLocaleString('bn-BD')}/-
                     </td>
 
                     <td className="p-3 text-center font-mono text-stone-700">
-                      ৳{(Number(room.projectorCost) || 0).toLocaleString('bn-BD')}/-
+                      ৳{room.projectorCost.toLocaleString('bn-BD')}/-
                     </td>
                   </tr>
                 ))}
@@ -766,7 +761,7 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
                   {roomsData.map((room) => (
                     <tr key={room.id} className="hover:bg-[#FAF8F5]">
                       <td className="p-3 border-r border-stone-200 font-serif font-bold text-[#1A1207] whitespace-nowrap">
-                        {language === 'bn' ? `${(room.titleBn || (room as any).title_bn || "")} (রুম ${(room.roomNo || (room as any).room_no || "")})` : `${(room.titleEn || (room as any).title_en || "")} (R${(room.roomNo || (room as any).room_no || "")})`}
+                        {language === 'bn' ? `${room.titleBn} (রুম ${room.roomNo})` : `${room.titleEn} (R${room.roomNo})`}
                       </td>
                       <td className="p-3 border-r border-stone-200 text-stone-700">
                         {language === 'bn' ? room.furnitureBn : room.furnitureEn}
@@ -837,23 +832,23 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
                   <div className="relative h-48 overflow-hidden bg-stone-100">
                     <img 
                       src={room.image} 
-                      alt={(room.titleBn || (room as any).title_bn || "")}
+                      alt={room.titleBn}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute top-3 left-3 bg-[#1A1207]/90 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border border-white/20">
-                      {language === 'bn' ? `রুম: ${(room.roomNo || (room as any).room_no || "")} (${(room.floorBn || (room as any).floor_bn || "")})` : `Room ${(room.roomNo || (room as any).room_no || "")} (${room.floorEn})`}
+                      {language === 'bn' ? `রুম: ${room.roomNo} (${room.floorBn})` : `Room ${room.roomNo} (${room.floorEn})`}
                     </div>
 
                     <div className="absolute bottom-3 right-3 bg-[#B8862A] text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-xs">
-                      {language === 'bn' ? (room.capacityBn || (room as any).capacity_bn || "") : room.capacityEn}
+                      {language === 'bn' ? room.capacityBn : room.capacityEn}
                     </div>
                   </div>
 
                   {/* Body Content */}
                   <div className="p-5 space-y-3">
                     <h3 className="font-serif text-lg font-extrabold text-[#1A1207] group-hover:text-[#B8862A] transition-colors leading-snug">
-                      {language === 'bn' ? (room.titleBn || (room as any).title_bn || "") : (room.titleEn || (room as any).title_en || "")}
+                      {language === 'bn' ? room.titleBn : room.titleEn}
                     </h3>
 
                     <p className="text-xs text-stone-600 font-sans leading-relaxed line-clamp-2">
@@ -865,14 +860,14 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
                       <div className="flex justify-between items-center">
                         <span className="text-stone-500">{language === 'bn' ? '১ শিফট ভাড়া:' : '1 Shift Rent:'}</span>
                         <span className="font-bold text-[#1A1207]">
-                          ৳{(Number(room.singleShiftNonAc) || 0).toLocaleString('bn-BD')}/-
+                          ৳{room.singleShiftNonAc.toLocaleString('bn-BD')}/-
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center border-t border-stone-200/60 pt-1">
                         <span className="text-stone-500">{language === 'bn' ? '২ শিফট একসাথে:' : '2 Shift Full Day:'}</span>
                         <span className="font-bold text-[#B8862A]">
-                          ৳{(Number(room.doubleShiftNonAc) || 0).toLocaleString('bn-BD')}/-
+                          ৳{room.doubleShiftNonAc.toLocaleString('bn-BD')}/-
                         </span>
                       </div>
                     </div>

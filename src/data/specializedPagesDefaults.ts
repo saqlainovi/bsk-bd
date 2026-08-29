@@ -1,5 +1,187 @@
 // Default / Seed data for the 11 Specialized Pages of Bishwo Shahitto Kendro
 
+export const defaultCentralLibraryData = {
+  hero_badge_bn: "বিশ্বসাহিত্য কেন্দ্র",
+  hero_badge_en: "Bishwo Shahitto Kendro",
+  hero_title_bn: "কেন্দ্রীয় গ্রন্থাগার",
+  hero_title_en: "Central Library HQ",
+  hero_subtitle_bn: "১৯৭৮ সাল থেকে রুচিশীল ও মননশীল পাঠক তৈরির নির্ভরযোগ্য ঠিকানা",
+  hero_subtitle_en: "A haven for book lovers and researchers since 1978",
+  hero_desc_bn: "বিশ্বসাহিত্য কেন্দ্রের কেন্দ্র লাইব্রেরিটি দেশ-বিদেশের অমূল্য ও ঐতিহ্যবাহী গ্রন্থের এক বিশাল আধার। পাঠকদের মননশীল ও উন্নত দৃষ্টিভঙ্গি গঠনে এবং তাদের জ্ঞানের দিগন্ত প্রসারিত করতে এই পাঠাগার দীর্ঘ চার দশকেরও বেশি সময় ধরে নিরলস সেবা দিয়ে যাচ্ছে।",
+  hero_desc_en: "The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature and rare academic volumes. Serving for more than four decades, it has shaped thousands of enlightened minds.",
+  hero_image: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
+  apply_btn_label_bn: "সদস্য হতে আবেদন করুন",
+  apply_btn_label_en: "Apply for Membership",
+
+  // 4 Statistics
+  stats: [
+    { val: "৮৫,০০০+", lbl: "বইয়ের সংগ্রহ", sub: "দেশি-বিদেশী দুর্লভ বই", val_en: "85,000+", lbl_en: "Books Collection", sub_en: "Local & Global Classics" },
+    { val: "১৫,০০০+", lbl: "সক্রিয় সদস্য", sub: "পাঠক ও গবেষকবৃন্দ", val_en: "15,000+", lbl_en: "Active Members", sub_en: "Avid Readers & Scholars" },
+    { val: "কেন্দ্রীয় পাঠাগার", lbl: "প্রধান ভবন", sub: "বাংলামোটর, ঢাকা", val_en: "Central Library", lbl_en: "HQ Reading Hall", sub_en: "Banglamotor, Dhaka" },
+    { val: "সকাল ১০টা - রাত ৮টা", lbl: "সেবা সময়সীমা", sub: "শনিবার থেকে বৃহস্পতিবার", val_en: "10 AM - 8 PM", lbl_en: "Service Hours", sub_en: "Saturday to Thursday" }
+  ],
+
+  // About & Mission
+  about_heading_bn: "লাইব্রেরির পরিচিতি ও লক্ষ্য",
+  about_heading_en: "About the Central Library",
+  about_text_bn: "বিশ্বসাহিত্য কেন্দ্রের কেন্দ্র লাইব্রেরিটি দেশ-বিদেশের অমূল্য ও ঐতিহ্যবাহী গ্রন্থের এক বিশাল আধার। পাঠকদের মননশীল ও উন্নত দৃষ্টিভঙ্গি গঠনে এবং তাদের জ্ঞানের দিগন্ত প্রসারিত করতে এই পাঠাগার দীর্ঘ চার দশকেরও বেশি সময় ধরে নিরলস সেবা দিয়ে যাচ্ছে।",
+  about_text_en: "The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature and rare academic volumes. Serving for more than four decades, it has shaped thousands of enlightened minds and continues to push intellectual boundaries.",
+  mission_title_bn: "আমাদের মূল উদ্দেশ্য (Mission)",
+  mission_title_en: "Our Mission",
+  mission_text_bn: "মানসম্পন্ন সাহিত্য ও মননশীল গ্রন্থের মাধ্যমে মানুষের মনকে প্রসারিত ও আলোকিত করা এবং একটি সংবেদনশীল ও প্রজ্ঞাবান জাতি গড়ে তোলার মূল চালিকাশক্তি হিসেবে কাজ করা।",
+  mission_text_en: "To cultivate a reading culture and elevate human consciousness through exposure to fine literature, arts, and philosophy, shaping a sensible and enlightened society.",
+  feature1_title_bn: "বইয়ের বিশাল সংগ্রহ",
+  feature1_title_en: "Pristine Collection",
+  feature1_desc_bn: "আমাদের সংগ্রহে রয়েছে বাংলা সাহিত্য, অনূদিত বিশ্বসাহিত্য, বিজ্ঞান, ইতিহাস, দর্শন ও চিত্রকলার সুবিন্যস্ত সম্ভার। এছাড়া রয়েছে গবেষণাধর্মী ও দুর্লভ রেফারেন্স গ্রন্থের এক দুর্লভ সংগ্রহশালা।",
+  feature1_desc_en: "Features rare translations, classic world fiction, historical chronicles, scientific journals, philosophy, art, and children literature, indexed to aid research.",
+  feature2_title_bn: "মনোরম পাঠ পরিবেশ",
+  feature2_title_en: "Aesthetic Environment",
+  feature2_desc_bn: "সম্পূর্ণ শীতাতপ নিয়ন্ত্রিত, কোলাহলমুক্ত ও সুপ্রশস্ত পাঠকক্ষ। প্রাকৃতিক আলো-বাতাস ও মনোরম ইন্টেরিয়র ডিজাইন পাঠকদের অধ্যয়ন ও গবেষণাকে আরও উপভোগ্য ও ফলপ্রসূ করে তোলে।",
+  feature2_desc_en: "Spacious, naturally lit, and air-conditioned reading halls create a tranquil space. Modern desks, comfortable seating, and helpful curators ensure peak focus.",
+
+  // 6 Services
+  services_heading_bn: "লাইব্রেরি সেবাসমূহ ও গ্যালারি",
+  services_heading_en: "Library Services & Photo Gallery",
+  services_sub_bn: "যেকোনো সেবায় ক্লিক করে বিস্তারিত বিবরণ এবং ছবির গ্যালারি দেখে নিন",
+  services_sub_en: "Click any service tile below to explore details and view live photos",
+  services: [
+    {
+      title_bn: "বই ধার নেওয়া ও কাউন্টার সেবা",
+      title_en: "Book Lending & Counter Services",
+      desc_bn: "বিশ্বসাহিত্য কেন্দ্রের লক্ষ লক্ষ বইয়ের সংগ্রহ থেকে পছন্দের বই বাড়িতে নিয়ে পড়ার জন্য সাধারণ ও গবেষণা সদস্যদের জন্য বই ধার নেওয়ার বিশেষ কাউন্টার সেবা।",
+      desc_en: "Borrow and return classic titles to read in your comfortable home environment from our collection of hundreds of thousands of books.",
+      img: "/assets/IMGS/LIBARY/484577162_1054485683369579_7369530174410735143_n.jpg",
+      schedule_bn: "শনিবার - বৃহস্পতিবার (সকাল ১০:০০ - রাত ৮:০০)",
+      schedule_en: "Saturday - Thursday (10:00 AM - 8:00 PM)"
+    },
+    {
+      title_bn: "মনোরম ও কোলাহলমুক্ত প্রধান পাঠকক্ষ",
+      title_en: "Aesthetic Reading Hall",
+      desc_bn: "সম্পূর্ণ শীতাতপ নিয়ন্ত্রিত, কোলাহলমুক্ত ও সুপ্রশস্ত প্রধান পাঠকক্ষ। যেখানে মনোরম ইন্টেরিয়র এবং প্রাকৃতিক আলোর সমন্বয়ে পড়ার জন্য নিখুঁত পরিবেশ রয়েছে।",
+      desc_en: "A quiet, spacious and air-conditioned main reading hall designed with natural light to ensure peak focus for readers and researchers.",
+      img: "/assets/IMGS/LIBARY/484318312_1054477440037070_1610026182586324512_n.jpg",
+      schedule_bn: "শনিবার - বৃহস্পতিবার (সকাল ১০:০০ - রাত ৮:০০)",
+      schedule_en: "Saturday - Thursday (10:00 AM - 8:00 PM)"
+    },
+    {
+      title_bn: "রেফারেন্স ও গবেষণা আর্কাইভ",
+      title_en: "Reference & Archives",
+      desc_bn: "দেশ-বিদেশের দুষ্প্রাপ্য রেফারেন্স গ্রন্থ, বিশ্বকোষ, গবেষণাধর্মী জার্নাল, চিত্রকলা ও মানচিত্রের এক সমৃদ্ধ সংগ্রহ যা উচ্চতর গবেষণা এবং তথ্যানুসন্ধানের চমৎকার সহায়ক।",
+      desc_en: "A comprehensive repository of rare reference books, encyclopedias, scholarly journals, and fine arts collections to support high-level research.",
+      img: "/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg",
+      schedule_bn: "শনিবার - বৃহস্পতিবার (সকাল ১০:০০ - রাত ৮:০০)",
+      schedule_en: "Saturday - Thursday (10:00 AM - 8:00 PM)"
+    },
+    {
+      title_bn: "জ্ঞানভিত্তিক কার্যক্রম ও পাঠক সমাবেশ",
+      title_en: "Enlightenment Assemblies",
+      desc_bn: "পাঠকদের চিন্তার পরিধি ও মননশীলতা বৃদ্ধির লক্ষ্যে নিয়মিত পাঠচক্র, সাহিত্য আলোচনা সভা, বিশিষ্ট লেখকদের সান্নিধ্য এবং বিষয়ভিত্তিক বইয়ের আকর্ষণীয় প্রদর্শনী।",
+      desc_en: "Regular reading circles, literary dialogues, meetings with eminent authors, and thematic exhibitions to foster deep intellectual engagement.",
+      img: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg",
+      schedule_bn: "সাপ্তাহিক ও মাসিক নির্ধারিত সূচি অনুযায়ী",
+      schedule_en: "Weekly & Monthly Scheduled Events"
+    },
+    {
+      title_bn: "শিশু-কিশোর কর্নার",
+      title_en: "Children & Youth Section",
+      desc_bn: "শিশু-কিশোরদের মনে শৈশব থেকেই বই পড়ার প্রতি ভালোবাসা জন্মানোর লক্ষ্যে তাদের উপযোগী ছবি ও বিচিত্র রূপকথার বই দিয়ে সজ্জিত একটি আকর্ষণীয় ও রঙিন জগৎ।",
+      desc_en: "A colorful, welcoming space curated with illustrated books, fairy tales, and educational games to instil a lifelong passion for reading in children.",
+      img: "/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg",
+      schedule_bn: "শনিবার - বৃহস্পতিবার (সকাল ১০:০০ - সন্ধ্যা ৭:০০)",
+      schedule_en: "Saturday - Thursday (10:00 AM - 7:00 PM)"
+    },
+    {
+      title_bn: "তথ্য ও ডিজিটাল সাহায্য সেবা",
+      title_en: "Reference & Help Desk",
+      desc_bn: "পাঠকদের প্রয়োজনীয় বই সহজে ও দ্রুততম সময়ে খুঁজে দিতে সাহায্য করার জন্য দক্ষ ক্যাটালগ ডেস্ক ও আধুনিক তথ্য অনুসন্ধান সেবা।",
+      desc_en: "Expert curation and catalog assistance helping readers quickly locate target volumes, check availability and conduct academic searches.",
+      img: "/assets/IMGS/LIBARY/484495050_1054485666702914_3052177565535586646_n.jpg",
+      schedule_bn: "সার্বক্ষণিক লাইব্রেরি কার্যকাল",
+      schedule_en: "All Library Working Hours"
+    }
+  ],
+
+  // 8 Categories
+  categories_heading_bn: "জনপ্রিয় বইয়ের বিভাগসমূহ",
+  categories_heading_en: "Popular Book Categories",
+  categories: [
+    { name_bn: "বাংলা সাহিত্য", name_en: "Bengali Literature", count_bn: "২৫,০০০+ বই", count_en: "25,000+ Books" },
+    { name_bn: "বিশ্ব সাহিত্য", name_en: "World Literature", count_bn: "১৮,০০০+ বই", count_en: "18,000+ Books" },
+    { name_bn: "ইতিহাস ও সংস্কৃতি", name_en: "History & Culture", count_bn: "১২,০০০+ বই", count_en: "12,000+ Books" },
+    { name_bn: "বিজ্ঞান ও গবেষণা", name_en: "Science & Research", count_bn: "১০,০০০+ বই", count_en: "10,000+ Books" },
+    { name_bn: "দর্শন ও চিন্তাধারা", name_en: "Philosophy & Thought", count_bn: "৮,০০০+ বই", count_en: "8,000+ Books" },
+    { name_bn: "শিশু-কিশোর সাহিত্য", name_en: "Children & Youth", count_bn: "১৫,০০০+ বই", count_en: "15,000+ Books" },
+    { name_bn: "কিশোর ক্লাসিকস", name_en: "Teen Classics", count_bn: "৯,০০০+ বই", count_en: "9,000+ Books" },
+    { name_bn: "দুর্লভ সংগ্রহ", name_en: "Rare Collection", count_bn: "৩,০০০+ বই", count_en: "3,000+ Books" }
+  ],
+
+  // Membership Rules & Tiers
+  membership_rules_title_bn: "গ্রন্থাগারের সদস্যপদ লাভ ও নিয়মাবলী",
+  membership_rules_title_en: "Library Membership & Rules",
+  membership_rules_bn: "ক. বিশ্বসাহিত্য কেন্দ্র গ্রন্থাগার-এর সদস্য হওয়া একটি সম্পূর্ণ স্বতন্ত্র বিষয়। এটি কেন্দ্রের সভ্য হওয়া কিংবা এর অন্য কোনো বিভাগের সভ্য হওয়ার সঙ্গে সম্পর্কযুক্ত নয়।\nখ. এই গ্রন্থাগারের দুটো সুযোগ রয়েছে- এক: পাঠ কক্ষে বসে পড়া, দুই: গ্রন্থাগারের সদস্য হয়ে বাড়িতে বই নেওয়া।\nগ. যথাযথ আবেদনপত্র পূরণের মাধ্যমে সদস্য পদের জন্য এক কপি পাসপোর্ট সাইজের ছবিসহ আবেদন করতে হবে। আবেদনপত্র গৃহীত হলে সদস্য হওয়া যাবে।\nঘ. কাউকে সদস্যপদ দেওয়া, না দেওয়া বা পরিস্থিতিগত কারণে কারো সদস্যপদ বাতিল করার পূর্ণ ক্ষমতা গ্রন্থাগার কর্তৃপক্ষের থাকবে।\nঙ. সদস্যকার্ড সদস্যকে নিজের কাছে রাখতে হবে। এই কার্ডের সাহায্যেই তিনি লাইব্রেরির বই দেওয়া-নেওয়া করবেন। প্রয়োজন হলে সদস্য নিজে না এসে অন্য কারো মাধ্যমেও বই দেওয়া-নেওয়া করতে পারবেন। এক্ষেত্রে সদস্য যাকে পাঠাবেন তার হাতে তাঁর স্বাক্ষরিত অনুরোধপত্র পাঠাতে হবে। তবে বই-এর দায়িত্ব সদস্যকেই বহন করতে হবে।",
+  membership_rules_en: "A. Membership of Bishwo Shahitto Kendro Library is completely distinct from other departments.\nB. Two facilities: 1. Reading in the hall, 2. Borrowing books for home study.\nC. Apply with completed form and 1 passport-size photo.\nD. Library authority reserves full right of granting or canceling membership.\nE. Membership card must be retained carefully for book borrowing transactions.",
+
+  membershipPlans: [
+    {
+      id: "general",
+      nameBn: "সাধারণ সদস্যপদ",
+      nameEn: "General Membership",
+      feeBn: "৳১০০ / মাস (বাৎসরিক ১০০০)",
+      feeEn: "৳100 / Month (৳1000 / Year)",
+      depositBn: "ফেরতযোগ্য জামানত: ৳৫০০",
+      depositEn: "Refundable Deposit: ৳500",
+      quotaBn: "এককালীন ২টি বই ধার (১৫ দিন)",
+      quotaEn: "Borrow 2 books for 15 days",
+      featuresBn: ["রিডিং রুমে আনলিমিটেড পড়া", "বই ধার নেওয়ার পূর্ণ সুবিধা", "ওয়াইফাই ও রেফারেন্স সুবিধা"],
+      featuresEn: ["Unlimited reading room access", "Full book borrowing rights", "Free Wi-Fi & references"]
+    },
+    {
+      id: "student",
+      nameBn: "শিক্ষার্থী সদস্যপদ",
+      nameEn: "Student Membership",
+      feeBn: "৳৫০ / মাস (বাৎসরিক ৫০০)",
+      feeEn: "৳50 / Month (৳500 / Year)",
+      depositBn: "ফেরতযোগ্য জামানত: ৳৩০০",
+      depositEn: "Refundable Deposit: ৳300",
+      quotaBn: "এককালীন ২টি বই ধার (১৫ দিন)",
+      quotaEn: "Borrow 2 books for 15 days",
+      featuresBn: ["শিক্ষার্থী আইডি কার্ডে বিশেষ ছাড়", "অধ্যয়ন কক্ষ ব্যবহার", "রেফারেন্স ও জার্নাল সুবিধা"],
+      featuresEn: ["Special student discount", "Study room access", "Reference and journal access"]
+    },
+    {
+      id: "life",
+      nameBn: "আজীবন সদস্যপদ",
+      nameEn: "Life Membership",
+      feeBn: "এককালীন ৳১০,০০০",
+      feeEn: "One-time ৳10,000",
+      depositBn: "কোনো অতিরিক্ত জামানত নেই",
+      depositEn: "No extra deposit needed",
+      quotaBn: "এককালীন ৪টি বই ধার (৩০ দিন)",
+      quotaEn: "Borrow 4 books for 30 days",
+      featuresBn: ["আজীবন কেন্দ্রীয় লাইব্রেরি ব্যবহার", "বিশেষ সেমিনার ও আয়োজনে আমন্ত্রণ", "কেন্দ্রের সকল প্রকাশনায় বিশেষ ছাড়"],
+      featuresEn: ["Lifetime library access", "VIP invitations to seminars", "Discounts on BSK publications"]
+    }
+  ],
+
+  // Downloads & PDF Forms
+  catalog_pdf_url: "/assets/downloads/library_catalog.pdf",
+  catalog_label_bn: "গ্রন্থাগার ক্যাটালগ ও বইয়ের তালিকা (PDF)",
+  catalog_label_en: "Library Catalog & Book List (PDF)",
+  form_pdf_url: "/assets/downloads/membership_form.pdf",
+  form_label_bn: "সদস্যপদ আবেদন ফরম (PDF ডাউনলোড)",
+  form_label_en: "Membership Application Form (PDF)",
+
+  // Photo Gallery
+  gallery: [
+    { image: "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg", caption_bn: "কেন্দ্রীয় লাইব্রেরির মূল পাঠাগার ও রিডিং কর্নার", caption_en: "Main reading corner" },
+    { image: "/assets/IMGS/LIBARY/484435759_1054485740036240_8050965389656193796_n.jpg", caption_bn: "বইয়ের সুবিশাল সংগ্রহশালা ও পাঠক কর্ণার", caption_en: "Library bookshelves and study tables" },
+    { image: "/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg", caption_bn: "বই ইস্যু ও রিটার্ন সেবা কাউন্টার", caption_en: "Book circulation desk" },
+    { image: "/assets/IMGS/LIBARY/484318312_1054477440037070_1610026182586324512_n.jpg", caption_bn: "মনোরম ও নিরিবিলি পাঠকক্ষ", caption_en: "Tranquil reading hall" },
+    { image: "/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg", caption_bn: "রেফারেন্স ও গবেষণা জার্নাল কর্নার", caption_en: "Reference & research journal section" },
+    { image: "/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg", caption_bn: "শিশু ও কিশোর কর্নার", caption_en: "Children & Young Readers Corner" }
+  ]
+};
+
 export const defaultAalorIshkoolData = {
   enabled: true,
   hero_title_bn: "আলোর ইশকুল - আত্মবিকাশ ও মুক্তবুদ্ধির চর্চা কেন্দ্র",
@@ -1557,14 +1739,217 @@ export const defaultDonationData = {
 };
 
 export const defaultBuildingData = {
-  hero_title_bn: "বিশ্বসাহিত্য কেন্দ্র ভবন - আলোকিত জীবনের সাংস্কৃতিক কেন্দ্রপ্রস্তর",
-  hero_title_en: "BSK Landmark Complex - Cultural Beacon of Enlightenment",
-  hero_subtitle_bn: "ঢাকার বাংলা মোটোরে অবস্থিত ১০ তলা বিশিষ্ট পরিবেশবান্ধব এই আধুনিক ভবনটি সাহিত্য, শিল্প, সংস্কৃতি ও জ্ঞানচর্চার এক অপূর্ব মিলনকেন্দ্র।",
-  hero_subtitle_en: "A modern 10-story eco-friendly cultural landmark located in Bangla Motor, Dhaka, housing libraries, auditoriums, art galleries, and rooftops.",
-  architect_info_bn: "স্থাপত্যশৈলী: আধুনিক আলো-বাতাসপূর্ণ পরিবেশবান্ধব গ্রিন বিল্ডিং নকশা",
-  architect_info_en: "Architecture: Eco-friendly open light & ventilation green building concept",
-  floors_count: "১০টি তলা + ভূগর্ভস্থ পার্কিং",
-  address_bn: "১৪ কাজী নজরুল ইসলাম এভিনিউ, বাংলা মোটোর, ঢাকা-১০০০"
+  badge_bn: "১৭ ময়মনসিংহ রোড, বাংলামোটর, ঢাকা-১০০০",
+  badge_en: "17 Mymensingh Road, Banglamotor, Dhaka-1000",
+  title_bn: "বিশ্বসাহিত্য কেন্দ্র ভবন",
+  title_en: "Bishwo Shahitto Kendro Building",
+  subtitle_bn: "ঢাকার বাংলামোটরে অবস্থিত বিশ্বসাহিত্য কেন্দ্রের বহুতল পরিবেশবান্ধব ও সর্বাধুনিক স্থাপত্য ভবনের বিস্তারিত পরিচিতি। ভবনে রয়েছে কেন্দ্রীয় পাঠাগার, ৯টি শীতাতপনিয়ন্ত্রিত মিলনায়তন, চিত্রশালা, ওপেন এয়ার ক্যাফেটেরিয়া এবং বুকশপ।",
+  subtitle_en: "Welcome to the iconic Bishwo Shahitto Kendro complex located at Banglamotor, Dhaka. A landmark 10-story cultural & educational hub equipped with state-of-the-art auditoriums, central library, art gallery, and rooftop cafe.",
+  hero_image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80",
+  
+  // Quick Info Badges
+  location_bn: "বাংলামোটর, ঢাকা",
+  location_en: "Banglamotor, Dhaka",
+  floors_count_bn: "১০-তলা বিশিষ্ট বহুতল ভবন",
+  floors_count_en: "10-Story Landmark Building",
+  timing_bn: "খোলা: সকাল ৯:০০ - রাত ৯:০০",
+  timing_en: "Open: 9:00 AM - 9:00 PM",
+
+  // 3 Action Buttons
+  btn_auditorium_bn: "অডিটোরিয়াম ও রুম বুকিং",
+  btn_auditorium_en: "Auditorium Booking & Rent",
+  btn_library_bn: "কেন্দ্রীয় পাঠাগার",
+  btn_library_en: "Central Library",
+  btn_cafe_bn: "রুফটপ ক্যাফেটেরিয়া",
+  btn_cafe_en: "Rooftop Cafe",
+
+  // Building Architectural Specifications (৪টি স্থাপত্য ও পরিবেশ বৈশিষ্ট্য)
+  specs_heading_bn: "ভবনের বৈশিষ্ট্য ও নাগরিক সুবিধাসমূহ",
+  specs_heading_en: "Building Architecture & Key Amenities",
+  specs_sub_bn: "আধুনিক নকশা, নিরাপদ পরিবেশ ও পরিবেশবান্ধব প্রযুক্তির এক অপূর্ব সমন্বয়।",
+  specs_sub_en: "State-of-the-art infrastructure designed for safety, sustainability, and elegance.",
+  specs: [
+    {
+      titleBn: "১২ তলা বিশিষ্ট অত্যাধুনিক টাওয়ার",
+      titleEn: "12-Storey Modern Tower Complex",
+      descBn: "ঢাকার বাংলামোটরে অবস্থিত ভূগর্ভস্থ পার্কিং সহ সর্বাধুনিক স্থাপত্য শৈলীর আন্তর্জাতিক মানের সাংস্কৃতিক কমপ্লেক্স।",
+      descEn: "Architectural landmark in Banglamotor equipped with basement parking and modern cultural amenities."
+    },
+    {
+      titleBn: "অটোমেটেড সিসমিক ও ফায়ার সেফটি",
+      titleEn: "Seismic Resilience & Modern Fire Safety",
+      descBn: "ভূমিকম্প সহনশীল কাঠামো, অত্যাধুনিক অটোমেটিক স্প্রিংকলার, স্মোক ডিটেক্টর ও জরুরি সিঁড়ি ব্যবস্থা।",
+      descEn: "Earthquake-resistant engineering with automatic sprinklers, smoke alarms, and dual emergency staircases."
+    },
+    {
+      titleBn: "সবুজ শক্তি ও বিদ্যুৎ সাশ্রয়ী নকশা",
+      titleEn: "Eco-Friendly & Green Energy Design",
+      descBn: "প্রাকৃতিক আলো-বাতাসের সর্বোত্তম ব্যবহার, ছাদবাগান ও পরিবেশবান্ধব সৌরশক্তির সমন্বিত ব্যবহার।",
+      descEn: "Maximized natural light and ventilation integrated with solar power and rooftop green landscaping."
+    },
+    {
+      titleBn: "আন্তর্জাতিক মানসম্পন্ন এক্সেসিবিলিটি",
+      titleEn: "Full Barrier-Free Accessibility",
+      descBn: "প্রতিটি তলায় হাই-স্পিড লিফট, হুইলচেয়ার এক্সেস ও বিশেষ ক্ষমতাসম্পন্ন নাগরিকদের জন্য প্রস্তুত টয়লেট ব্যবস্থা।",
+      descEn: "High-speed passenger lifts, smooth ramps, and dedicated accessible restrooms on every floor level."
+    }
+  ],
+
+  // Floor Directory (তলাভিত্তিক পরিচিতি)
+  floors_heading_bn: "ভবনের তলাভিত্তিক পরিচিতি ও বিস্তারিত",
+  floors_heading_en: "Floor-by-Floor Layout Directory",
+  floors: [
+    {
+      floorNo: 0,
+      floorBn: "ভূগর্ভস্থ ও নিচতলা",
+      floorEn: "Ground Floor & Basement",
+      titleBn: "প্রধান অভ্যর্থনা, মূল বইয়ের দোকান ও পার্কিং",
+      titleEn: "Main Reception, Central Bookshop & Parking",
+      featuresBn: [
+        "বিশ্বসাহিত্য কেন্দ্র তথ্য ও মূল অভ্যর্থনা কেন্দ্র",
+        "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় বিক্রয়কেন্দ্র (দেশ-বিদেশের বিরল বইয়ের সংগ্রহ)",
+        "নিরাপদ কার ও মোটরসাইকেল পার্কিং সুবিধা",
+        "প্রতিবন্ধী ও প্রবীণদের জন্য হুইলচেয়ার র‍্যাম্প"
+      ],
+      featuresEn: [
+        "Main Information Desk & Central Reception",
+        "BSK Flagship Bookshop with curated literature collection",
+        "Underground visitor & staff vehicle parking",
+        "Wheelchair accessible ramp entrance"
+      ],
+      image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&auto=format&fit=crop&q=80",
+      actionRoute: "bookshop"
+    },
+    {
+      floorNo: 2,
+      floorBn: "২য় তলা",
+      floorEn: "2nd Floor",
+      titleBn: "প্রধান মিলনায়তন ও গ্যালারি হল",
+      titleEn: "Main Auditoriums (R103 & R101)",
+      featuresBn: [
+        "ইস্তেন্দিয়ার জাহিদ হাসান মিলনায়তন (২০০ আসন, আধুনিক স্টেজ ও সাউন্ডপ্রুফ)",
+        "গ্যালারি মিলনায়তন-১০১ (৭১টি ফিক্সড গ্যালারি আসন)",
+        "সম্মেলন, বড় সেমিনার, নাটক ও বই উন্মোচনের উপযুক্ত পরিবেশ"
+      ],
+      featuresEn: [
+        "Istendiar Zahid Hasan Auditorium (200 seats, acoustics & stage setup)",
+        "Tiered Gallery Auditorium R101 (71 fixed seats)",
+        "Ideal for national seminars, symposia, and theatrical readings"
+      ],
+      image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80",
+      actionRoute: "auditorium"
+    },
+    {
+      floorNo: 3,
+      floorBn: "৩য় তলা",
+      floorEn: "3rd Floor",
+      titleBn: "সাধারণ শ্রেণীকক্ষ ও কর্মশালা রুম",
+      titleEn: "Training Classrooms (R301, 302, 303)",
+      featuresBn: [
+        "শ্রেণীকক্ষ ৩০১, ৩০২ ও ৩০৩ (প্রতিটিতে ৩০ আসন)",
+        "শীতাতপ নিয়ন্ত্রিত (AC) ও মাল্টিমিডিয়া প্রজেক্টর সুবিধা",
+        "পাঠচক্র, এনজিও ও প্রাতিষ্ঠানিক ট্রেনিং এর জন্য প্রস্তুত"
+      ],
+      featuresEn: [
+        "General Classrooms 301, 302 & 303 (30 seats each)",
+        "Air-conditioned options with high-definition projection",
+        "Designed for workshops, study circles, and corporate training"
+      ],
+      image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop&q=80",
+      actionRoute: "auditorium"
+    },
+    {
+      floorNo: 4,
+      floorBn: "৪র্থ তলা",
+      floorEn: "4th Floor",
+      titleBn: "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় পাঠাগার",
+      titleEn: "BSK Central Library & Reading Room",
+      featuresBn: [
+        "বিশাল পাঠকক্ষ ও উন্মুক্ত বইয়ের র্যাক ব্যবস্থা",
+        "দেশী-বিদেশী দুর্লভ বই, গবেষণা পত্রিকা ও সাময়িকী",
+        "অনলাইন ক্যাটালগ ও নিরিবিলি অধ্যয়ন পরিবেশ"
+      ],
+      featuresEn: [
+        "Spacious reading hall with open shelf access",
+        "Extensive collection of classical literature and journals",
+        "Quiet study zone with digital indexing"
+      ],
+      image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&auto=format&fit=crop&q=80",
+      actionRoute: "central-library"
+    },
+    {
+      floorNo: 5,
+      floorBn: "৫ম তলা",
+      floorEn: "5th Floor",
+      titleBn: "ভ্রাম্যমাণ লাইব্রেরি ও দেশভিত্তিক বই পড়া কর্মসূচি বিভাগ",
+      titleEn: "Mobile Library & Nationwide Reading Program Ops",
+      featuresBn: [
+        "সারাদেশে বিস্তৃত ভ্রাম্যমাণ লাইব্রেরি প্রধান প্রশাসনিক কার্যালয়",
+        "শিক্ষার্থীদের বই পড়া প্রতিযোগিতার কেন্দ্রীয় মনিটরিং সেল",
+        "বই প্যাকেজিং ও বুক সার্ভিসিং ডেপো"
+      ],
+      featuresEn: [
+        "Central administrative HQ for nationwide Mobile Library Fleet",
+        "Nationwide School & College Reading Program operations",
+        "Book distribution center & processing hub"
+      ],
+      image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      floorNo: 6,
+      floorBn: "৬ষ্ঠ তলা",
+      floorEn: "6th Floor",
+      titleBn: "আলোকচিত্র গ্যালারি ও সেমিনার হল",
+      titleEn: "Art Gallery & Seminar Hall (R601, R602)",
+      featuresBn: [
+        "চিত্রকলা ও আলোকচিত্র প্রদর্শনীর জন্য সুসজ্জিত গ্যালারি",
+        "ভিআইপি সেমিনার কক্ষ ও সাহিত্য আড্ডার স্পেস",
+        "সাংস্কৃতিক প্রদর্শনী ও মিডিয়া প্রেস ব্রিফিং সেন্টার"
+      ],
+      featuresEn: [
+        "Elegantly lit Art Gallery for painting & photo exhibitions",
+        "VIP Seminar Hall R601 & Discussion Lounges",
+        "Press conference and media briefing facilities"
+      ],
+      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      floorNo: 10,
+      floorBn: "১০ম তলা (ছাদ)",
+      floorEn: "10th Floor (Rooftop)",
+      titleBn: "উন্মুক্ত ক্যাফেটেরিয়া ও প্রাকৃতিক ছাদবাগান",
+      titleEn: "Open Air Rooftop Cafeteria & Garden",
+      featuresBn: [
+        "সবুজ প্রাকৃতিক পরিবেশে পরিচ্ছন্ন ওপেন-এয়ার ক্যাফেটেরিয়া",
+        "ঢাকা শহরের দিগন্ত দেখার মনোরম ওয়াচ ডেক",
+        "স্বাস্থ্যকর হালকা নাশতা, কফি, চা ও স্ন্যাক্স সুবিধা"
+      ],
+      featuresEn: [
+        "Open-air garden cafeteria surrounded by lush plants",
+        "Panoramic Dhaka skyline viewing deck",
+        "Fresh refreshments, espresso coffee, and gourmet snacks"
+      ],
+      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop&q=80",
+      actionRoute: "cafe"
+    }
+  ],
+
+  // Rental Redirect Banner
+  rental_badge_bn: "মিলনায়তন বুকিং সেবা",
+  rental_badge_en: "Auditorium Booking Service",
+  rental_title_bn: "বিশ্বসাহিত্য কেন্দ্র ভবনের কোনো রুম বা মিলনায়তন ভাড়া নিতে চান?",
+  rental_title_en: "Looking to Rent an Auditorium or Classroom in BSK Building?",
+  rental_desc_bn: "সেমিনার, ওয়ার্কশপ, প্রদর্শনী ও সাংস্কৃতিক আয়োজনের জন্য ৯টি আধুনিক মিলনায়তন ও শ্রেণীকক্ষের অফিশিয়াল মূল্য তালিকা, আসবাবপত্র তথ্য ও অনলাইন বুকিংয়ের জন্য মিলনায়তন পেজে ভিজিট করুন।",
+  rental_desc_en: "View complete rental rate cards, seat capacity specs, equipment pricing, and online booking options on the dedicated Auditorium page.",
+  rental_btn_bn: "মিলনায়তন বুকিং পেজে যান",
+  rental_btn_en: "Go to Auditorium Page",
+
+  // Gallery
+  gallery: [
+    { image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80", caption_bn: "বিশ্বসাহিত্য কেন্দ্র প্রধান মিলনায়তন", caption_en: "Main Auditorium Hall" },
+    { image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&auto=format&fit=crop&q=80", caption_bn: "কেন্দ্রীয় লাইব্রেরি ও পাঠকক্ষ", caption_en: "Central Library" },
+    { image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop&q=80", caption_bn: "রুফটপ ছাদবাগান ক্যাফেটেরিয়া", caption_en: "Rooftop Garden Cafe" }
+  ]
 };
 
 export const defaultBookFairData = {
@@ -1639,24 +2024,4 @@ export const defaultReadingHabitData = {
     { id: "2", title_bn: "শিক্ষা প্রতিষ্ঠান অংশগ্রহণ ও নিবন্ধন ফরম", title_en: "Institutional Participation & Registration Form", file_size: "১.২ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
     { id: "3", title_bn: "বার্ষিক বই তালিকা ও গ্রেডভিত্তিক সিলেবাস", title_en: "Annual Grade-wise Curated Book List", file_size: "৩.১ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
   ]
-};
-
-export const defaultCentralLibraryData = {
-  hero_title_bn: "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরি",
-  hero_title_en: "BSK Central Library Services",
-  hero_subtitle_bn: "জ্ঞানপিপাসু ও রুচিশীল পাঠকদের জন্য সংগৃহীত লক্ষাধিক মূল্যবান গ্রন্থের সমৃদ্ধ লাইব্রেরি ও নিরিবিলি আধুনিক পাঠকক্ষ।",
-  hero_subtitle_en: "A rich haven with over 100,000 carefully curated classic books, modern reading lounge, and research resources.",
-  about_bn: "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরি ১৯৭৮ সাল থেকে রুচিশীল ও মননশীল পাঠকদের সেবা দিয়ে আসছে। এখানে রয়েছে বাংলা ও বিশ্বসাহিত্যের কালজয়ী রচনাসমগ্র, দর্শন, বিজ্ঞান, ইতিহাস, চিত্রকলা ও সমাজবিদ্যার অমূল্য গ্রন্থভাণ্ডার।",
-  about_en: "BSK Central Library has been serving bibliophiles since 1978 with classic world literature, philosophy, history, and arts.",
-  stats: [
-    { value: "১,০০,০০০+", label_bn: "সংগৃহীত বই", label_en: "Curated Books" },
-    { value: "২৫,০০০+", label_bn: "নিবন্ধিত সদস্য", label_en: "Registered Members" },
-    { value: "৩০০+", label_bn: "দৈনিক পাঠক আসন", label_en: "Daily Reader Capacity" },
-    { value: "৭ দিন", label_bn: "সাপ্তাহিক সেবা", label_en: "Days Open Weekly" }
-  ],
-  library_hours_bn: "শনিবার থেকে বৃহস্পতিবার: সকাল ১০:০০ - রাত ৮:০০ (শুক্রবার বন্ধ)",
-  library_hours_en: "Saturday to Thursday: 10:00 AM - 8:00 PM (Friday Closed)",
-  library_location_bn: "বিশ্বসাহিত্য কেন্দ্র ভবন (৭ম তলা), ১৪ কাজী নজরুল ইসলাম এভিনিউ, বাংলা মোটোর, ঢাকা",
-  library_location_en: "BSK Complex (7th Floor), 14 Kazi Nazrul Islam Avenue, Bangla Motor, Dhaka",
-  hotline: "০১৭৩০০০০০১৪"
 };

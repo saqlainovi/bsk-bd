@@ -326,7 +326,7 @@ export default function Navbar({
       title_bn: 'পরিষেবা',
       title_en: 'Services',
       items: [
-        { id: 'central-library', title_bn: 'লাইব্রেরি', title_en: 'Library', icon: Library },
+        { id: 'central-library', title_bn: 'কেন্দ্রীয় লাইব্রেরি', title_en: 'Central Library', icon: Library },
         { id: 'publication', title_bn: 'প্রকাশনা ও প্রকাশনী', title_en: 'Publications', icon: BookOpenCheck },
         { id: 'bookshop', title_bn: 'বই বিক্রয় কেন্দ্র', title_en: 'Book Shop', icon: Layout },
         { id: 'building', title_bn: 'বিশ্বসাহিত্য কেন্দ্র ভবন', title_en: 'BSK Building', icon: Building },

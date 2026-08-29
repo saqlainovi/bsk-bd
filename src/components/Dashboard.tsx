@@ -639,7 +639,7 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
       }
     });
 
-    // 2. Merge dbHomepagePrograms items (highest priority)
+    // 2. Merge dbHomepagePrograms items
     if (dbHomepagePrograms.length > 0) {
       dbHomepagePrograms.forEach((p) => {
         if (p.id) {
@@ -653,10 +653,11 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
             tag_en: p.tag_en || '',
             colorClass: p.colorClass || 'bg-[#2E5942] text-emerald-100',
             icon: resolveProgramIcon(p.iconName || p.icon) || BookOpen,
-            bgImage: p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1600&auto=format&fit=crop&q=90',
-            order: p.order || 99
+            bgImage: p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1600&auto=format&fit=crop&q=90'
           };
-          const imgToUse = p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || existing.bgImage;
+          const pageDoc = pagesMap.get(p.id) || (p.id === 'bangalir_chinta' ? pagesMap.get('bangalir-chinta') : null);
+          const pageImg = pageDoc?.hero_image || pageDoc?.bgImage || pageDoc?.cover_image || pageDoc?.image || pageDoc?.imageUrl;
+          const imgToUse = p.bgImage || p.image || p.imageUrl || p.cover_image || p.hero_image || pageImg || existing.bgImage;
 
           baseMap.set(p.id, {
             ...existing,
@@ -668,8 +669,22 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
       });
     }
 
-    const result: typeof programs = Array.from(baseMap.values());
-    result.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+    const result: typeof programs = [];
+    const seen = new Set<string>();
+
+    OFFICIAL_PROGRAM_IDS.forEach((id) => {
+      if (baseMap.has(id)) {
+        result.push(baseMap.get(id)!);
+        seen.add(id);
+      }
+    });
+
+    baseMap.forEach((prog, id) => {
+      if (!seen.has(id)) {
+        result.push(prog);
+      }
+    });
+
     return result;
   }, [dbHomepagePrograms, dbPages]);
 

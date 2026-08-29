@@ -17,7 +17,7 @@ export const BookShopCMSEditor: React.FC<BookShopCMSEditorProps> = ({
   language,
   uploadImageToServer
 }) => {
-  const [activeTab, setActiveTab] = useState<'hero' | 'stats' | 'branches' | 'gallery'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'stats' | 'catalogs' | 'branches' | 'gallery'>('hero');
   const [uploading, setUploading] = useState<string | null>(null);
 
   const bookShopData = editingPage.bookShopData || editingPage || {};
@@ -54,41 +54,16 @@ export const BookShopCMSEditor: React.FC<BookShopCMSEditorProps> = ({
     }
   };
 
-  const defaultBranches = [
-    { nameBn: 'কেন্দ্রীয় বুকশপ (হেডকোয়ার্টার)', addressBn: 'বিশ্বসাহিত্য কেন্দ্র ভবন (নিচতলা), ১৪ কাজী নজরুল ইসলাম এভিনিউ, বাংলা মোটোর, ঢাকা', phone: '০১৭৩০০০০০১২', mapLink: 'https://maps.google.com' },
-    { nameBn: 'চট্টগ্রাম শাখা বুকশপ', addressBn: 'সিডিএ এভিনিউ, জিইসি মোড়, চট্টগ্রাম', phone: '০১৭৩০০০০০১৩', mapLink: 'https://maps.google.com' },
-    { nameBn: 'রাজশাহী শাখা বুকশপ', addressBn: 'সাহেব বাজার, আরডিএ মার্কেট সংলগ্ন, রাজশাহী', phone: '০১৭৩০০০০০১৪', mapLink: 'https://maps.google.com' },
-    { nameBn: 'খুলনা শাখা বুকশপ', addressBn: 'শিববাড়ি মোড়, কেডিএ এভিনিউ, খুলনা', phone: '০১৭৩০০০০০১৫', mapLink: 'https://maps.google.com' }
-  ];
-
-  const currentBranches = Array.isArray(bookShopData.branches) && bookShopData.branches.length > 0 ? bookShopData.branches : defaultBranches;
-
-  const updateBranch = (idx: number, field: string, val: any) => {
-    const next = [...currentBranches];
-    next[idx] = { ...next[idx], [field]: val };
-    updateShopField('branches', next);
-  };
-
-  const addBranch = () => {
-    const newB = { nameBn: 'নতুন শাখা বুকশপ', addressBn: 'শাখার পূর্ণাঙ্গ ঠিকানা', phone: '০১৭৩০০০০...', mapLink: '' };
-    updateShopField('branches', [...currentBranches, newB]);
-  };
-
-  const deleteBranch = (idx: number) => {
-    if (confirm('এই শাখাটি মুছে ফেলতে চান?')) {
-      const next = currentBranches.filter((_: any, i: number) => i !== idx);
-      updateShopField('branches', next);
-    }
-  };
-
   return (
     <div className="space-y-6 text-stone-800 font-sans text-xs pt-2 text-left">
+      {/* Sub Tabs */}
       <div className="bg-[#FAF7F2] p-2 rounded-2xl border border-[#B8862A]/30 flex flex-wrap gap-2 shadow-xs">
         {[
-          { id: 'hero', labelBn: '১. বুকশপ পরিচিতি ও ব্যানার', icon: Store },
-          { id: 'stats', labelBn: '২. পরিসংখ্যান ও অফার', icon: Award },
-          { id: 'branches', labelBn: '৩. বিক্রয়কেন্দ্র ও শাখাসমূহ (' + currentBranches.length + 'টি)', icon: MapPin },
-          { id: 'gallery', labelBn: '৪. বুকশপ ফটো গ্যালারি', icon: ImageIcon }
+          { id: 'hero', labelBn: '১. পরিচিতি ও ব্যানার', icon: Store },
+          { id: 'stats', labelBn: '২. মূল তথ্য ও বিশেষ ছাড়', icon: Award },
+          { id: 'catalogs', labelBn: '৩. ক্যাটালগ ও বইয়ের তালিকা', icon: FileText },
+          { id: 'branches', labelBn: '৪. বিক্রয় কেন্দ্র ও আউটলেট', icon: MapPin },
+          { id: 'gallery', labelBn: '৫. বুকশপ ফটো গ্যালারি', icon: ImageIcon }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -97,8 +72,8 @@ export const BookShopCMSEditor: React.FC<BookShopCMSEditorProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                isActive ? 'bg-[#2E5942] text-white shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border'
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                isActive ? 'bg-[#1A1207] text-[#F0CC7A] shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -111,177 +86,205 @@ export const BookShopCMSEditor: React.FC<BookShopCMSEditorProps> = ({
       {/* 1. HERO */}
       {activeTab === 'hero' && (
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-          <h5 className="text-sm font-bold text-[#1A1207] font-serif border-b pb-2">১. বুকশপ পরিচিতি তথ্য</h5>
+          <h5 className="text-sm font-bold text-[#1A1207] font-serif border-b pb-2">১. বই বিক্রয় কেন্দ্র পরিচিতি ও ব্যানার</h5>
+
+          {/* Banner Image Upload & Live Preview */}
+          <div className="p-4 border border-[#B8862A]/30 rounded-xl space-y-3 bg-[#FAF7F2]/40">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-[#B8862A]" />
+                <span>বুকশপ মূল ব্যানার ছবি (Hero Banner Image)</span>
+              </label>
+              <span className="text-[10px] text-[#B8862A] font-mono">* প্রস্তাবিত সাইজ: ১২০০x৬০০ পিক্সেল</span>
+            </div>
+
+            <div className="relative aspect-video max-h-48 w-full rounded-xl overflow-hidden border border-stone-200 bg-stone-900 shadow-xs">
+              <img 
+                src={editingPage.hero_image || bookShopData.hero_image || '/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg'} 
+                alt="Bookshop Banner" 
+                className="w-full h-full object-cover" 
+                referrerPolicy="no-referrer" 
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  updateShopField('hero_image', '/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg');
+                }}
+                className="absolute top-2 right-2 px-2.5 py-1 bg-black/70 hover:bg-black text-white text-[10px] rounded-lg font-bold cursor-pointer transition"
+              >
+                ডিফল্ট ছবি ফিরিয়ে আনুন
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-stone-600 block">ইমেজ লিংক বা সার্ভার ইউআরএল</label>
+                <input
+                  type="text"
+                  value={editingPage.hero_image || bookShopData.hero_image || ''}
+                  onChange={(e) => updateShopField('hero_image', e.target.value)}
+                  placeholder="/assets/IMGS/..."
+                  className="w-full p-2 border rounded-lg text-xs font-mono bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-stone-600 block">পিসি থেকে নতুন ব্যানার ছবি আপলোড করুন</label>
+                <label className="border-2 border-dashed border-[#2E5942]/40 rounded-lg p-2 bg-[#2E5942]/5 text-center hover:bg-[#2E5942]/10 hover:border-[#2E5942] transition flex items-center justify-center gap-2 cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading === 'shop_hero_image'}
+                    onChange={(e) => handleFileUpload(e, (url) => {
+                      updateShopField('hero_image', url);
+                    }, 'shop_hero_image')}
+                  />
+                  <Upload className={`h-4 w-4 text-[#2E5942] ${uploading === 'shop_hero_image' ? 'animate-spin' : ''}`} />
+                  <span className="text-xs font-bold text-[#2E5942]">
+                    {uploading === 'shop_hero_image' ? 'আপলোড হচ্ছে...' : '📁 ব্যানার ছবি নির্বাচন করুন'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-bold block">বুকশপের নাম (বাংলা)</label>
+              <label className="font-bold text-[11px] block">প্রধান শিরোনাম (বাংলা)</label>
               <input
                 type="text"
-                value={bookShopData.hero_title_bn ?? 'বিশ্বসাহিত্য কেন্দ্র বই বিক্রয় কেন্দ্র'}
-                onChange={(e) => updateShopField('hero_title_bn', e.target.value)}
+                value={editingPage.title_bn ?? 'বই বিক্রয় কেন্দ্র'}
+                onChange={(e) => updateShopField('title_bn', e.target.value)}
+                placeholder="শিরোনাম (বাংলা)"
                 className="w-full p-2 border rounded font-bold"
               />
             </div>
             <div className="space-y-1">
-              <label className="font-bold block">Shop Title (English)</label>
+              <label className="font-bold text-[11px] block">প্রধান শিরোনাম (ইংরেজি)</label>
               <input
                 type="text"
-                value={bookShopData.hero_title_en ?? 'BSK Book Shop & Publication Outlet'}
-                onChange={(e) => updateShopField('hero_title_en', e.target.value)}
+                value={editingPage.title_en ?? 'BSK Book Shop'}
+                onChange={(e) => updateShopField('title_en', e.target.value)}
+                placeholder="Title (English)"
                 className="w-full p-2 border rounded"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="font-bold block">পরিচিতি অনুচ্ছেদ (বাংলা)</label>
+          <div className="space-y-2">
+            <label className="font-bold block">বুকশপ বিবরণী অনুচ্ছেদ (বাংলা)</label>
             <textarea
               rows={3}
-              value={bookShopData.hero_subtitle_bn ?? 'বিশ্বসাহিত্য কেন্দ্রের সকল প্রকাশনাসহ দেশ-বিদেশের খ্যাতিমান প্রকাশকদের মানসম্মত ও রুচিশীল বইয়ের সমৃদ্ধ সমাহার। কেন্দ্র পাঠকদের জন্য সবসময় বিশেষ ছাড়ের ব্যবস্থা রয়েছে।'}
-              onChange={(e) => updateShopField('hero_subtitle_bn', e.target.value)}
+              value={bookShopData.about_bn ?? 'বিশ্বসাহিত্য কেন্দ্র ভবনের ২য় তলায় অবস্থিত আমাদের সমৃদ্ধ বই বিক্রয় কেন্দ্র। এখানে কেন্দ্র প্রকাশিত কালজয়ী গ্রন্থ ছাড়াও দেশ-বিদেশের খ্যাতিমান প্রকাশনীর বই বিশেষ ছাড়ে পাওয়া যায়।'}
+              onChange={(e) => updateShopField('about_bn', e.target.value)}
               className="w-full p-2 border rounded"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="font-bold block">বুকশপ হটলাইন</label>
-              <input
-                type="text"
-                value={bookShopData.hotline ?? '০১৭৩০০০০০১২'}
-                onChange={(e) => updateShopField('hotline', e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-bold block">বই অর্ডারের ইমেইল</label>
-              <input
-                type="text"
-                value={bookShopData.order_email ?? 'bookshop@bskbd.org'}
-                onChange={(e) => updateShopField('order_email', e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="font-bold block">ব্যানার কভার ছবি URL</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={bookShopData.hero_image ?? ''}
-                onChange={(e) => updateShopField('hero_image', e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="flex-1 p-2 border rounded"
-              />
-              <label className="px-3 py-2 bg-[#2E5942] text-white rounded font-bold cursor-pointer flex items-center gap-1">
-                <Upload className="w-3.5 h-3.5" />
-                <span>{uploading === 'hero' ? '...' : 'ছবি আপলোড'}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, (url) => updateShopField('hero_image', url), 'hero')} />
-              </label>
-            </div>
+          <div className="space-y-2">
+            <label className="font-bold block">হটলাইন ও অর্ডার যোগাযোগ (বাংলা)</label>
+            <input
+              type="text"
+              value={bookShopData.hotline_bn ?? '+৮৮০ ১৭৩০০৫৫৮০২, +৮৮০ ২-৯৬৬০৮১২'}
+              onChange={(e) => updateShopField('hotline_bn', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
           </div>
         </div>
       )}
 
-      {/* 2. STATS */}
-      {activeTab === 'stats' && (
+      {/* 3. CATALOGS */}
+      {activeTab === 'catalogs' && (
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-          <h5 className="text-sm font-bold text-[#1A1207] font-serif border-b pb-2">২. বুকশপ পরিসংখ্যান ও ডিসকাউন্ট পলিসি</h5>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-stone-50 rounded-xl border space-y-1">
-              <label className="font-bold block">সংগৃহীত মোট বইয়ের টাইটেল</label>
-              <input
-                type="text"
-                value={bookShopData.stat_books ?? '১০,০০০+'}
-                onChange={(e) => updateShopField('stat_books', e.target.value)}
-                className="w-full p-2 border rounded bg-white font-bold"
-              />
-            </div>
-            <div className="p-3 bg-stone-50 rounded-xl border space-y-1">
-              <label className="font-bold block">কেন্দ্র প্রকাশনা ছাড়</label>
-              <input
-                type="text"
-                value={bookShopData.stat_discount ?? '২৫% - ৩৫%'}
-                onChange={(e) => updateShopField('stat_discount', e.target.value)}
-                className="w-full p-2 border rounded bg-white font-bold"
-              />
-            </div>
-            <div className="p-3 bg-stone-50 rounded-xl border space-y-1">
-              <label className="font-bold block">দেশব্যাপী সক্রিয় শাখা</label>
-              <input
-                type="text"
-                value={bookShopData.stat_branches ?? '৮টি বিভাগীয় কেন্দ্র'}
-                onChange={(e) => updateShopField('stat_branches', e.target.value)}
-                className="w-full p-2 border rounded bg-white font-bold"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. BRANCHES */}
-      {activeTab === 'branches' && (
-        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b pb-3">
-            <div>
-              <h5 className="text-sm font-bold text-[#1A1207] font-serif">৩. বিক্রয়কেন্দ্র ও শাখাসমূহের পূর্ণাঙ্গ তালিকা</h5>
-              <p className="text-[11px] text-stone-500">প্রতিটি শাখার নাম, ঠিকানা ও ফোন নম্বর পরিবর্তন করুন</p>
-            </div>
+          <div className="flex justify-between items-center border-b pb-2">
+            <h5 className="text-sm font-bold text-[#1A1207] font-serif">৩. ডাউনলোডযোগ্য ক্যাটালগ ও বইয়ের তালিকা</h5>
             <button
               type="button"
-              onClick={addBranch}
-              className="px-3 py-1.5 bg-[#2E5942] text-white font-bold rounded-lg flex items-center gap-1 text-xs cursor-pointer"
+              onClick={() => {
+                const current = editingPage.downloads || [];
+                setEditingPage({
+                  ...editingPage,
+                  downloads: [...current, { title_bn: 'নতুন ক্যাটালগ', file_size: '২.৫ MB (PDF)', file_url: '' }]
+                });
+              }}
+              className="text-xs font-bold text-[#2E5942] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>নতুন শাখা যোগ করুন</span>
+              <span>ক্যাটালগ যোগ করুন</span>
             </button>
           </div>
 
           <div className="space-y-3">
-            {currentBranches.map((branch: any, idx: number) => (
-              <div key={idx} className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
-                <div className="flex items-center justify-between border-b pb-1.5">
-                  <span className="font-bold font-mono text-[#B8862A] text-xs">শাখা #{idx + 1}</span>
+            {(editingPage.downloads || [
+              { title_bn: 'বিশ্বসাহিত্য কেন্দ্র প্রকাশনীর বইয়ের তালিকা (ক্যাটালগ)', file_size: '৩.৮ MB • PDF', file_url: '' },
+              { title_bn: 'বিশেষ ছাড়ের বইয়ের মজুদ তালিকা (বাংলাদেশি প্রকাশনা)', file_size: '২.৫ MB • PDF', file_url: '' },
+              { title_bn: 'ভারতীয় বিভিন্ন প্রকাশনার বইয়ের মজুদ তালিকা (কলকাতা)', file_size: '২.৯ MB • PDF', file_url: '' }
+            ]).map((doc: any, dIdx: number) => (
+              <div key={dIdx} className="p-3 bg-stone-50 rounded-xl border space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] text-[#2E5942] font-bold">ক্যাটালগ #{dIdx + 1}</span>
                   <button
                     type="button"
-                    onClick={() => deleteBranch(idx)}
-                    className="text-rose-600 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    onClick={() => {
+                      const copy = (editingPage.downloads || []).filter((_: any, i: number) => i !== dIdx);
+                      setEditingPage({ ...editingPage, downloads: copy });
+                    }}
+                    className="text-[10px] text-red-600 font-bold hover:underline cursor-pointer"
                   >
-                    <Trash2 className="w-3 h-3" />
-                    <span>মুছুন</span>
+                    মুছুন
                   </button>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="font-bold text-[10px] block">শাখার নাম (বাংলা)</label>
-                    <input
-                      type="text"
-                      value={branch.nameBn ?? ''}
-                      onChange={(e) => updateBranch(idx, 'nameBn', e.target.value)}
-                      className="w-full p-1.5 border rounded bg-white font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-[10px] block">যোগাযোগ ফোন নম্বর</label>
-                    <input
-                      type="text"
-                      value={branch.phone ?? ''}
-                      onChange={(e) => updateBranch(idx, 'phone', e.target.value)}
-                      className="w-full p-1.5 border rounded bg-white font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-[10px] block">শাখার পূর্ণাঙ্গ ঠিকানা</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <input
                     type="text"
-                    value={branch.addressBn ?? ''}
-                    onChange={(e) => updateBranch(idx, 'addressBn', e.target.value)}
-                    className="w-full p-1.5 border rounded bg-white"
+                    value={doc.title_bn || ''}
+                    onChange={(e) => {
+                      const copy = [...(editingPage.downloads || [])];
+                      copy[dIdx] = { ...copy[dIdx], title_bn: e.target.value };
+                      setEditingPage({ ...editingPage, downloads: copy });
+                    }}
+                    placeholder="ক্যাটালগ শিরোনাম"
+                    className="sm:col-span-2 p-2 border rounded bg-white font-bold"
                   />
+                  <input
+                    type="text"
+                    value={doc.file_size || ''}
+                    onChange={(e) => {
+                      const copy = [...(editingPage.downloads || [])];
+                      copy[dIdx] = { ...copy[dIdx], file_size: e.target.value };
+                      setEditingPage({ ...editingPage, downloads: copy });
+                    }}
+                    placeholder="সাইজ e.g. ৩.৫ MB PDF"
+                    className="p-2 border rounded bg-white text-xs"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={doc.file_url || doc.url || ''}
+                    onChange={(e) => {
+                      const copy = [...(editingPage.downloads || [])];
+                      copy[dIdx] = { ...copy[dIdx], file_url: e.target.value, url: e.target.value };
+                      setEditingPage({ ...editingPage, downloads: copy });
+                    }}
+                    placeholder="File URL / PDF Link"
+                    className="flex-1 p-2 border rounded bg-white font-mono text-xs"
+                  />
+                  <label className="px-3 py-2 bg-[#2E5942] text-white text-xs font-bold rounded cursor-pointer flex items-center gap-1 shrink-0">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>আপলোড PDF</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, (url) => {
+                        const copy = [...(editingPage.downloads || [])];
+                        copy[dIdx] = { ...copy[dIdx], file_url: url, url: url };
+                        setEditingPage({ ...editingPage, downloads: copy });
+                      }, `cat_${dIdx}`)}
+                    />
+                  </label>
                 </div>
               </div>
             ))}
@@ -289,26 +292,82 @@ export const BookShopCMSEditor: React.FC<BookShopCMSEditorProps> = ({
         </div>
       )}
 
-      {/* 4. GALLERY */}
+      {/* 5. GALLERY */}
       {activeTab === 'gallery' && (
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-          <h5 className="text-sm font-bold text-[#1A1207] font-serif border-b pb-2">৪. বুকশপ ফটো গ্যালারি</h5>
-          <div className="space-y-3">
-            {[0, 1, 2, 3].map((gIdx) => (
-              <div key={gIdx} className="flex gap-2 items-center p-2.5 bg-stone-50 rounded-xl border">
-                <span className="font-mono font-bold text-stone-400 w-6">#{gIdx + 1}</span>
+          <div className="flex justify-between items-center border-b pb-2">
+            <h5 className="text-sm font-bold text-[#1A1207] font-serif">৫. বুকশপ ফটো গ্যালারি</h5>
+            <button
+              type="button"
+              onClick={() => {
+                const current = editingPage.gallery || [];
+                setEditingPage({
+                  ...editingPage,
+                  gallery: [...current, { image: '', caption_bn: 'বই বিক্রয় কেন্দ্রের দৃশ্য' }]
+                });
+              }}
+              className="text-xs font-bold text-[#2E5942] hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>ছবি যোগ করুন</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {(editingPage.gallery || []).map((img: any, gIdx: number) => (
+              <div key={gIdx} className="p-3 bg-stone-50 rounded-xl border space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] font-bold text-[#B8862A]">ছবি #{gIdx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const copy = (editingPage.gallery || []).filter((_: any, i: number) => i !== gIdx);
+                      setEditingPage({ ...editingPage, gallery: copy });
+                    }}
+                    className="text-[10px] text-red-600 font-bold hover:underline cursor-pointer"
+                  >
+                    মুছুন
+                  </button>
+                </div>
+                {img.image && <img src={img.image} className="w-full h-28 object-cover rounded" alt="gal" />}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={img.image || ''}
+                    onChange={(e) => {
+                      const copy = [...(editingPage.gallery || [])];
+                      copy[gIdx] = { ...copy[gIdx], image: e.target.value };
+                      setEditingPage({ ...editingPage, gallery: copy });
+                    }}
+                    placeholder="URL"
+                    className="flex-1 p-1.5 text-xs border rounded bg-white font-mono"
+                  />
+                  <label className="px-2.5 py-1.5 bg-[#2E5942] text-white text-xs font-bold rounded cursor-pointer flex items-center gap-1 shrink-0">
+                    <Upload className="w-3 h-3" />
+                    <span>আপলোড</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, (url) => {
+                        const copy = [...(editingPage.gallery || [])];
+                        copy[gIdx] = { ...copy[gIdx], image: url };
+                        setEditingPage({ ...editingPage, gallery: copy });
+                      }, `shop_gal_${gIdx}`)}
+                    />
+                  </label>
+                </div>
                 <input
                   type="text"
-                  value={bookShopData[`gallery_img_${gIdx}`] ?? ''}
-                  onChange={(e) => updateShopField(`gallery_img_${gIdx}`, e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="flex-1 p-2 border rounded bg-white"
+                  value={img.caption_bn || ''}
+                  onChange={(e) => {
+                    const copy = [...(editingPage.gallery || [])];
+                    copy[gIdx] = { ...copy[gIdx], caption_bn: e.target.value };
+                    setEditingPage({ ...editingPage, gallery: copy });
+                  }}
+                  placeholder="ক্যাপশন (বাংলা)"
+                  className="w-full p-1.5 border rounded bg-white"
                 />
-                <label className="px-3 py-2 bg-[#2E5942] text-white rounded font-bold text-xs cursor-pointer flex items-center gap-1">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>{uploading === `bg_${gIdx}` ? '...' : 'আপলোড'}</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, (url) => updateShopField(`gallery_img_${gIdx}`, url), `bg_${gIdx}`)} />
-                </label>
               </div>
             ))}
           </div>

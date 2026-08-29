@@ -17,21 +17,29 @@ if (fs.existsSync(distDir)) {
     }
   });
 
-  // Read current version
+  // Read and auto-increment version
   const versionFilePath = path.join(process.cwd(), 'version.json');
-  let currentVersion = 10;
+  let currentVersion = 28;
+  let vData = {};
   if (fs.existsSync(versionFilePath)) {
     try {
-      const vData = JSON.parse(fs.readFileSync(versionFilePath, 'utf8'));
+      vData = JSON.parse(fs.readFileSync(versionFilePath, 'utf8'));
       if (typeof vData.version === 'number') {
         currentVersion = vData.version;
       }
     } catch (e) {}
   }
 
-  const ver = currentVersion;
+  // Auto-increment version for every new build push
+  const ver = currentVersion + 1;
+  vData.version = ver;
+  vData.updatedAt = new Date().toISOString();
+  try {
+    fs.writeFileSync(versionFilePath, JSON.stringify(vData, null, 2), 'utf8');
+  } catch (e) {}
+
   console.log(`\n========================================`);
-  console.log(`Packaging Clean Version: v${ver}`);
+  console.log(`Packaging Clean Incremental Version: v${ver}`);
   console.log(`========================================\n`);
 
   // Clean old zip files from root, dist, and public

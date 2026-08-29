@@ -26,11 +26,13 @@ import { MobileLibraryPage } from './MobileLibraryPage';
 import { CafePage } from './CafePage';
 import { AuditoriumPage } from './AuditoriumPage';
 import { BuildingPage } from './BuildingPage';
+import { CentralLibraryPage } from './CentralLibraryPage';
 import { BookShopPage } from './BookShopPage';
 import { PrimaryTeacherPage } from './PrimaryTeacherPage';
 import { BangalirChintaPage } from './BangalirChintaPage';
 import OfficialJobApplicationModal from './OfficialJobApplicationModal';
 import { defaultPublicationStats, defaultPublicationSeriesList, defaultPublicationCatalogs, defaultPublicationGallery } from '../data/publicationDefaults';
+import { defaultCentralLibraryData } from '../data/specializedPagesDefaults';
 
 interface PageContentProps {
   page: ParsedPage;
@@ -39,6 +41,35 @@ interface PageContentProps {
 }
 
 export default function PageContent({ page, language, onNavigate }: PageContentProps) {
+  // Real-time cPanel database synchronization for current page
+  const [dbPageData, setDbPageData] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchCurrentPage = async () => {
+      if (!page?.id) return;
+      try {
+        const data = await cpanelApi.getDoc('website_pages', page.id);
+        if (data && isMounted) {
+          setDbPageData(data);
+        }
+      } catch (e) {
+        console.warn("Failed to fetch live page doc:", e);
+      }
+    };
+    fetchCurrentPage();
+
+    const handleUpdate = (e: any) => {
+      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
+        fetchCurrentPage();
+      }
+    };
+    window.addEventListener('bsk_db_updated', handleUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('bsk_db_updated', handleUpdate);
+    };
+  }, [page?.id]);
   const [dbNotices, setDbNotices] = React.useState<any[]>([]);
   const [dbEvents, setDbEvents] = React.useState<any[]>([]);
   const [dbNewsItems, setDbNewsItems] = React.useState<any[]>([]);
@@ -64,34 +95,6 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
   });
 
   const [activeServiceIndex, setActiveServiceIndex] = React.useState<number>(0);
-  const [dbPageDoc, setDbPageDoc] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    const loadCurrentPageDoc = async () => {
-      try {
-        const data = await cpanelApi.getDoc('website_pages', page.id);
-        if (data) setDbPageDoc(data);
-      } catch (e) {
-        console.warn('Failed to fetch doc for ' + page.id, e);
-      }
-    };
-    loadCurrentPageDoc();
-
-    const handlePageUpdate = (e: any) => {
-      if (!e?.detail?.collection || e.detail.collection === 'website_pages') {
-        loadCurrentPageDoc();
-      }
-    };
-    window.addEventListener('bsk_db_updated', handlePageUpdate);
-    return () => window.removeEventListener('bsk_db_updated', handlePageUpdate);
-  }, [page.id]);
-
-  const livePage = {
-    ...page,
-    ...(page.libraryData || {}),
-    ...(dbPageDoc || {}),
-    ...(dbPageDoc?.libraryData || {})
-  };
 
   // Organogram interactive states
   const [organogramTab, setOrganogramTab] = React.useState<'chart' | 'leadership' | 'departments'>('chart');
@@ -2574,497 +2577,7 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
             </AnimatePresence>
           </div>
         ) : page.id === 'central-library' ? (
-          <div className="space-y-8 md:space-y-12 w-full animate-fade-in text-left">
-            {(() => {
-              const livePage = {
-                ...page,
-                ...(page.libraryData || {}),
-                ...(dbPageDoc || {}),
-                ...(dbPageDoc?.libraryData || {})
-              };
-              const getTranslatedText = (text: string, currentLang: 'bn' | 'en'): string => {
-                if (!text) return '';
-                if (text.includes('--')) {
-                  const parts = text.split('--').map(s => s.trim());
-                  return currentLang === 'bn' ? parts[0] : (parts[1] || parts[0]);
-                }
-                return text;
-              };
-
-              const sections = page.sections || [];
-              
-              // 1. About the Library / Mission (Section 1)
-              const hasSec0 = sections.length > 0 && sections[0];
-              const aboutText = livePage.about_bn || (hasSec0 && sections[0].content && sections[0].content[0]
-                ? getTranslatedText(sections[0].content[0], language)
-                : (language === 'bn'
-                  ? 'বিশ্বসাহিত্য কেন্দ্রের কেন্দ্র লাইব্রেরিটি দেশ-বিদেশের অমূল্য ও ঐতিহ্যবাহী গ্রন্থের এক বিশাল আধার। পাঠকদের মননশীল ও উন্নত দৃষ্টিভঙ্গি গঠনে এবং তাদের জ্ঞানের দিগন্ত প্রসারিত করতে এই পাঠাগার দীর্ঘ চার দশকেরও বেশি সময় ধরে নিরলস সেবা দিয়ে যাচ্ছে।'
-                  : 'The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature and rare academic volumes. Serving for more than four decades, it has shaped thousands of enlightened minds and continues to push intellectual boundaries.'));
-              
-              const missionText = hasSec0 && sections[0].content && sections[0].content[1]
-                ? getTranslatedText(sections[0].content[1], language)
-                : (language === 'bn'
-                  ? 'মানসম্পন্ন সাহিত্য ও মননশীল গ্রন্থের মাধ্যমে মানুষের মনকে প্রসারিত ও আলোকিত করা এবং একটি সংবেদনশীল ও প্রজ্ঞাবান জাতি গড়ে তোলার মূল চালিকাশক্তি হিসেবে কাজ করা।'
-                  : 'To cultivate a reading culture and elevate human consciousness through exposure to fine literature, arts, and philosophy, shaping a sensible and enlightened society.');
-
-              const aboutTitle = hasSec0 && sections[0].title
-                ? getTranslatedText(sections[0].title, language)
-                : (language === 'bn' ? 'লাইব্রেরির পরিচিতি ও লক্ষ্য' : 'About the Central Library');
-
-              // 2. Stats (Section 2)
-              const hasSec1 = sections.length > 1 && sections[1];
-              const defaultStats = [
-                { val: livePage.stat_books || (language === 'bn' ? '📚 ১,০০,০০০+' : '📚 100,000+'), lbl: language === 'bn' ? 'বইয়ের সংগ্রহ' : 'Books Collection', sub: language === 'bn' ? 'দেশি-বিদেশী দুর্লভ বই' : 'Local & Global Classics', icon: BookOpen },
-                { val: livePage.stat_members || (language === 'bn' ? '👥 ২৫,০০০+' : '👥 25,000+'), lbl: language === 'bn' ? 'সক্রিয় সদস্য' : 'Active Members', sub: language === 'bn' ? 'পাঠক ও গবেষকবৃন্দ' : 'Avid Readers & Scholars', icon: HeartHandshake },
-                { val: livePage.stat_seats || (language === 'bn' ? '🏛️ ৩০০+ আসন' : '🏛️ 300+ Seats'), lbl: language === 'bn' ? 'পাঠকক্ষ আসন' : 'Reading Hall Seats', sub: livePage.library_location_bn || (language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র ভবন (৭ম তলা)' : 'BSK Bhaban (7th Floor)'), icon: Landmark },
-                { val: livePage.stat_days || (language === 'bn' ? '🕒 ৬ দিন' : '🕒 6 Days'), lbl: language === 'bn' ? 'সেবা সময়সীমা' : 'Service Schedule', sub: livePage.library_hours_bn || (language === 'bn' ? 'সকাল ১০:০০ - রাত ৮:০০' : '10:00 AM - 8:00 PM'), icon: Calendar }
-              ];
-              
-              let parsedStats = defaultStats;
-              if (hasSec1 && sections[1].content && sections[1].content.length > 0) {
-                if (Array.isArray(sections[1].content)) {
-                  parsedStats = sections[1].content.map((item, idx) => {
-                    const parts = item.split('|').map(s => s.trim());
-                    return {
-                      val: getTranslatedText(parts[0] || '', language) || (defaultStats[idx]?.val || ''),
-                      lbl: getTranslatedText(parts[1] || '', language) || (defaultStats[idx]?.lbl || ''),
-                      sub: getTranslatedText(parts[2] || '', language) || (defaultStats[idx]?.sub || ''),
-                      icon: defaultStats[idx]?.icon || BookOpen
-                    };
-                  });
-                }
-              }
-
-              // 3. Key Features (Section 3)
-              const hasSec2 = sections.length > 2 && sections[2];
-              const feature1_raw = hasSec2 && sections[2].content && sections[2].content[0]
-                ? sections[2].content[0]
-                : (language === 'bn'
-                  ? 'বইয়ের বিশাল সংগ্রহ: আমাদের সংগ্রহে রয়েছে বাংলা সাহিত্য, অনূদিত বিশ্বসাহিত্য, বিজ্ঞান, ইতিহাস, দর্শন ও চিত্রকলার সুবিন্যস্ত সম্ভার। এছাড়া রয়েছে গবেষণাধর্মী ও দুর্লভ রেফারেন্স গ্রন্থের এক দুর্লভ সংগ্রহশালা।'
-                  : 'Pristine Collection: Features rare translations, classic world fiction, historical chronicles, scientific journals, philosophy, art, and children literature, indexed to aid research.');
-              const feature2_raw = hasSec2 && sections[2].content && sections[2].content[1]
-                ? sections[2].content[1]
-                : (language === 'bn'
-                  ? 'মনোরম পাঠ পরিবেশ: সম্পূর্ণ শীতাতপ নিয়ন্ত্রিত, কোলাহলমুক্ত ও সুপ্রশস্ত পাঠকক্ষ। প্রাকৃতিক আলো-বাতাস ও মনোরম ইন্টেরিয়র ডিজাইন পাঠকদের অধ্যয়ন ও গবেষণাকে আরও উপভোগ্য ও ফলপ্রসূ করে তোলে।'
-                  : 'Aesthetic Environment: Spacious, naturally lit, and air-conditioned reading halls create a tranquil space. Modern desks, comfortable seating, and helpful curators ensure peak focus.');
-
-              const f1_translated = getTranslatedText(feature1_raw, language);
-              const f2_translated = getTranslatedText(feature2_raw, language);
-
-              const f1_parts = f1_translated.includes(': ') ? f1_translated.split(': ') : f1_translated.split(':');
-              const f2_parts = f2_translated.includes(': ') ? f2_translated.split(': ') : f2_translated.split(':');
-
-              const f1_title = f1_parts[0]?.trim() || (language === 'bn' ? 'বইয়ের বিশাল সংগ্রহ' : 'Pristine Collection');
-              const f1_desc = f1_parts.slice(1).join(':').trim() || f1_parts[0]?.trim();
-              const f2_title = f2_parts[0]?.trim() || (language === 'bn' ? 'মনোরম পাঠ পরিবেশ' : 'Aesthetic Environment');
-              const f2_desc = f2_parts.slice(1).join(':').trim() || f2_parts[0]?.trim();
-
-              // 4. Library Services Gallery (Section 4)
-              const hasSec3 = sections.length > 3 && sections[3];
-              const defaultServices = [
-                {
-                  title_bn: 'বই ধার নেওয়া ও কাউন্টার সেবা',
-                  title_en: 'Book Lending & Counter Services',
-                  icon: BookOpen,
-                  desc_bn: 'বিশ্বসাহিত্য কেন্দ্রের লক্ষ লক্ষ বইয়ের সংগ্রহ থেকে পছন্দের বই বাড়িতে নিয়ে পড়ার জন্য সাধারণ ও গবেষণা সদস্যদের জন্য বই ধার নেওয়ার বিশেষ কাউন্টার সেবা।',
-                  desc_en: 'Borrow and return classic titles to read in your comfortable home environment from our collection of hundreds of thousands of books.',
-                  img: '/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg'
-                },
-                {
-                  title_bn: 'মনোরম ও কোলাহলমুক্ত প্রধান পাঠকক্ষ',
-                  title_en: 'Aesthetic Reading Hall',
-                  icon: Library,
-                  desc_bn: 'সম্পূর্ণ শীতাতপ নিয়ন্ত্রিত, কোলাহলমুক্ত ও সুপ্রশস্ত প্রধান পাঠকক্ষ। যেখানে মনোরম ইন্টেরিয়র এবং প্রাকৃতিক আলোর সমন্বয়ে পড়ার জন্য নিখুঁত পরিবেশ রয়েছে।',
-                  desc_en: 'A quiet, spacious and air-conditioned main reading hall designed with natural light to ensure peak focus for readers and researchers.',
-                  img: '/assets/IMGS/LIBARY/484318312_1054477440037070_1610026182586324512_n.jpg'
-                },
-                {
-                  title_bn: 'রেফারেন্স ও গবেষণা আর্কাইভ',
-                  title_en: 'Reference & Archives',
-                  icon: Award,
-                  desc_bn: 'দেশ-বিদেশের দুষ্প্রাপ্য রেফারেন্স গ্রন্থ, বিশ্বকোষ, গবেষণাধর্মী জার্নাল, চিত্রকলা ও মানচিত্রের এক সমৃদ্ধ সংগ্রহ যা উচ্চতর গবেষণা এবং তথ্যানুসন্ধানের চমৎকার সহায়ক।',
-                  desc_en: 'A comprehensive repository of rare reference books, encyclopedias, scholarly journals, and fine arts collections to support high-level research.',
-                  img: '/assets/IMGS/LIBARY/484279184_1054485723369575_4075618552384323885_n.jpg'
-                },
-                {
-                  title_bn: 'জ্ঞানভিত্তিক কার্যক্রম ও পাঠক সমাবেশ',
-                  title_en: 'Enlightenment Assemblies',
-                  icon: Sparkles,
-                  desc_bn: 'পাঠকদের চিন্তার পরিধি ও মননশীলতা বৃদ্ধির লক্ষ্যে নিয়মিত পাঠচক্র, সাহিত্য আলোচনা সভা, বিশিষ্ট লেখকদের সান্নিধ্য এবং বিষয়ভিত্তিক বইয়ের আকর্ষণীয় প্রদর্শনী।',
-                  desc_en: 'Regular reading circles, literary dialogues, meetings with eminent authors, and thematic exhibitions to foster deep intellectual engagement.',
-                  img: '/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg'
-                },
-                {
-                  title_bn: 'শিশু-কিশোর কর্নার',
-                  title_en: 'Children & Youth Section',
-                  icon: Compass,
-                  desc_bn: 'শিশু-কিশোরদের মনে শৈশব থেকেই বই পড়ার প্রতি ভালোবাসা জন্মানোর লক্ষ্যে তাদের উপযোগী ছবি ও বিচিত্র রূপকথার বই দিয়ে সজ্জিত একটি আকর্ষণীয় ও রঙিন জগৎ।',
-                  desc_en: 'A colorful, welcoming space curated with illustrated books, fairy tales, and educational games to instil a lifelong passion for reading in children.',
-                  img: '/assets/IMGS/LIBARY/484173839_1054477563370391_4423360347440951157_n.jpg'
-                },
-                {
-                  title_bn: 'তথ্য ও ডিজিটাল সাহায্য সেবা',
-                  title_en: 'Reference & Help Desk',
-                  icon: HelpCircle,
-                  desc_bn: 'পাঠকদের প্রয়োজনীয় বই সহজে ও দ্রুততম সময়ে খুঁজে দিতে সাহায্য করার জন্য দক্ষ ক্যাটালগ ডেস্ক ও আধুনিক তথ্য অনুসন্ধান সেবা।',
-                  desc_en: 'Expert curation and catalog assistance helping readers quickly locate target volumes, check availability and conduct academic searches.',
-                  img: '/assets/IMGS/LIBARY/484495050_1054485666702914_3052177565535586646_n.jpg'
-                }
-              ];
-
-              let galleryServices = defaultServices;
-              if (page.gallery && Array.isArray(page.gallery) && page.gallery.length > 0) {
-                galleryServices = (page?.gallery || []).map((g: any, idx: number) => ({
-                  title_bn: g.caption_bn || g.title_bn || g.title || defaultServices[idx]?.title_bn || `সেবা #${idx + 1}`,
-                  title_en: g.caption_en || g.title_en || defaultServices[idx]?.title_en || `Service #${idx + 1}`,
-                  img: g.image || g.img || g.url || defaultServices[idx]?.img || '/assets/IMGS/LIBARY/484577162_1054485646702916_7369530174410735143_n.jpg',
-                  desc_bn: g.desc_bn || g.description_bn || defaultServices[idx]?.desc_bn || '',
-                  desc_en: g.desc_en || g.description_en || defaultServices[idx]?.desc_en || '',
-                  icon: defaultServices[idx]?.icon || BookOpen
-                }));
-              } else if (hasSec3 && sections[3].content && sections[3].content.length > 0) {
-                if (Array.isArray(sections[3].content)) {
-                  galleryServices = sections[3].content.map((item, idx) => {
-                    const parts = item.split('|').map(s => s.trim());
-                    return {
-                      title_bn: getTranslatedText(parts[0] || '', 'bn') || (defaultServices[idx]?.title_bn || ''),
-                      title_en: getTranslatedText(parts[0] || '', 'en') || (defaultServices[idx]?.title_en || ''),
-                      img: parts[1] || (defaultServices[idx]?.img || ''),
-                      desc_bn: getTranslatedText(parts[2] || '', 'bn') || (defaultServices[idx]?.desc_bn || ''),
-                      desc_en: getTranslatedText(parts[2] || '', 'en') || (defaultServices[idx]?.desc_en || ''),
-                      icon: defaultServices[idx]?.icon || BookOpen
-                    };
-                  });
-                }
-              }
-
-              const activeSer = galleryServices[activeServiceIndex] || galleryServices[0];
-
-              return (
-                <>
-                  {/* 1. Hero Section (Enlarged Gallery Image Showcase) */}
-                  <div className="relative bg-[#FAF8F3] border border-[#E8DDD0] rounded-2xl overflow-hidden shadow-xs">
-                    <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#B8862A_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-6 md:p-10 items-center">
-                      <div className="lg:col-span-4 space-y-5 text-left">
-                        <span className="inline-flex items-center gap-1.5 bg-[#B8862A]/10 text-[#B8862A] px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border border-[#B8862A]/20">
-                          <Library className="w-3.5 h-3.5" />
-                          <span>{language === 'bn' ? (page.badge_bn || 'বিশ্বসাহিত্য কেন্দ্র') : (page.badge_en || 'Bishwo Shahitto Kendro')}</span>
-                        </span>
-                        <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1A1207] tracking-tight leading-tight">
-                          {language === 'bn' ? (livePage.hero_title_bn || page.title_bn || 'কেন্দ্র লাইব্রেরি') : (livePage.hero_title_en || page.title_en || 'Central Library HQ')}
-                        </h1>
-                        <p className="text-stone-600 text-xs md:text-sm leading-relaxed font-sans">
-                          {language === 'bn' 
-                            ? (page.subtitle_bn || (sections[0]?.content?.[0] ? getTranslatedText(sections[0].content[0], 'bn') : 'বিশ্বসাহিত্য কেন্দ্রের কেন্দ্র লাইব্রেরিটি দেশ-বিদেশের অমূল্য ও ঐতিহ্যবাহী গ্রন্থের এক বিশাল আধার।'))
-                            : (page.subtitle_en || (sections[0]?.content?.[0] ? getTranslatedText(sections[0].content[0], 'en') : 'The Central Library of Bishwo Shahitto Kendro houses an extraordinary array of global literature.'))
-                          }
-                        </p>
-                        <div className="flex flex-wrap gap-4 pt-2">
-                          <button 
-                            onClick={() => setMembershipModalOpen(true)}
-                            className="inline-flex items-center justify-center space-x-2 bg-[#B8862A] text-white px-7 py-3.5 rounded-xl text-sm font-bold hover:bg-[#9A6D1F] transition-all duration-200 shadow-xs cursor-pointer hover:shadow-md"
-                          >
-                            <HeartHandshake className="w-4 h-4" />
-                            <span>{language === 'bn' ? 'সদস্য হতে আবেদন করুন' : 'Apply for Membership'}</span>
-                          </button>
-                        </div>
-                      </div>
-                      <div className="lg:col-span-8 relative group">
-                        <div className="absolute -inset-1.5 bg-gradient-to-r from-[#B8862A]/20 to-[#E8DDD0] rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition duration-300" />
-                        <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-[#E8DDD0] bg-stone-100 shadow-lg">
-                          <img 
-                            src={livePage.hero_image || page.hero_image || "/assets/IMGS/LIBARY/484036140_1054485683369579_2651909291206012899_n.jpg"} 
-                            alt={language === 'bn' ? page.title_bn : page.title_en} 
-                            className="w-full h-full object-cover transition duration-500 group-hover:scale-102"
-                            referrerPolicy="no-referrer"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 2. Statistics Section */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    {parsedStats.map((st, sidx) => (
-                      <div key={sidx} className="bg-white border border-[#E8DDD0] rounded-2xl p-5 text-left space-y-2 hover:border-[#B8862A] hover:shadow-md transition-all duration-300 group">
-                        <div className="space-y-1">
-                          <div className="font-serif font-extrabold text-base sm:text-lg text-[#1A1207]">
-                            {st.val}
-                          </div>
-                          <div className="text-xs sm:text-sm font-bold text-stone-700">
-                            {st.lbl}
-                          </div>
-                          <div className="text-[10px] text-stone-500">
-                            {st.sub}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 3. About the Library */}
-                  <div className="bg-white border border-[#E8DDD0] rounded-2xl p-6 md:p-8 space-y-6 text-left shadow-xs">
-                    <div className="border-b border-[#E8DDD0] pb-4">
-                      <h2 className="font-serif text-xl md:text-2xl font-bold text-[#1A1207] flex items-center space-x-2">
-                        <span className="w-1.5 h-6 bg-[#B8862A] rounded-full inline-block" />
-                        <span>{aboutTitle}</span>
-                      </h2>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 leading-relaxed text-sm text-stone-700">
-                      <div className="space-y-4">
-                        <p className="font-sans text-stone-600">
-                          {aboutText}
-                        </p>
-                        <div className="bg-[#FAF8F3] border-l-4 border-[#B8862A] p-4 rounded-r-xl">
-                          <h4 className="font-serif font-bold text-stone-900 mb-1">
-                            {language === 'bn' ? 'আমাদের মূল उद्देश्य (Mission)' : 'Our Mission'}
-                          </h4>
-                          <p className="text-xs text-stone-600">
-                            {missionText}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-serif font-bold text-[#1A1207] mb-1.5 flex items-center gap-1.5 text-base">
-                            <BookOpenCheck className="w-4 h-4 text-[#B8862A]" />
-                            <span>{f1_title}</span>
-                          </h4>
-                          <p className="text-xs text-stone-600">
-                            {f1_desc}
-                          </p>
-                        </div>
-                        <div className="pt-2">
-                          <h4 className="font-serif font-bold text-[#1A1207] mb-1.5 flex items-center gap-1.5 text-base">
-                            <Sparkles className="w-4 h-4 text-[#B8862A]" />
-                            <span>{f2_title}</span>
-                          </h4>
-                          <p className="text-xs text-stone-600">
-                            {f2_desc}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 4. Library Services Gallery (Enlarged) */}
-                  <div className="space-y-6 text-left">
-                    <div className="border-b border-[#E8DDD0] pb-3">
-                      <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
-                        <span className="w-1.5 h-5 bg-[#B8862A] rounded-full inline-block" />
-                        <span>{language === 'bn' ? 'লাইব্রেরি সেবাসমূহ ও গ্যালারি' : 'Library Services & Photo Gallery'}</span>
-                      </h3>
-                      <p className="text-xs text-stone-500 font-sans mt-1">
-                        {language === 'bn' 
-                          ? 'যেকোনো সেবায় ক্লিক করে বিস্তারিত বিবরণ এবং ছবির গ্যালারি দেখে নিন' 
-                          : 'Click any service tile below to explore details and view live photos'}
-                      </p>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* Featured Large Gallery Photo and Info Display (Enlarged layout) */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-[#E8DDD0] rounded-2xl overflow-hidden shadow-xs">
-                        {/* Left: Large Image with Overlay Controls */}
-                        <div className="lg:col-span-8 relative aspect-video w-full overflow-hidden bg-stone-100 flex items-center justify-center">
-                          <AnimatePresence mode="wait">
-                            <motion.img
-                              key={activeServiceIndex}
-                              src={activeSer.img}
-                              alt={activeSer.title_en}
-                              initial={{ opacity: 0, scale: 1.02 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.98 }}
-                              transition={{ duration: 0.4 }}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                          </AnimatePresence>
-
-                          {/* Prev / Next Arrows */}
-                          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
-                            <button
-                              onClick={() => {
-                                setActiveServiceIndex((prev) => 
-                                  prev === 0 ? galleryServices.length - 1 : prev - 1
-                                );
-                              }}
-                              className="w-10 h-10 rounded-full bg-[#1A1207]/70 hover:bg-[#B8862A] text-white flex items-center justify-center pointer-events-auto transition shadow-md cursor-pointer outline-none border-none"
-                            >
-                              <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setActiveServiceIndex((prev) => 
-                                  prev === galleryServices.length - 1 ? 0 : prev + 1
-                                );
-                              }}
-                              className="w-10 h-10 rounded-full bg-[#1A1207]/70 hover:bg-[#B8862A] text-white flex items-center justify-center pointer-events-auto transition shadow-md cursor-pointer outline-none border-none"
-                            >
-                              <ChevronRight className="w-5 h-5" />
-                            </button>
-                          </div>
-
-                          {/* Image Counter Badge */}
-                          <div className="absolute bottom-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono rounded-lg border border-white/10">
-                            {activeServiceIndex + 1} / {galleryServices.length}
-                          </div>
-                        </div>
-
-                        {/* Right: Service Description Content (Reduced span to 4) */}
-                        <div className="lg:col-span-4 p-6 md:p-8 flex flex-col justify-between space-y-6 text-left">
-                          <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-9 h-9 rounded-lg bg-[#B8862A]/10 flex items-center justify-center text-[#B8862A]">
-                                <activeSer.icon className="w-5 h-5" />
-                              </div>
-                              <span className="text-[10px] font-mono font-bold text-[#B8862A] tracking-wider uppercase">
-                                {language === 'bn' ? 'লাইব্রেরি সেবাসমূহ' : 'Library Services'}
-                              </span>
-                            </div>
-
-                            <h3 className="font-serif font-extrabold text-stone-900 text-lg md:text-xl leading-tight">
-                              {language === 'bn' ? activeSer.title_bn : activeSer.title_en}
-                            </h3>
-
-                            <p className="text-stone-700 text-xs sm:text-sm leading-relaxed font-sans">
-                              {language === 'bn' ? activeSer.desc_bn : activeSer.desc_en}
-                            </p>
-                          </div>
-
-                          <div className="pt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500 font-sans">
-                            <div className="flex items-center space-x-1.5">
-                              <span className="w-1.5 h-1.5 bg-[#B8862A] rounded-full" />
-                              <span>{language === 'bn' ? 'সাপ্তাহিক সেবা দিনসমূহ' : 'Weekly Services'}</span>
-                            </div>
-                            <span className="font-bold text-[#B8862A]">{language === 'bn' ? 'শনিবার - বৃহস্পতিবার' : 'Sat - Thu'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Miniature Horizontal Photo Gallery (Thumbnails Selector) */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                        {galleryServices.map((ser, sidx) => {
-                          const isActive = activeServiceIndex === sidx;
-                          return (
-                            <button
-                              key={sidx}
-                              onClick={() => setActiveServiceIndex(sidx)}
-                              className={`group text-left border rounded-xl overflow-hidden transition-all duration-300 bg-white shadow-2xs hover:shadow-xs outline-none cursor-pointer flex flex-col ${
-                                isActive
-                                  ? 'border-[#B8862A] ring-2 ring-[#B8862A]/10 scale-[1.01]'
-                                  : 'border-[#E8DDD0] hover:border-[#B8862A]/50'
-                              }`}
-                            >
-                              {/* Miniature Thumbnail Image */}
-                              <div className="relative aspect-video w-full overflow-hidden bg-stone-100 border-b border-stone-100">
-                                <img
-                                  src={ser.img}
-                                  alt={ser.title_en}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                  referrerPolicy="no-referrer"
-                                />
-                                {isActive && (
-                                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                                    <div className="px-2 py-0.5 bg-[#B8862A] text-white text-[8px] font-bold rounded-sm tracking-wider uppercase">
-                                      {language === 'bn' ? 'চলতি' : 'Active'}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                              {/* Thumbnail Title */}
-                              <div className="p-2.5 flex-1 flex flex-col justify-center">
-                                <span className={`text-[10px] font-serif font-bold leading-tight ${isActive ? 'text-[#B8862A]' : 'text-stone-800'}`}>
-                                  {language === 'bn' ? ser.title_bn : ser.title_en}
-                                </span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
-
-            {/* 4.5. Dynamic Membership Plans from CMS */}
-            {Array.isArray(livePage.membershipPlans) && livePage.membershipPlans.length > 0 && (
-              <div className="space-y-4 text-left">
-                <div className="border-b border-[#E8DDD0] pb-3">
-                  <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
-                    <span className="w-1.5 h-5 bg-[#B8862A] rounded-full inline-block" />
-                    <span>{language === 'bn' ? 'সদস্যপদ স্কিম ও ফি তালিকা' : 'Membership Plans & Fee Structure'}</span>
-                  </h3>
-                  <p className="text-xs text-stone-500 font-sans mt-0.5">
-                    {language === 'bn' ? 'বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরির বিভিন্ন ক্যাটাগরির পাঠক সদস্যপদ' : 'Various reader membership categories of BSK Central Library'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {livePage.membershipPlans.map((plan: any, pIdx: number) => (
-                    <div key={pIdx} className="bg-white border border-[#E8DDD0] rounded-2xl p-5 space-y-3 hover:border-[#B8862A] hover:shadow-md transition-all">
-                      <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-                        <h4 className="font-serif font-bold text-stone-900 text-sm">{plan.titleBn}</h4>
-                        <span className="text-[10px] font-bold bg-[#2E5942]/10 text-[#2E5942] px-2 py-0.5 rounded-full">সক্রিয়</span>
-                      </div>
-                      <div className="space-y-1.5 text-xs text-stone-600">
-                        <div className="flex justify-between">
-                          <span className="text-stone-500">ফেরতযোগ্য জামানত:</span>
-                          <span className="font-bold text-[#B8862A] font-mono">{plan.depositBn}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-stone-500">মাসিক ফি:</span>
-                          <span className="font-bold text-stone-800 font-mono">{plan.feeBn}</span>
-                        </div>
-                        {plan.limitBn && (
-                          <div className="flex justify-between">
-                            <span className="text-stone-500">বই নেওয়ার সীমা:</span>
-                            <span className="font-bold text-stone-800">{plan.limitBn}</span>
-                          </div>
-                        )}
-                      </div>
-                      {plan.descBn && (
-                        <p className="text-[11px] text-stone-500 pt-1 border-t border-stone-100 leading-normal">{plan.descBn}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 5. Book Categories */}
-            <div className="space-y-4 text-left">
-              <h3 className="font-serif text-lg md:text-xl font-bold text-[#1A1207] flex items-center space-x-2">
-                <span className="w-1.5 h-5 bg-[#B8862A] rounded-full inline-block" />
-                <span>{language === 'bn' ? 'জনপ্রিয় বইয়ের বিভাগসমূহ' : 'Popular Book Categories'}</span>
-              </h3>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { bn: "বাংলা সাহিত্য", en: "Bengali Literature", count: "২৫,০০০+ বই", countEn: "25,000+ Books" },
-                  { bn: "বিশ্ব সাহিত্য", en: "World Literature", count: "১৮,০০০+ বই", countEn: "18,000+ Books" },
-                  { bn: "ইতিহাস ও সংস্কৃতি", en: "History & Culture", count: "১২,০০০+ বই", countEn: "12,000+ Books" },
-                  { bn: "বিজ্ঞান ও গবেষণা", en: "Science & Research", count: "১০,০০০+ বই", countEn: "10,000+ Books" },
-                  { bn: "দর্শন ও চিন্তাধারা", en: "Philosophy & Thought", count: "৮,০০০+ বই", countEn: "8,000+ Books" },
-                  { bn: "শিশু-কিশোর সাহিত্য", en: "Children & Youth", count: "১৫,০০০+ বই", countEn: "15,000+ Books" },
-                  { bn: "কিশোর ক্লাসিকস", en: "Teen Classics", count: "৯,০০০+ বই", countEn: "9,000+ Books" },
-                  { bn: "দুর্লভ সংগ্রহ", en: "Rare Collection", count: "৩,০০০+ বই", countEn: "3,000+ Books" },
-                ].map((cat, cIdx) => (
-                  <div key={cIdx} className="p-3.5 bg-white border border-[#E8DDD0] rounded-xl text-left hover:border-[#B8862A] transition-colors">
-                    <span className="font-serif text-sm font-bold text-[#1A1207] block">
-                      {language === "bn" ? cat.bn : cat.en}
-                    </span>
-                    <span className="text-[10px] text-stone-500 font-sans block mt-0.5">
-                      {language === "bn" ? cat.count : cat.countEn}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <CentralLibraryPage page={page} language={language} onNavigate={onNavigate} />
         ) : page.id === "reading-habit" ? (
           <div className="space-y-12 w-full animate-fade-in text-left font-sans">
             {/* 1. Hero Banner */}

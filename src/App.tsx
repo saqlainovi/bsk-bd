@@ -328,7 +328,7 @@ export default function App() {
     if (clean === 'bsk-history' || clean === 'history') return 'bsk-history';
     if (clean === 'achievement' || clean === 'achievements') return 'achievement';
     if (clean === 'mobile-library' || clean === 'mobile_library' || clean === 'mobilelibrary') return 'mobile-library';
-    if (clean === 'central-library' || clean === 'central_library' || clean === 'centrallibrary') return 'central-library';
+    if (clean === 'central-library' || clean === 'central_library' || clean === 'centrallibrary' || clean === 'library' || clean === 'libary' || clean === 'kendro-library' || clean === 'kendro_library') return 'central-library';
     if (clean === 'reading-habit' || clean === 'reading_habit' || clean === 'reading-habit-dev' || clean === 'readinghabit') return 'reading-habit';
     if (clean === 'aalor-ishkool' || clean === 'aalor_ishkool' || clean === 'aalorishkool') return 'aalor-ishkool';
     if (clean === 'aalor-pathshala' || clean === 'aalor_pathshala' || clean === 'aalorpathshala') return 'aalor-pathshala';

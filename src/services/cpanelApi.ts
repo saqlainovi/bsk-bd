@@ -248,7 +248,10 @@ export function normalizeRecord<T = any>(tableName: string, item: any): T {
     'busFleet', 'documents', 'sub_programs', 'trustees',
     'attachments', 'tags', 'cards', 'items', 'curriculum',
     'testimonials', 'data', 'announcement_bar', 'navbar_settings',
-    'footer_settings', 'google_map', 'primaryTeacherData', 'admission_info'
+    'footer_settings', 'google_map', 'primaryTeacherData', 'admission_info',
+    'centralLibraryData', 'buildingData', 'auditoriumData', 'cafeData',
+    'bookshopData', 'publicationData', 'aalorIshkoolData', 'aalorPathshalaData',
+    'bangalirChintaData', 'nationwideExcellenceData', 'bookFairData', 'mobileLibraryData', 'membershipPlans'
   ];
 
   for (const key of jsonKeys) {
@@ -424,20 +427,6 @@ export const cpanelApi = {
     return getApiUrl();
   },
 
-  async checkConnection(): Promise<boolean> {
-    try {
-      const res = await fetch(`${getApiUrl()}?action=ping&_t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        return !!(data && (data.success || data.status === 'connected'));
-      }
-      return false;
-    } catch (e) {
-      console.warn("checkConnection error:", e);
-      return false;
-    }
-  },
-
   /**
    * Public Read Collection (with fallback for end-user frontend resilience)
    */
@@ -447,10 +436,9 @@ export const cpanelApi = {
       if (res.ok) {
         const text = await res.text();
         if (!text.trim().startsWith('<?php') && !text.trim().startsWith('<')) {
-          const parsed = JSON.parse(text);
-          const rawList = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.data) ? parsed.data : (Array.isArray(parsed?.items) ? parsed.items : []));
-          if (Array.isArray(rawList)) {
-            const normalized = rawList.map((item) => normalizeRecord<T>(tableName, item));
+          const data = JSON.parse(text);
+          if (Array.isArray(data)) {
+            const normalized = data.map((item) => normalizeRecord<T>(tableName, item));
             setLocalCollection(tableName, normalized);
             return normalized as T[];
           }
@@ -469,10 +457,9 @@ export const cpanelApi = {
       if (res.ok) {
         const text = await res.text();
         if (!text.trim().startsWith('<?php') && !text.trim().startsWith('<')) {
-          const parsed = JSON.parse(text);
-          const docData = parsed?.data !== undefined ? parsed.data : parsed;
-          if (docData !== null && typeof docData === 'object') {
-            const normalized = normalizeRecord<T>(tableName, docData);
+          const data = JSON.parse(text);
+          if (data !== null) {
+            const normalized = normalizeRecord<T>(tableName, data);
             const items = getLocalCollection(tableName);
             const index = items.findIndex((item: any) => item.id === id);
             if (index !== -1) items[index] = normalized;

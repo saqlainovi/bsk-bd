@@ -1,5 +1,3 @@
-import { cpanelApi } from '../services/cpanelApi';
-import { DatabaseHealthDashboard } from './DatabaseHealthDashboard';
 import React, { useState, useEffect } from 'react';
 import { 
   Lock, Layout, Image as ImageIcon, FileText, Plus, Edit2, Trash2, Save, X, RefreshCw, 
@@ -33,7 +31,6 @@ import { BookShopCMSEditor } from './BookShopCMSEditor';
 import { PublicationCMSEditor } from './PublicationCMSEditor';
 import { OrganogramCMSEditor } from './OrganogramCMSEditor';
 import {
-  defaultCentralLibraryData,
   defaultAalorIshkoolData,
   defaultAuditoriumData,
   defaultBangalirChintaData,
@@ -41,6 +38,7 @@ import {
   defaultBookShopData,
   defaultBuildingData,
   defaultCafeData,
+  defaultCentralLibraryData,
   defaultDonationData,
   defaultMobileLibraryData,
   defaultNationwideExcellenceData,
@@ -1211,12 +1209,8 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       if (cleanedPage.id === 'press_contact') {
         // Save custom media contact block data to homepage_blocks/media_contact
         await setDoc(doc(db, 'homepage_blocks', 'media_contact'), cleanedPage.mediaContactData || {});
-        await cpanelApi.setDoc('homepage_blocks', 'media_contact', cleanedPage.mediaContactData || {});
-        window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_blocks' } }));
       } else {
         await setDoc(doc(db, 'website_pages', cleanedPage.id), cleanedPage);
-        await cpanelApi.setDoc('website_pages', cleanedPage.id, cleanedPage);
-        window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'website_pages' } }));
       }
       setPages(prevPages => {
         const idx = prevPages.findIndex(p => p.id === cleanedPage.id);
@@ -1227,9 +1221,9 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
         }
         return [...prevPages, cleanedPage];
       });
-      setEditingPage(null);
-      setActionStatus(language === 'bn' ? 'সফলভাবে সংরক্ষিত!' : 'Page Override Saved!');
-      setTimeout(() => setActionStatus(''), 3000);
+      setEditingPage(cleanedPage);
+      setActionStatus(language === 'bn' ? '✅ পৃষ্ঠা সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে!' : '✅ Page saved to database successfully!');
+      setTimeout(() => setActionStatus(''), 4000);
     } catch (e: any) {
       console.error("Save Page Error:", e);
       const userErrMsg = e?.message || (language === 'bn' ? 'সংরক্ষণ করতে ব্যর্থ হয়েছে!' : 'Failed to save page!');
@@ -1480,19 +1474,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     if (!editingProgram) return;
     try {
       setActionStatus(language === 'bn' ? 'সংরক্ষণ করা হচ্ছে...' : 'Saving Program...');
-      const cleanProg = removeUndefinedFields(editingProgram);
-      await setDoc(doc(db, 'homepage_programs', cleanProg.id), cleanProg);
-      await cpanelApi.setDoc('homepage_programs', cleanProg.id, cleanProg);
-      setHomepagePrograms(prev => {
-        const idx = (prev || []).findIndex(p => p.id === cleanProg.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = cleanProg;
-          return next;
-        }
-        return [...(prev || []), cleanProg];
-      });
-      window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_programs' } }));
+      await setDoc(doc(db, 'homepage_programs', editingProgram.id), editingProgram);
       setEditingProgram(null);
       setActionStatus(language === 'bn' ? 'সফলভাবে সংরক্ষিত!' : 'Program Saved Successfully!');
       setTimeout(() => setActionStatus(''), 2000);
@@ -1509,9 +1491,6 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       async () => {
         try {
           await deleteDoc(doc(db, 'homepage_programs', id));
-          await cpanelApi.deleteDoc('homepage_programs', id);
-          setHomepagePrograms(prev => (prev || []).filter(p => p.id !== id));
-          window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_programs' } }));
           setActionStatus(language === 'bn' ? 'সফলভাবে মুছে ফেলা হয়েছে!' : 'Deleted successfully!');
           setTimeout(() => setActionStatus(''), 2000);
         } catch (e) {
@@ -2181,6 +2160,25 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                     🎯 {language === 'bn' ? `ক্রম: ${slide.order}` : `Priority Order: ${slide.order}`}
                                   </span>
                                   <div className="flex items-center gap-2">
+                                    <label className="p-1 px-2 bg-[#2E5942]/10 hover:bg-[#2E5942]/20 text-[#2E5942] text-xs font-sans font-bold rounded-lg border border-[#2E5942]/20 transition cursor-pointer flex items-center gap-1">
+                                      <Upload className="h-3 w-3" />
+                                      <span>{language === 'bn' ? 'ছবি বদলান' : 'Change Image'}</span>
+                                      <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        className="hidden" 
+                                        onChange={async (e) => {
+                                          if (e.target.files && e.target.files[0]) {
+                                            try {
+                                              const url = await uploadImageToServer(e.target.files[0]);
+                                              await setDoc(doc(db, 'hero_slides', slide.id), { ...slide, bgImage: url });
+                                            } catch (err) {
+                                              console.error(err);
+                                            }
+                                          }
+                                        }} 
+                                      />
+                                    </label>
                                     <button 
                                       onClick={() => { setEditingHero(slide); setPreviewImage(slide.bgImage); }}
                                       className="p-1 px-2.5 bg-[#B8862A]/10 hover:bg-[#B8862A]/20 text-[#B8862A] text-xs font-sans font-bold rounded-lg border border-[#B8862A]/20 transition cursor-pointer"
@@ -2763,10 +2761,10 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             { id: 'ataglance', name_bn: 'এক নজরে কেন্দ্র', name_en: 'BSK at a Glance' },
                             { id: 'trustees', name_bn: 'ট্রাস্টি বোর্ড', name_en: 'Board of Trustees' },
                             { id: 'organogram', name_bn: 'প্রশাসনিক কাঠামো ও অর্গানোগ্রাম', name_en: 'Administrative Structure' },
-                            { id: 'achievement', name_bn: 'সাফল্য ও অর্জন', name_en: 'Achievements' },
-                            { id: 'bsk-history', name_bn: 'ইতিহাস ও ঐতিহ্য', name_en: 'BSK History' },
+                            { id: 'achievement', name_bn: 'সাফল্য ও অর্জন', name_en: 'Achievements & Milestones' },
+                            { id: 'bsk-history', name_bn: 'ইতিহাস ও ঐতিহ্য', name_en: 'BSK History & Journey' },
                             { id: 'governance', name_bn: 'গভর্ন্যান্স ও আর্থিক স্বচ্ছতা', name_en: 'Governance & Financial Transparency' },
-                            { id: 'contact', name_bn: 'যোগাযোগ ও ঠিকানা', name_en: 'Contact Information' },
+                            { id: 'contact', name_bn: 'যোগাযোগ ও প্রধান কার্যালয়', name_en: 'Contact & Headquarters' },
                             { id: 'press_contact', name_bn: 'মিডিয়া ও প্রেস যোগাযোগ (সেকশন ৫)', name_en: 'Media & Press Contact (Section 5)' }
                           ].map((pageInfo) => {
                             // Find if we already customized this page in Firestore
@@ -5929,7 +5927,8 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                   uploadImageToServer={uploadImageToServer}
                                 />
                               )}
-                            </div>
+
+                              </div>
 
                             <div className="border-t pt-4 flex items-center justify-between">
                               <div className="flex gap-2">
@@ -5995,7 +5994,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                                   {/* Mock Address Bar */}
                                   <div className="bg-white border border-stone-200 text-stone-500 rounded-md px-3 py-1 text-[11px] font-mono flex items-center gap-1.5 flex-1 max-w-xs md:max-w-md truncate justify-center select-all">
                                     <span className="text-[#2E5942] font-semibold">https://</span>
-                                    <span>bskbd.org/{activePreviewLang}/programs/{editingPage.id}</span>
+                                    <span>bskbd.org/{activePreviewLang}/pages/{editingPage.id}</span>
                                   </div>
 
                                   {/* Live Language Toggler inside mock frame */}
@@ -6039,42 +6038,574 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                                 {/* Scrollable Preview Frame */}
                                 <div className="max-h-[70vh] overflow-y-auto p-4 bg-[#FAF7F2]/30 space-y-6 scrollbar-thin">
-                                  {/* General page live preview */}
-                                  <div className="space-y-4">
-                                    <div className="border-b border-[#E8DDD0] pb-2 text-left">
-                                      <h1 className="font-serif text-sm font-bold text-[#1A1207] flex items-center gap-1.5">
-                                        <span className="w-1 h-4 bg-[#B8862A] rounded-full inline-block" />
-                                        <span>{activePreviewLang === 'bn' ? editingPage.title_bn : editingPage.title_en}</span>
-                                      </h1>
-                                    </div>
-                                    <div className="space-y-3">
-                                      {(editingPage?.sections || []).map((sec, sIdx) => {
-                                        if ((!sec.content || sec.content.length === 0) && !sec.title) return null;
-                                        return (
-                                          <div key={sIdx} className="space-y-2 bg-white p-3 rounded-xl border border-[#E8DDD0] shadow-xs text-left">
-                                            {sec.title && sec.title !== editingPage.title_bn && (
-                                              <h3 className="font-serif text-[11px] font-bold text-[#1A1207] border-b border-[#E8DDD0]/60 pb-1 flex items-center gap-1">
-                                                <span className="w-1 h-3 bg-[#B8862A] rounded-full inline-block" />
-                                                <span>{sec.title}</span>
-                                              </h3>
-                                            )}
-                                            {sec.image && (
-                                              <div className="w-full max-h-36 rounded-lg overflow-hidden border border-stone-100 bg-stone-50 flex justify-center items-center">
-                                                <img src={sec.image} className="max-w-full max-h-31 object-contain" alt="Section content" referrerPolicy="no-referrer" />
+                                  {editingPage.id === 'press_contact' ? (
+                                    <div className="space-y-6 w-full text-[#1A1207]">
+                                      <div className="bg-white border border-[#E8DDD0] rounded-xl p-5 shadow-xs space-y-4">
+                                        <div className="border-b border-stone-100 pb-3">
+                                          <h4 className="font-serif font-bold text-sm text-[#2E5942]">
+                                            {activePreviewLang === 'bn' ? 'মিডিয়া ও প্রেস জনসংযোগ সেকশন' : 'Media & Public Relations Section'}
+                                          </h4>
+                                          <p className="text-[10px] text-stone-500 font-sans mt-0.5">
+                                            {activePreviewLang === 'bn' ? 'প্রেস পেজ সেকশন ৫ প্রিভিউ' : 'Press Page Section 5 Preview'}
+                                          </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {/* Coordinator Contact Card */}
+                                          <div className="p-4 bg-[#2E5942]/5 border border-[#2E5942]/10 rounded-lg space-y-2">
+                                            <div className="text-[9px] font-bold text-[#2E5942] uppercase tracking-wider">
+                                              {activePreviewLang === 'bn' 
+                                                ? ((editingPage as any).mediaContactData?.coordinator_title_bn || 'মিডিয়া কো-অর্ডিনেটর')
+                                                : ((editingPage as any).mediaContactData?.coordinator_title_en || 'Media Liaison Coordinator')
+                                              }
+                                            </div>
+                                            <div className="font-serif font-extrabold text-sm text-stone-900">
+                                              {activePreviewLang === 'bn'
+                                                ? ((editingPage as any).mediaContactData?.coordinator_name_bn || '')
+                                                : ((editingPage as any).mediaContactData?.coordinator_name_en || '')
+                                              }
+                                            </div>
+                                            <div className="text-[10px] text-stone-600 font-sans">
+                                              {activePreviewLang === 'bn'
+                                                ? ((editingPage as any).mediaContactData?.coordinator_role_bn || '')
+                                                : ((editingPage as any).mediaContactData?.coordinator_role_en || '')
+                                              }
+                                            </div>
+                                            <div className="pt-2 border-t border-[#2E5942]/10 space-y-1 font-mono text-[10px] text-stone-700">
+                                              <div className="flex items-center gap-1">
+                                                <span className="text-[#2E5942] font-semibold">Email:</span>
+                                                <span>{(editingPage as any).mediaContactData?.coordinator_email || ''}</span>
                                               </div>
-                                            )}
-                                            <div className="space-y-1.5 text-left">
-                                              {(sec?.content || []).map((pText, pIdx) => (
-                                                <p key={pIdx} className="text-stone-700 text-[10px] leading-relaxed font-sans">
-                                                  {pText}
-                                                </p>
-                                              ))}
+                                              <div className="flex items-center gap-1">
+                                                <span className="text-[#2E5942] font-semibold">Phone:</span>
+                                                <span>{(editingPage as any).mediaContactData?.coordinator_phone || ''}</span>
+                                              </div>
                                             </div>
                                           </div>
-                                        );
-                                      })}
+
+                                          {/* Desk / Hours Card */}
+                                          <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-lg space-y-3 text-[10px]">
+                                            <div className="space-y-0.5">
+                                              <div className="font-bold text-stone-700">
+                                                {activePreviewLang === 'bn'
+                                                  ? ((editingPage as any).mediaContactData?.office_label_bn || 'কেন্দ্রীয় কার্যালয়:')
+                                                  : ((editingPage as any).mediaContactData?.office_label_en || 'Central Corporate Desk:')
+                                                }
+                                              </div>
+                                              <div className="text-stone-600">
+                                                {activePreviewLang === 'bn'
+                                                  ? ((editingPage as any).mediaContactData?.office_value_bn || '')
+                                                  : ((editingPage as any).mediaContactData?.office_value_en || '')
+                                                }
+                                              </div>
+                                            </div>
+
+                                            <div className="space-y-0.5">
+                                              <div className="font-bold text-stone-700">
+                                                {activePreviewLang === 'bn'
+                                                  ? ((editingPage as any).mediaContactData?.hours_label_bn || 'মিডিয়া ডেস্ক অফিস সময়:')
+                                                  : ((editingPage as any).mediaContactData?.hours_label_en || 'Media Desks Duty Hours:')
+                                                }
+                                              </div>
+                                              <div className="text-stone-600">
+                                                {activePreviewLang === 'bn'
+                                                  ? ((editingPage as any).mediaContactData?.hours_value_bn || '')
+                                                  : ((editingPage as any).mediaContactData?.hours_value_en || '')
+                                                }
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {((editingPage as any).mediaContactData?.note_bn || (editingPage as any).mediaContactData?.note_en) && (
+                                          <div className="p-3 bg-[#B8862A]/5 border border-[#B8862A]/10 rounded-lg text-[10px] text-stone-700 leading-relaxed italic">
+                                            {activePreviewLang === 'bn'
+                                              ? ((editingPage as any).mediaContactData?.note_bn || '')
+                                              : ((editingPage as any).mediaContactData?.note_en || '')
+                                            }
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
+                                  ) : editingPage.id === 'trustees' ? (
+                                    <div className="space-y-6 w-full">
+                                      {/* Header / Intro Spotlight */}
+                                      <div className="bg-[#1A1207] text-[#FAF7F2] rounded-xl p-4 md:p-5 relative overflow-hidden shadow-md border border-[#B8862A]/20">
+                                        <div className="absolute top-2 left-4 text-4xl text-[#B8862A]/15 font-serif select-none pointer-events-none">“</div>
+                                        <div className="relative z-10 space-y-2">
+                                          <h1 className="font-serif text-base md:text-lg font-bold text-[#F0CC7A] flex items-center gap-2">
+                                            <span className="w-1 h-5 bg-[#B8862A] rounded-full inline-block" />
+                                            <span>{activePreviewLang === 'bn' ? editingPage.title_bn : editingPage.title_en}</span>
+                                          </h1>
+                                          
+                                          {editingPage.sections[0] && (
+                                            <div className="text-stone-300 leading-relaxed text-[11px] font-serif italic space-y-1 text-left">
+                                              {editingPage.sections[0].content
+                                                .filter(p => p.trim().length > 0 && 
+                                                  (!p.includes(' - ') && 
+                                                   p.trim() !== 'আবদুল্লাহ আবু সায়ীদ' && 
+                                                   p.trim() !== 'মোহাম্মদ ফরিদউদ্দীন' && 
+                                                   p.trim() !== 'মনসুর আহমেদ চৌধুরী' && 
+                                                   p.trim() !== 'aminul' && 
+                                                   p.trim() !== 'আমিনুল ইসলাম ভুঁইয়া'
+                                                  )
+                                                )
+                                                .slice(0, 3)
+                                                .map((pText, pIdx) => (
+                                                  <p key={pIdx}>{pText}</p>
+                                                ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Trustees Grid */}
+                                      {(() => {
+                                        const allTrusteeSecs = editingPage.sections.filter((sec, idx) => idx > 0 && sec.title && sec.title !== editingPage.title_bn);
+                                        const currentTrustees = allTrusteeSecs.filter(sec => !sec.is_former);
+                                        const formerTrustees = allTrusteeSecs.filter(sec => sec.is_former === true);
+
+                                        return (
+                                          <div className="space-y-6">
+                                            {/* Current Trustees */}
+                                            {currentTrustees.length > 0 && (
+                                              <div className="space-y-3">
+                                                <div className="text-xs font-bold text-[#1A1207] border-b border-[#E8DDD0] pb-1 flex items-center gap-2 font-serif">
+                                                  <span className="w-1.5 h-3.5 bg-[#B8862A] rounded-full inline-block" />
+                                                  <span>{activePreviewLang === 'bn' ? 'বর্তমান ট্রাস্টিমন্ডলী' : 'Current Trustees'}</span>
+                                                </div>
+                                                <div className="space-y-3">
+                                                  {(currentTrustees || []).map((sec, idx) => {
+                                                    const trusteeName = sec.title;
+                                                    let trusteeImg = sec.image || "";
+                                                    if (!trusteeImg) {
+                                                      if (trusteeName.includes("আবদুল্লাহ") || trusteeName.includes("সায়ীদ") || trusteeName.includes("Sayeed")) {
+                                                        trusteeImg = "/assets/IMGS/ABOUT_PAGE_FOUNDER/p_abu_sayed.jpg";
+                                                      }
+                                                    }
+                                                    const initialLetter = trusteeName.trim().charAt(0) || 'T';
+
+                                                    return (
+                                                      <div 
+                                                        key={idx}
+                                                        className="bg-white rounded-xl border border-[#E8DDD0] shadow-2xs overflow-hidden flex flex-col md:flex-row p-3.5 gap-3"
+                                                      >
+                                                        <div className="flex flex-col items-center text-center shrink-0 w-full md:w-32">
+                                                          <div className="relative">
+                                                            {trusteeImg ? (
+                                                              <div className="w-16 h-16 rounded-full overflow-hidden border border-[#B8862A] p-0.5 bg-white shadow-2xs">
+                                                                <img 
+                                                                  src={trusteeImg} 
+                                                                  alt={trusteeName} 
+                                                                  className="w-full h-full object-cover rounded-full"
+                                                                  referrerPolicy="no-referrer"
+                                                                />
+                                                              </div>
+                                                            ) : (
+                                                              <div className="w-16 h-16 rounded-full bg-[#1A1207] border border-[#B8862A]/60 flex items-center justify-center text-[#F0CC7A] shadow-2xs">
+                                                                <div className="text-lg font-serif font-extrabold">
+                                                                  {initialLetter}
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-bold tracking-wider uppercase bg-[#B8862A] text-stone-950 border border-white">
+                                                                {activePreviewLang === 'bn' ? 'ট্রাস্টি' : 'Trustee'}
+                                                              </span>
+                                                            </div>
+                                                          </div>
+                                                          <div className="mt-2">
+                                                            <h4 className="font-serif font-bold text-[#1A1207] text-xs leading-snug">
+                                                              {trusteeName}
+                                                            </h4>
+                                                          </div>
+                                                        </div>
+
+                                                        <div className="flex-1 flex flex-col justify-center space-y-1.5 border-t md:border-t-0 md:border-l border-stone-100 pt-2.5 md:pt-0 md:pl-3">
+                                                          {sec.content
+                                                            .filter(p => p !== trusteeName && p.length > 5)
+                                                            .map((pText, pIdx) => (
+                                                              <p key={pIdx} className="text-stone-700 text-[10px] md:text-[11px] leading-relaxed font-sans text-left">
+                                                                {pText}
+                                                              </p>
+                                                            ))}
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* Former Trustees */}
+                                            {formerTrustees.length > 0 && (
+                                              <div className="space-y-3 pt-2">
+                                                <div className="text-xs font-bold text-[#1A1207] border-b border-[#E8DDD0] pb-1 flex items-center gap-2 font-serif">
+                                                  <span className="w-1.5 h-3.5 bg-[#8B621B] rounded-full inline-block" />
+                                                  <span>{activePreviewLang === 'bn' ? 'সাবেক ট্রাস্টিবৃন্দ' : 'Former Trustees'}</span>
+                                                </div>
+                                                <div className="space-y-3">
+                                                  {(formerTrustees || []).map((sec, idx) => {
+                                                    const trusteeName = sec.title;
+                                                    let trusteeImg = sec.image || "";
+                                                    const initialLetter = trusteeName.trim().charAt(0) || 'T';
+
+                                                    return (
+                                                      <div 
+                                                        key={idx}
+                                                        className="bg-[#FAF7F2]/80 rounded-xl border border-[#E8DDD0] shadow-2xs overflow-hidden flex flex-col md:flex-row p-3.5 gap-3"
+                                                      >
+                                                        <div className="flex flex-col items-center text-center shrink-0 w-full md:w-32">
+                                                          <div className="relative">
+                                                            {trusteeImg ? (
+                                                              <div className="w-16 h-16 rounded-full overflow-hidden border border-[#8B621B]/50 p-0.5 bg-white shadow-2xs">
+                                                                <img 
+                                                                  src={trusteeImg} 
+                                                                  alt={trusteeName} 
+                                                                  className="w-full h-full object-cover rounded-full grayscale"
+                                                                  referrerPolicy="no-referrer"
+                                                                />
+                                                              </div>
+                                                            ) : (
+                                                              <div className="w-16 h-16 rounded-full bg-[#2A231A] border border-[#B8862A]/40 flex items-center justify-center text-[#E5C378] shadow-2xs">
+                                                                <div className="text-lg font-serif font-extrabold">
+                                                                  {initialLetter}
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                                                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-bold tracking-wider uppercase bg-[#8B621B] text-amber-50 border border-white whitespace-nowrap">
+                                                                {activePreviewLang === 'bn' ? 'সাবেক' : 'Former'}
+                                                              </span>
+                                                            </div>
+                                                          </div>
+                                                          <div className="mt-2 space-y-1">
+                                                            <h4 className="font-serif font-bold text-[#1A1207] text-xs leading-snug">
+                                                              {trusteeName}
+                                                            </h4>
+                                                            {sec.period && (
+                                                              <span className="inline-block px-1.5 py-0.5 bg-[#B8862A]/10 text-[#8B621B] rounded text-[9px] font-bold font-sans">
+                                                                {sec.period}
+                                                              </span>
+                                                            )}
+                                                          </div>
+                                                        </div>
+
+                                                        <div className="flex-1 flex flex-col justify-center space-y-1.5 border-t md:border-t-0 md:border-l border-stone-200 pt-2.5 md:pt-0 md:pl-3">
+                                                          {sec.content
+                                                            .filter(p => p !== trusteeName && p.length > 5)
+                                                            .map((pText, pIdx) => (
+                                                              <p key={pIdx} className="text-stone-700 text-[10px] md:text-[11px] leading-relaxed font-sans text-left">
+                                                                {pText}
+                                                              </p>
+                                                            ))}
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  ) : editingPage.id === 'organogram' ? (
+                                    <div className="space-y-4 w-full text-left">
+                                      {/* Quick Preview Header */}
+                                      <div className="text-[10px] uppercase tracking-wider font-extrabold text-[#B8862A] bg-stone-100 py-1 px-2.5 rounded-md text-center border border-stone-200">
+                                        {activePreviewLang === 'bn' ? 'সাংগঠনিক কাঠামো প্রিভিউ (অটো-ক্যাটাগরি)' : 'Administrative Hierarchy Preview (Auto-Categorized)'}
+                                      </div>
+
+                                      {/* Leadership Preview */}
+                                      <div className="space-y-3">
+                                        <h3 className="text-xs font-bold text-[#1A1207] border-b border-stone-200 pb-1 flex items-center gap-1">
+                                          <span className="w-1.5 h-3 bg-[#B8862A] rounded-full inline-block" />
+                                          <span>{activePreviewLang === 'bn' ? 'নেতৃত্ব ও প্রশাসন' : 'Leadership & Admin'}</span>
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                          {editingPage.sections
+                                            .filter((sec, idx) => idx > 0 && !sec.title?.startsWith('বিভাগ'))
+                                            .map((sec, idx) => {
+                                              const leaderName = sec.title?.split(' - ')[0] || sec.title || '';
+                                              const designation = sec.title?.split(' - ')[1] || '';
+                                              let leaderImg = sec.image || '';
+                                              if (!leaderImg && (leaderName.includes('আবদুল্লাহ') || leaderName.includes('সায়ীদ'))) {
+                                                leaderImg = "/assets/IMGS/ABOUT_PAGE_FOUNDER/p_abu_sayed.jpg";
+                                              }
+                                              const initialLetter = leaderName.trim().charAt(0) || 'L';
+                                              
+                                              return (
+                                                <div key={idx} className="bg-white rounded-lg p-3 border border-stone-200 flex gap-3 text-left">
+                                                  <div className="shrink-0">
+                                                    {leaderImg ? (
+                                                      <img src={leaderImg} alt="" className="w-11 h-11 rounded-full object-cover border border-[#B8862A]" referrerPolicy="no-referrer" />
+                                                    ) : (
+                                                      <div className="w-11 h-11 rounded-full bg-[#1A1207] text-[#F0CC7A] flex items-center justify-center text-[10px] font-serif font-bold border border-[#B8862A]/50">
+                                                        {initialLetter}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                  <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold text-[#1A1207] text-xs font-serif truncate">{leaderName}</h4>
+                                                    {designation && <p className="text-[9px] text-[#B8862A] font-bold">{designation}</p>}
+                                                    {(sec?.content || []).map((pTxt, pI) => (
+                                                      <p key={pI} className="text-[10px] text-stone-600 mt-1 font-sans line-clamp-2">{pTxt}</p>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                        </div>
+                                      </div>
+
+                                      {/* Departments Preview */}
+                                      <div className="space-y-3 pt-2">
+                                        <h3 className="text-xs font-bold text-[#1A1207] border-b border-[#E8DDD0] pb-1 flex items-center gap-1">
+                                          <span className="w-1.5 h-3 bg-[#B8862A] rounded-full inline-block" />
+                                          <span>{activePreviewLang === 'bn' ? 'বিভাগ ও দায়িত্বসমূহ' : 'Departments & Duties'}</span>
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                          {editingPage.sections
+                                            .filter((sec, idx) => idx > 0 && sec.title?.startsWith('বিভাগ'))
+                                            .map((sec, idx) => {
+                                              const deptTitle = sec.title?.replace('বিভাগ: ', '').replace('Department: ', '') || '';
+                                              return (
+                                                <div key={idx} className="bg-white rounded-lg p-3 border border-stone-200 text-left space-y-2">
+                                                  <h4 className="font-bold text-xs text-[#1A1207] font-serif">{deptTitle}</h4>
+                                                  {(sec?.content || []).map((pText, pIdx) => {
+                                                    const isResponsibilities = pText.includes('দায়িত্বসমূহ:') || pText.includes('দায়িত্বসমূহ:') || pText.includes('Responsibilities:');
+                                                    if (isResponsibilities) {
+                                                      const parts = pText.split(':');
+                                                      const bullets = (parts[1] || '').split(/[,|;]/).map(b => b.trim()).filter(b => b.length > 0);
+                                                      return (
+                                                        <div key={pIdx} className="space-y-1">
+                                                          <p className="text-[10px] font-bold text-stone-700">{parts[0]}:</p>
+                                                          <ul className="list-disc pl-4 text-[10px] text-stone-600 space-y-0.5">
+                                                            {(bullets || []).map((b, bI) => <li key={bI}>{b}</li>)}
+                                                          </ul>
+                                                        </div>
+                                                      );
+                                                    }
+                                                    return <p key={pIdx} className="text-[10px] text-stone-600 font-sans leading-relaxed">{pText}</p>;
+                                                  })}
+                                                </div>
+                                              );
+                                            })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : editingPage.id === 'ataglance' ? (
+                                    /* CUSTOM TABLE PREVIEW TO MATCH REDESIGNED MAIN PAGE */
+                                    <div className="space-y-4 w-full text-left">
+                                      <div className="border-b border-[#B8862A]/20 pb-2 text-left">
+                                        <h1 className="font-serif text-sm font-bold text-[#1A1207] flex items-center gap-1.5">
+                                          <span className="w-1 h-4 bg-[#B8862A] rounded-full inline-block" />
+                                          <span>{activePreviewLang === 'bn' ? editingPage.title_bn : editingPage.title_en}</span>
+                                        </h1>
+                                      </div>
+                                      
+                                      {(() => {
+                                        // Reuse the exact same translations and category structure as the main page
+                                        const labelTranslations: Record<string, string> = {
+                                          "প্রতিষ্ঠা": "Year of Establishment",
+                                          "নিবন্ধন": "Government Registration Bureau",
+                                          "অর্থের উৎস (স্থানীয়)": "Funding Sources (Local)",
+                                          "অর্থের উৎস (বিদেশী)": "Funding Sources (Foreign/Development)",
+                                          "বিসাকে-র বৈদেশিক শাখা": "International Branches of BSK",
+                                          "ট্রাস্টি বোর্ডের সদস্য": "Board of Trustees Membership",
+                                          "নিয়মিত কর্মী": "Permanent Full-time Staff",
+                                          "নিয়মিত সেচ্ছাসেবক/ স্কুল সংগঠক": "Active School Organizers & Volunteers",
+                                          "অনিয়মিত সেচ্ছাসেবক": "General Assembly Volunteers",
+                                          "বাৎসরিক বাজেট (টাকা)": "Annual Operational Budget (BDT)",
+                                          "প্রকল্প": "Active Core Programs & Projects",
+                                          "নিবন্ধিত সদস্য (প্রধানত ছাত্র/ছাত্রী) (ক্রমপুঞ্জিত সংখ্যা)": "Registered Readers (Cumulative)",
+                                          "নিবন্ধিত সদস্য (বর্তমান সংখ্যা)": "Active Registered Members (Current)",
+                                          "অন্তর্ভূক্ত স্কুল ও কলেজের সংখ্যা": "Partner Schools & Colleges Network",
+                                          "স্কুল ও কলেজ প্রোগ্রামে বইয়ের সংখ্যা": "Book Reserve (School & College Programs)",
+                                          "মূল লাইব্রেরিতে বইয়ের সংখ্যা": "Central Library Book Reserves",
+                                          "লাইব্রেরি ব্যবহারকারীর সংখ্যা/ প্রতি বছর": "Annual Central Library Visitors",
+                                          "ভ্রাম্যমাণ লাইব্রেরিতে বইয়ের সংখ্যা": "Mobile Library Bus Book Reserve",
+                                          "ভ্রাম্যমাণ লাইব্রেরির সদস্য সংখ্যা": "Mobile Library Registered Readers",
+                                          "অন্তর্ভূক্ত জেলা (দেশভিত্তিক উৎকর্ষ কার্যক্রম)": "Districts Covered (Enrichment Program)",
+                                          "অন্তর্ভূক্ত জেলা (ভ্রাম্যমাণ লাইব্রেরি)": "Districts Covered (Mobile Library Network)",
+                                          "অন্তর্ভূক্ত উপজেলা (ভ্রাম্যমাণ লাইব্রেরি)": "Upazilas Covered (Mobile Library Network)"
+                                        };
+
+                                        const valueTranslations: Record<string, string> = {
+                                          "১৯৭৮": "1978",
+                                          "সমাজকল্যাণ অধিদপ্তর ও এনজিও বিষয়ক ব্যুরো": "Department of Social Services & NGO Affairs Bureau",
+                                          "গণপ্রজাতন্ত্রী বাংলাদেশ সরকার, এনজিও, আর্থিক ও ব্যবসা প্রতিষ্ঠান, ব্যক্তি বিশেষ": "Government of the People's Republic of Bangladesh, Corporate CSR, NGOs, Financial Institutions, and Private Patrons",
+                                          "রাজকীয় নরওয়ে দূতাবাস, রাজকীয় ডেনমার্ক দূতাবাস, বিশ্ব ব্যাংক, মানুষের জন্য ফাউন্ডেশান, রামোন ম্যাগসেসে ফাউন্ডেশান, সাউথ-এশিয়া পার্টনারশীপ, সিটি গ্রুপ ফাউন্ডেশান": "Royal Norwegian Embassy, Royal Danish Embassy, The World Bank, Manusher Jonno Foundation, Ramon Magsaysay Foundation, South Asia Partnership, Citi Foundation",
+                                          "লন্ডন ও নিউইয়র্ক (সীমিত কর্মকান্ড)": "London & New York (Limited cultural programs)",
+                                          "১১": "11 Members",
+                                          "২৯০": "290 Employees",
+                                          "১৪০০০": "14,000 Volunteers",
+                                          "৩০০০": "3,000 Volunteers",
+                                          "৩০০ মিলিয়ন": "300 Million BDT",
+                                          "৯": "9 Core Projects",
+                                          "১৪.২ মিলিয়ন": "14.2 Million",
+                                          "২২,০০,০০০": "2.2 Million Active Readers",
+                                          "১৪,২৬৬": "14,266 Educational Institutions",
+                                          "১০ মিলিয়ন": "10 Million Books",
+                                          "২০০,০০০": "200,000 Volumes",
+                                          "১৫,০০০": "15,000 Visitors",
+                                          "৪৩০,০০০": "430,000 Volumes",
+                                          "৩০০,০০০": "300,000 Active Members",
+                                          "৬৪": "64 (All Districts Nationwide)",
+                                          "৫৮": "58 Districts",
+                                          "২৫০": "250 Upazilas"
+                                        };
+
+                                        const getFactValue = (label: string, defaultValue: string) => {
+                                          const fact = editingPage.key_facts?.find((f: any) => f.label === label);
+                                          return fact ? fact.value : defaultValue;
+                                        };
+
+                                        const previewCategories = [
+                                          {
+                                            titleBn: "১. প্রাতিষ্ঠানিক পরিচিতি ও পরিচালনা",
+                                            titleEn: "1. Institutional Identity & Governance",
+                                            items: [
+                                              { label: "প্রতিষ্ঠা", value: getFactValue("প্রতিষ্ঠা", "১৯৭৮") },
+                                              { label: "নিবন্ধন", value: getFactValue("নিবন্ধন", "সমাজকল্যাণ অধিদপ্তর ও এনজিও বিষয়ক ব্যুরো") },
+                                              { label: "ট্রাস্টি বোর্ডের সদস্য", value: getFactValue("ট্রাস্টি বোর্ডের সদস্য", "১১") },
+                                              { label: "নিয়মিত কর্মী", value: getFactValue("নিয়মিত কর্মী", "২৯০") },
+                                            ]
+                                          },
+                                          {
+                                            titleBn: "২. পাঠক, সদস্য ও ভলান্টিয়ার নেটওয়ার্ক",
+                                            titleEn: "2. Reader & Volunteer Network",
+                                            items: [
+                                              { label: "নিবন্ধিত সদস্য (প্রধানত ছাত্র/ছাত্রী) (ক্রমপুঞ্জিত সংখ্যা)", value: getFactValue("নিবন্ধিত সদস্য (প্রধানত ছাত্র/ছাত্রী) (ক্রমপুঞ্জিত সংখ্যা)", "১৪.২ মিলিয়ন") },
+                                              { label: "নিবন্ধিত সদস্য (বর্তমান সংখ্যা)", value: getFactValue("নিবন্ধিত সদস্য (বর্তমান সংখ্যা)", "২২,০০,০০০") },
+                                              { label: "নিয়মিত সেচ্ছাসেবক/ স্কুল সংগঠক", value: getFactValue("নিয়মিত সেচ্ছাসেবক/ স্কুল সংগঠক", "১৪০০০") },
+                                              { label: "অনিয়মিত সেচ্ছাসেবক", value: getFactValue("অনিয়মিত সেচ্ছাসেবক", "৩০০০") },
+                                            ]
+                                          },
+                                          {
+                                            titleBn: "৩. দেশব্যাপী লাইব্রেরি ও ভৌগোলিক পরিধি",
+                                            titleEn: "3. Nationwide Library Footprint",
+                                            items: [
+                                              { label: "অন্তর্ভূক্ত জেলা (দেশভিত্তিক উৎকর্ষ কার্যক্রম)", value: getFactValue("অন্তর্ভূক্ত জেলা (দেশভিত্তিক উৎকর্ষ কার্যক্রম)", "৬৪") },
+                                              { label: "অন্তর্ভূক্ত জেলা (ভ্রাম্যমাণ লাইব্রেরি)", value: getFactValue("অন্তর্ভূক্ত জেলা (ভ্রাম্যমাণ লাইব্রেরি)", "৫৮") },
+                                              { label: "অন্তর্ভূক্ত উপজেলা (ভ্রাম্যমাণ লাইব্রেরি)", value: getFactValue("অন্তর্ভূক্ত উপজেলা (ভ্রাম্যমাণ লাইব্রেরি)", "২৫০") },
+                                              { label: "অন্তর্ভূক্ত স্কুল ও কলেজের সংখ্যা", value: getFactValue("অন্তর্ভূক্ত স্কুল ও কলেজের সংখ্যা", "১৪,২৬৬") },
+                                            ]
+                                          },
+                                          {
+                                            titleBn: "৪. গ্রন্থ সম্পদ ও লাইব্রেরি ভাণ্ডার",
+                                            titleEn: "4. Book Reserves & Resources",
+                                            items: [
+                                              { label: "স্কুল ও কলেজ প্রোগ্রামে বইয়ের সংখ্যা", value: getFactValue("স্কুল ও কলেজ প্রোগ্রামে বইয়ের সংখ্যা", "১০ মিলিয়ন") },
+                                              { label: "ভ্রাম্যমাণ লাইব্রেরিতে বইয়ের সংখ্যা", value: getFactValue("ভ্রাম্যমাণ লাইব্রেরিতে বইয়ের সংখ্যা", "৪৩০,০০০") },
+                                              { label: "ভ্রাম্যমাণ লাইব্রেরির সদস্য সংখ্যা", value: getFactValue("ভ্রাম্যমাণ লাইব্রেরির সদস্য সংখ্যা", "৩০০,০০০") },
+                                              { label: "মূল লাইব্রেরিতে বইয়ের সংখ্যা", value: getFactValue("মূল লাইব্রেরিতে বইয়ের সংখ্যা", "২০০,০০০") },
+                                              { label: "লাইব্রেরি ব্যবহারকারীর সংখ্যা/ প্রতি বছর", value: getFactValue("লাইব্রেরি ব্যবহারকারীর সংখ্যা/ প্রতি বছর", "১৫,০০০") },
+                                            ]
+                                          },
+                                          {
+                                            titleBn: "৫. বাজেট, অর্থায়ন ও প্রকল্প",
+                                            titleEn: "5. Budget, Finance & Programs",
+                                            items: [
+                                              { label: "বাৎসরিক বাজেট (টাকা)", value: getFactValue("বাৎসরিক বাজেট (টাকা)", "৩০০ মিলিয়ন") },
+                                              { label: "প্রকল্প", value: getFactValue("প্রকল্প", "৯") },
+                                              { label: "অর্থের উৎস (স্থানীয়)", value: getFactValue("অর্থের উৎস (স্থানীয়)", "গণপ্রজাতন্ত্রী বাংলাদেশ সরকার, এনজিও, আর্থিক ও ব্যবসা প্রতিষ্ঠান, ব্যক্তি বিশেষ") },
+                                              { label: "অর্থের উৎস (বিদেশী)", value: getFactValue("অর্থের উৎস (বিদেশী)", "রাজকীয় নরওয়ে দূতাবাস, রাজকীয় ডেনমার্ক দূতাবাস, বিশ্ব ব্যাংক, মানুষের জন্য ফাউন্ডেশান, রামোন ম্যাগসেসে ফাউন্ডেশান, সাউথ-এশিয়া পার্টনারশীপ, সিটি গ্রুপ ফাউন্ডেশান") },
+                                              { label: "বিসাকে-র বৈদেশিক শাখা", value: getFactValue("বিসাকে-র বৈদেশিক শাখা", "লন্ডন ও নিউইয়র্ক (সীমিত কর্মকান্ড)") },
+                                            ]
+                                          }
+                                        ];
+
+                                        return (
+                                          <div className="bg-white border border-[#B8862A]/40 rounded-xl overflow-hidden shadow-3xs text-[11px]">
+                                            <table className="w-full text-left border-collapse font-sans">
+                                              <thead>
+                                                <tr className="bg-[#FAF6F0] border-b-2 border-[#B8862A]">
+                                                  <th className="px-3 py-2 font-serif font-bold text-[#1A1207] w-12 text-center border-r border-[#B8862A]/30">
+                                                    {activePreviewLang === 'bn' ? 'নং' : 'Sl.'}
+                                                  </th>
+                                                  <th className="px-3 py-2 font-serif font-bold text-[#1A1207] border-r border-[#B8862A]/30 min-w-[100px]">
+                                                    {activePreviewLang === 'bn' ? 'বিবরণ / সূচক' : 'Indicator'}
+                                                  </th>
+                                                  <th className="px-3 py-2 font-serif font-bold text-[#1A1207]">
+                                                    {activePreviewLang === 'bn' ? 'তথ্য / পরিসংখ্যান' : 'Stats'}
+                                                  </th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {previewCategories.map((category, categoryIdx) => (
+                                                  <React.Fragment key={categoryIdx}>
+                                                    <tr className="bg-[#FCFBF7] border-y border-[#B8862A]/30">
+                                                      <td colSpan={3} className="px-3 py-1.5 bg-[#FAF6F0]/80">
+                                                        <span className="font-serif text-[10px] font-extrabold tracking-tight text-[#1A1207]">
+                                                          {activePreviewLang === 'bn' ? category.titleBn : category.titleEn}
+                                                        </span>
+                                                      </td>
+                                                    </tr>
+                                                    {(category?.items || []).map((item, itemIdx) => {
+                                                      const labelText = activePreviewLang === 'bn' ? item.label : (labelTranslations[item.label] || item.label);
+                                                      const valueText = activePreviewLang === 'bn' ? item.value : (valueTranslations[item.value] || item.value);
+                                                      return (
+                                                        <tr key={itemIdx} className="border-b border-[#B8862A]/20 hover:bg-[#FCFBF7]/50 odd:bg-white even:bg-[#FAF6F0]/10">
+                                                          <td className="px-3 py-2 text-[10px] font-mono text-stone-500 text-center border-r border-[#B8862A]/20">
+                                                            {categoryIdx + 1}.{itemIdx + 1}
+                                                          </td>
+                                                          <td className="px-3 py-2 text-[11px] font-serif font-bold text-[#1A1207] border-r border-[#B8862A]/20 leading-relaxed">
+                                                            {labelText}
+                                                          </td>
+                                                          <td className="px-3 py-2 text-[11px] font-sans font-medium text-[#1A1207] leading-relaxed">
+                                                            {valueText}
+                                                          </td>
+                                                        </tr>
+                                                      );
+                                                    })}
+                                                  </React.Fragment>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  ) : (
+                                    // General page live preview
+                                    <div className="space-y-4">
+                                      <div className="border-b border-[#E8DDD0] pb-2 text-left">
+                                        <h1 className="font-serif text-sm font-bold text-[#1A1207] flex items-center gap-1.5">
+                                          <span className="w-1 h-4 bg-[#B8862A] rounded-full inline-block" />
+                                          <span>{activePreviewLang === 'bn' ? editingPage.title_bn : editingPage.title_en}</span>
+                                        </h1>
+                                      </div>
+                                      <div className="space-y-3">
+                                        {(editingPage?.sections || []).map((sec, sIdx) => {
+                                          if ((!sec.content || sec.content.length === 0) && !sec.title) return null;
+                                          return (
+                                            <div key={sIdx} className="space-y-2 bg-white p-3 rounded-xl border border-[#E8DDD0] shadow-xs text-left">
+                                              {sec.title && sec.title !== editingPage.title_bn && (
+                                                <h3 className="font-serif text-[11px] font-bold text-[#1A1207] border-b border-[#E8DDD0]/60 pb-1 flex items-center gap-1">
+                                                  <span className="w-1 h-3 bg-[#B8862A] rounded-full inline-block" />
+                                                  <span>{sec.title}</span>
+                                                </h3>
+                                              )}
+                                              {sec.image && (
+                                                <div className="w-full max-h-36 rounded-lg overflow-hidden border border-stone-100 bg-stone-50 flex justify-center items-center">
+                                                  <img src={sec.image} className="max-w-full max-h-31 object-contain" alt="Section content" referrerPolicy="no-referrer" />
+                                                </div>
+                                              )}
+                                              <div className="space-y-1.5 text-left">
+                                                {(sec?.content || []).map((pText, pIdx) => (
+                                                  <p key={pIdx} className="text-stone-700 text-[10px] leading-relaxed font-sans">
+                                                    {pText}
+                                                  </p>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -11315,7 +11846,6 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                 {/* TAB 15: DATABASE MANAGEMENT & MYSQL BACKUP */}
                 {activeTab === 'database_cms' && (
                   <div className="space-y-6 font-sans text-left">
-                    <DatabaseHealthDashboard language={language} />
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
                       <div>
