@@ -86,6 +86,13 @@ export default function PageContent({ page, language, onNavigate }: PageContentP
     return () => window.removeEventListener('bsk_db_updated', handlePageUpdate);
   }, [page.id]);
 
+  const livePage = {
+    ...page,
+    ...(page.libraryData || {}),
+    ...(dbPageDoc || {}),
+    ...(dbPageDoc?.libraryData || {})
+  };
+
   // Organogram interactive states
   const [organogramTab, setOrganogramTab] = React.useState<'chart' | 'leadership' | 'departments'>('chart');
   const [selectedOrgNode, setSelectedOrgNode] = React.useState<string | null>(null);

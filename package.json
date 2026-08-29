@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "node test-bot.cjs"
+    "test": "node test-bot.cjs",
+    "test:e2e": "node e2e-bot.cjs"
   },
   "dependencies": {
     "@directus/sdk": "^24.0.0",
@@ -38,6 +39,7 @@
     "autoprefixer": "^10.4.21",
     "cheerio": "^1.2.0",
     "esbuild": "^0.25.0",
+    "puppeteer": "^25.9.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
