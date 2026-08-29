@@ -1,3 +1,4 @@
+import { DatabaseHealthDashboard } from './DatabaseHealthDashboard';
 import React, { useState, useEffect } from 'react';
 import { 
   Lock, Layout, Image as ImageIcon, FileText, Plus, Edit2, Trash2, Save, X, RefreshCw, 
