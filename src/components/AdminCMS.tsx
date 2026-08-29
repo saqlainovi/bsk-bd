@@ -11290,6 +11290,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                 {/* TAB 15: DATABASE MANAGEMENT & MYSQL BACKUP */}
                 {activeTab === 'database_cms' && (
                   <div className="space-y-6 font-sans text-left">
+                    <DatabaseHealthDashboard language={language} />
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
                       <div>
