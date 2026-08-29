@@ -1640,3 +1640,23 @@ export const defaultReadingHabitData = {
     { id: "3", title_bn: "বার্ষিক বই তালিকা ও গ্রেডভিত্তিক সিলেবাস", title_en: "Annual Grade-wise Curated Book List", file_size: "৩.১ MB (PDF)", file_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
   ]
 };
+
+export const defaultCentralLibraryData = {
+  hero_title_bn: "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরি",
+  hero_title_en: "BSK Central Library Services",
+  hero_subtitle_bn: "জ্ঞানপিপাসু ও রুচিশীল পাঠকদের জন্য সংগৃহীত লক্ষাধিক মূল্যবান গ্রন্থের সমৃদ্ধ লাইব্রেরি ও নিরিবিলি আধুনিক পাঠকক্ষ।",
+  hero_subtitle_en: "A rich haven with over 100,000 carefully curated classic books, modern reading lounge, and research resources.",
+  about_bn: "বিশ্বসাহিত্য কেন্দ্র কেন্দ্রীয় লাইব্রেরি ১৯৭৮ সাল থেকে রুচিশীল ও মননশীল পাঠকদের সেবা দিয়ে আসছে। এখানে রয়েছে বাংলা ও বিশ্বসাহিত্যের কালজয়ী রচনাসমগ্র, দর্শন, বিজ্ঞান, ইতিহাস, চিত্রকলা ও সমাজবিদ্যার অমূল্য গ্রন্থভাণ্ডার।",
+  about_en: "BSK Central Library has been serving bibliophiles since 1978 with classic world literature, philosophy, history, and arts.",
+  stats: [
+    { value: "১,০০,০০০+", label_bn: "সংগৃহীত বই", label_en: "Curated Books" },
+    { value: "২৫,০০০+", label_bn: "নিবন্ধিত সদস্য", label_en: "Registered Members" },
+    { value: "৩০০+", label_bn: "দৈনিক পাঠক আসন", label_en: "Daily Reader Capacity" },
+    { value: "৭ দিন", label_bn: "সাপ্তাহিক সেবা", label_en: "Days Open Weekly" }
+  ],
+  library_hours_bn: "শনিবার থেকে বৃহস্পতিবার: সকাল ১০:০০ - রাত ৮:০০ (শুক্রবার বন্ধ)",
+  library_hours_en: "Saturday to Thursday: 10:00 AM - 8:00 PM (Friday Closed)",
+  library_location_bn: "বিশ্বসাহিত্য কেন্দ্র ভবন (৭ম তলা), ১৪ কাজী নজরুল ইসলাম এভিনিউ, বাংলা মোটোর, ঢাকা",
+  library_location_en: "BSK Complex (7th Floor), 14 Kazi Nazrul Islam Avenue, Bangla Motor, Dhaka",
+  hotline: "০১৭৩০০০০০১৪"
+};

@@ -32,6 +32,7 @@ import { BookShopCMSEditor } from './BookShopCMSEditor';
 import { PublicationCMSEditor } from './PublicationCMSEditor';
 import { OrganogramCMSEditor } from './OrganogramCMSEditor';
 import {
+  defaultCentralLibraryData,
   defaultAalorIshkoolData,
   defaultAuditoriumData,
   defaultBangalirChintaData,
@@ -1209,8 +1210,12 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       if (cleanedPage.id === 'press_contact') {
         // Save custom media contact block data to homepage_blocks/media_contact
         await setDoc(doc(db, 'homepage_blocks', 'media_contact'), cleanedPage.mediaContactData || {});
+        await cpanelApi.setDoc('homepage_blocks', 'media_contact', cleanedPage.mediaContactData || {});
+        window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_blocks' } }));
       } else {
         await setDoc(doc(db, 'website_pages', cleanedPage.id), cleanedPage);
+        await cpanelApi.setDoc('website_pages', cleanedPage.id, cleanedPage);
+        window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'website_pages' } }));
       }
       setPages(prevPages => {
         const idx = prevPages.findIndex(p => p.id === cleanedPage.id);
@@ -1474,7 +1479,19 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     if (!editingProgram) return;
     try {
       setActionStatus(language === 'bn' ? 'সংরক্ষণ করা হচ্ছে...' : 'Saving Program...');
-      await setDoc(doc(db, 'homepage_programs', editingProgram.id), editingProgram);
+      const cleanProg = removeUndefinedFields(editingProgram);
+      await setDoc(doc(db, 'homepage_programs', cleanProg.id), cleanProg);
+      await cpanelApi.setDoc('homepage_programs', cleanProg.id, cleanProg);
+      setHomepagePrograms(prev => {
+        const idx = (prev || []).findIndex(p => p.id === cleanProg.id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = cleanProg;
+          return next;
+        }
+        return [...(prev || []), cleanProg];
+      });
+      window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_programs' } }));
       setEditingProgram(null);
       setActionStatus(language === 'bn' ? 'সফলভাবে সংরক্ষিত!' : 'Program Saved Successfully!');
       setTimeout(() => setActionStatus(''), 2000);
@@ -1491,6 +1508,9 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
       async () => {
         try {
           await deleteDoc(doc(db, 'homepage_programs', id));
+          await cpanelApi.deleteDoc('homepage_programs', id);
+          setHomepagePrograms(prev => (prev || []).filter(p => p.id !== id));
+          window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_programs' } }));
           setActionStatus(language === 'bn' ? 'সফলভাবে মুছে ফেলা হয়েছে!' : 'Deleted successfully!');
           setTimeout(() => setActionStatus(''), 2000);
         } catch (e) {
