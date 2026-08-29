@@ -1,5 +1,5 @@
 {
-  "version": 20,
-  "description": "BSK v20 Release - Fixed Facilities Edit Click Handler (defaultCentralLibraryData import), Fixed Homepage Programs Slider MySQL Sync & Direct Upload",
-  "updatedAt": "2026-08-29T05:38:00.000Z"
+  "version": 21,
+  "description": "BSK v21 Release - Fixed cpanelApi Import in AdminCMS, Direct Realtime MySQL Persistence Across All Modules",
+  "updatedAt": "2026-08-29T05:43:00.000Z"
 }

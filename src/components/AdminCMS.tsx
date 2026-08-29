@@ -1,3 +1,4 @@
+import { cpanelApi } from '../services/cpanelApi';
 import { DatabaseHealthDashboard } from './DatabaseHealthDashboard';
 import React, { useState, useEffect } from 'react';
 import { 
