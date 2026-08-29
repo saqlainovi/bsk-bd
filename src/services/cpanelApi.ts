@@ -424,6 +424,20 @@ export const cpanelApi = {
     return getApiUrl();
   },
 
+  async checkConnection(): Promise<boolean> {
+    try {
+      const res = await fetch(`${getApiUrl()}?action=ping&_t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        return !!(data && (data.success || data.status === 'connected'));
+      }
+      return false;
+    } catch (e) {
+      console.warn("checkConnection error:", e);
+      return false;
+    }
+  },
+
   /**
    * Public Read Collection (with fallback for end-user frontend resilience)
    */

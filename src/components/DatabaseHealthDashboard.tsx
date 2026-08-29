@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Database, CheckCircle2, XCircle, RefreshCw, Server, 
-  Activity, ShieldCheck, HardDrive, Layers
+  Activity, ShieldCheck, HardDrive, Layers, AlertCircle
 } from 'lucide-react';
 import { cpanelApi } from '../services/cpanelApi';
 import { Language } from '../types';
@@ -26,6 +26,7 @@ export const DatabaseHealthDashboard: React.FC<DatabaseHealthDashboardProps> = (
   const [pingLatency, setPingLatency] = useState<number>(0);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [lastChecked, setLastChecked] = useState<string>('');
+  const [dbErrorDetail, setDbErrorDetail] = useState<string>('');
   
   const [tables, setTables] = useState<TableStatus[]>([
     { name: 'website_pages', label_bn: 'ওয়েবসাইট পেজসমূহ (সকল কার্যক্রম ও সেবা)', label_en: 'Website Pages & Content', status: 'loading', count: 0, latencyMs: 0 },
@@ -45,15 +46,29 @@ export const DatabaseHealthDashboard: React.FC<DatabaseHealthDashboardProps> = (
 
   const runDiagnostics = async () => {
     setIsScanning(true);
+    setDbErrorDetail('');
     const startPing = performance.now();
 
     try {
-      const isConnected = await cpanelApi.checkConnection();
+      const res = await fetch(`${cpanelApi.getApiUrl()}?action=ping&_t=${Date.now()}`);
       const endPing = performance.now();
-      setIsDbOnline(isConnected);
       setPingLatency(Math.max(1, Math.round(endPing - startPing)));
-    } catch (e) {
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && (data.success || data.status === 'connected')) {
+          setIsDbOnline(true);
+        } else {
+          setIsDbOnline(false);
+          setDbErrorDetail(data.error || 'Unknown status');
+        }
+      } else {
+        setIsDbOnline(false);
+        setDbErrorDetail(`HTTP ${res.status} ${res.statusText}`);
+      }
+    } catch (e: any) {
       setIsDbOnline(false);
+      setDbErrorDetail(e.message || 'Network fetch failed');
     }
 
     const updated = await Promise.all(
@@ -156,6 +171,11 @@ export const DatabaseHealthDashboard: React.FC<DatabaseHealthDashboardProps> = (
             </span>
           </div>
           <p className="text-[10.5px] text-stone-400 font-mono">DB: bskbd_new @ localhost</p>
+          {dbErrorDetail && (
+            <p className="text-[10px] text-rose-500 font-mono truncate" title={dbErrorDetail}>
+              {dbErrorDetail}
+            </p>
+          )}
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-1">
