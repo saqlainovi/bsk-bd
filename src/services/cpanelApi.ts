@@ -447,9 +447,10 @@ export const cpanelApi = {
       if (res.ok) {
         const text = await res.text();
         if (!text.trim().startsWith('<?php') && !text.trim().startsWith('<')) {
-          const data = JSON.parse(text);
-          if (Array.isArray(data)) {
-            const normalized = data.map((item) => normalizeRecord<T>(tableName, item));
+          const parsed = JSON.parse(text);
+          const rawList = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.data) ? parsed.data : (Array.isArray(parsed?.items) ? parsed.items : []));
+          if (Array.isArray(rawList)) {
+            const normalized = rawList.map((item) => normalizeRecord<T>(tableName, item));
             setLocalCollection(tableName, normalized);
             return normalized as T[];
           }
@@ -468,9 +469,10 @@ export const cpanelApi = {
       if (res.ok) {
         const text = await res.text();
         if (!text.trim().startsWith('<?php') && !text.trim().startsWith('<')) {
-          const data = JSON.parse(text);
-          if (data !== null) {
-            const normalized = normalizeRecord<T>(tableName, data);
+          const parsed = JSON.parse(text);
+          const docData = parsed?.data !== undefined ? parsed.data : parsed;
+          if (docData !== null && typeof docData === 'object') {
+            const normalized = normalizeRecord<T>(tableName, docData);
             const items = getLocalCollection(tableName);
             const index = items.findIndex((item: any) => item.id === id);
             if (index !== -1) items[index] = normalized;

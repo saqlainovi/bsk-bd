@@ -99,7 +99,7 @@ export const NationwideExcellencePage: React.FC<NationwideExcellencePageProps> =
     }
   ];
 
-  const highlightsList = page.highlights && page.highlights.length > 0 ? page.highlights : defaultHighlights;
+  const highlightsList = pageData.highlights && pageData.highlights.length > 0 ? pageData.highlights : defaultHighlights;
 
   // Default Levels
   const defaultLevels = [

@@ -2763,6 +2763,10 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                             { id: 'ataglance', name_bn: 'এক নজরে কেন্দ্র', name_en: 'BSK at a Glance' },
                             { id: 'trustees', name_bn: 'ট্রাস্টি বোর্ড', name_en: 'Board of Trustees' },
                             { id: 'organogram', name_bn: 'প্রশাসনিক কাঠামো ও অর্গানোগ্রাম', name_en: 'Administrative Structure' },
+                            { id: 'achievement', name_bn: 'সাফল্য ও অর্জন', name_en: 'Achievements' },
+                            { id: 'bsk-history', name_bn: 'ইতিহাস ও ঐতিহ্য', name_en: 'BSK History' },
+                            { id: 'governance', name_bn: 'গভর্ন্যান্স ও আর্থিক স্বচ্ছতা', name_en: 'Governance & Financial Transparency' },
+                            { id: 'contact', name_bn: 'যোগাযোগ ও ঠিকানা', name_en: 'Contact Information' },
                             { id: 'press_contact', name_bn: 'মিডিয়া ও প্রেস যোগাযোগ (সেকশন ৫)', name_en: 'Media & Press Contact (Section 5)' }
                           ].map((pageInfo) => {
                             // Find if we already customized this page in Firestore

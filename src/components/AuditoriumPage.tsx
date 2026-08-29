@@ -337,11 +337,13 @@ export const AuditoriumPage: React.FC<AuditoriumPageProps> = ({ page, language, 
     }
   ];
 
-  const roomsData: RoomOption[] = (page?.rooms && page.rooms.length > 0) 
-    ? page.rooms 
-    : (page?.roomsData && page.roomsData.length > 0) 
-      ? page.roomsData 
-      : defaultRoomsData;
+  const roomsData: RoomOption[] = (pageData?.rooms && pageData.rooms.length > 0) 
+    ? pageData.rooms 
+    : (pageData?.halls && pageData.halls.length > 0) 
+      ? pageData.halls 
+      : (pageData?.roomsData && pageData.roomsData.length > 0) 
+        ? pageData.roomsData 
+        : defaultRoomsData;
 
   // Filtered rooms logic
   const filteredRooms = roomsData.filter((r) => {

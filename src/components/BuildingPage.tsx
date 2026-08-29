@@ -226,8 +226,8 @@ export const BuildingPage: React.FC<BuildingPageProps> = ({ page, language, onNa
   const heroImage = page?.hero_image || page?.heroImage || 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&auto=format&fit=crop&q=80';
 
   const specs = (page?.specs && page.specs.length > 0) ? page.specs : defaultBuildingSpecs;
-  const floors = (page?.floors && page.floors.length > 0) ? page.floors : defaultFloorData;
-  const gallery = page?.gallery || [];
+  const floors = (pageData?.floors && pageData.floors.length > 0) ? pageData.floors : defaultFloorData;
+  const gallery = pageData?.gallery || page?.gallery || [];
 
   return (
     <div className="space-y-12 w-full animate-fade-in text-left font-sans">
