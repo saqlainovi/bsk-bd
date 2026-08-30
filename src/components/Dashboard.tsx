@@ -10,6 +10,7 @@ import { normalizeImageUrl } from './imageUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import Footer from './Footer';
 import { cpanelApi } from '../services/cpanelApi';
+import { HomepageInfographic } from './HomepageInfographic';
 
 const cleanTextEmoji = (str?: string) => {
   if (!str) return '';
@@ -2248,68 +2249,8 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
 
 
 
-      {/* ── SECTION 5: 4 FULL IMAGE HIGHLIGHTS GRID ── */}
-      {(() => {
-        const infoDoc = dbInfographicBlock || {};
-        const headerTitle = language === 'bn' 
-          ? (infoDoc.header_title_bn || '') 
-          : (infoDoc.header_title_en || '');
-
-        // Check if a single full-section banner image is uploaded (full width, no border, no margin)
-        const fullBannerUrl = infoDoc.section_image || infoDoc.banner_image || infoDoc.image;
-        if (fullBannerUrl) {
-          return (
-            <div className="w-full rounded-2xl overflow-hidden shadow-xs bg-white animate-fade-in border-0 p-0 m-0">
-              <img 
-                src={fullBannerUrl} 
-                alt={headerTitle || 'Infographic Banner'}
-                className="w-full h-auto object-cover block border-0 p-0 m-0 rounded-2xl"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          );
-        }
-
-        const defaultImgs = [
-          "/assets/IMGS/482986950_1054527260032088_5237943853609018055_n.jpg",
-          "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg",
-          "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg",
-          "/assets/IMGS/534826832_1175889297895883_7988975073499309288_n.jpg"
-        ];
-
-        const rawItems = Array.isArray(infoDoc.items) && infoDoc.items.length > 0 ? infoDoc.items : [{}, {}, {}, {}];
-        const items = [0, 1, 2, 3].map((idx) => {
-          const item = rawItems[idx] || {};
-          return {
-            ...item,
-            image: item.image || item.imgUrl || item.img || defaultImgs[idx]
-          };
-        });
-
-        return (
-          <div className="rounded-2xl overflow-hidden border border-[#E8DDD0] shadow-sm bg-white animate-fade-in">
-            {/* 4 Full Image Slots Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 bg-white p-4 sm:p-6 lg:p-8 gap-4 sm:gap-6">
-              {items.map((item: any, idx: number) => {
-                const imgSrc = item.image || defaultImgs[idx];
-                return (
-                  <div 
-                    key={idx} 
-                    className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 border border-[#E8DDD0] shadow-xs hover:shadow-md transition-all duration-300 group"
-                  >
-                    <img 
-                      src={imgSrc} 
-                      alt={`BSK Showcase 0${idx + 1}`}
-                      className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
+      {/* ── SECTION 5: 4-PILLAR DYNAMIC INFOGRAPHIC ── */}
+      <HomepageInfographic data={dbInfographicBlock} language={language} />
 
       {/* ── SECTION 6: CENTRAL BELIEF / ABOUT BAND ── */}
       <div className="border-t border-[#B8862A]/20 py-8 md:py-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center text-[#1A1207] text-left animate-fade-in">

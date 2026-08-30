@@ -7315,142 +7315,428 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                       </div>
                     )}
 
-                    {/* SUB-BLOCK 3: INFOGRAPHIC & 4 SHOWCASE CARDS */}
-                    {activeSubBlock === 'infographic' && (
-                      <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-md space-y-5 animate-fade-in font-sans">
-                        <div className="border-b pb-3 flex justify-between items-center">
-                          <div>
-                            <h4 className="font-bold text-stone-900 font-serif text-base flex items-center gap-2">
-                              <span>📊</span>
-                              <span>{language === 'bn' ? 'ইনফোগ্রাফ ও ৪টি কার্যক্রম ফটো হাইলাইটস' : 'Infographic & 4-Photo Showcase Grid'}</span>
-                            </h4>
-                            <p className="text-[11px] text-stone-500 mt-0.5">
-                              {language === 'bn' ? 'হোমপেজে প্রদর্শিত ৪টি বড় ছবি বা ফুল-উইডথ ইনফোগ্রাফ ব্যানার পরিবর্তন করুন।' : 'Update the 4-photo showcase grid or single wide infograph banner.'}
-                            </p>
-                          </div>
-                        </div>
+                    {/* SUB-BLOCK 3: INFOGRAPHIC & 4 PILLARS */}
+                    {activeSubBlock === 'infographic' && (() => {
+                      const defaultInfo = {
+                        template: 'template1',
+                        badge_bn: '✨ আলোকিত সমাজ বিনির্মাণের রূপরেখা',
+                        badge_en: '✨ Roadmap for an Enlightened Society',
+                        title_bn: 'বিশ্বসাহিত্য কেন্দ্রের ৪টি মৌলিক স্তম্ভ ও কর্মপ্রবাহ',
+                        title_en: 'Four Core Pillars & Strategic Roadmap of BSK',
+                        subtitle_bn: 'দেশব্যাপী বইপড়া, ভ্রাম্যমাণ সেবা, পাঠচক্র ও সাংস্কৃতিক বিকাশের মাধ্যমে প্রজ্ঞাবান মানবিক নেতৃত্ব গড়ে তোলার ধারাবাহিক প্রয়াস।',
+                        subtitle_en: 'A continuous movement to foster wise human leadership through nationwide reading, mobile libraries, study circles, and cultural enrichment.',
+                        items: [
+                          {
+                            icon: '📚',
+                            metric: '২৫০+ উপজেলা',
+                            metric_en: '250+ Upazilas',
+                            title_bn: 'দেশব্যাপী বইপড়া কর্মসূচি',
+                            title_en: 'Nationwide Reading Program',
+                            subtitle_bn: 'স্কুল-কলেজ পর্যায়ের মূল ভিত্তি',
+                            subtitle_en: 'Foundational Student Tier',
+                            desc_bn: 'স্কুল ও মাদ্রাসার লাখ লাখ শিক্ষার্থীদের মাঝে মানসম্পন্ন বিশ্বসাহিত্যের চর্চা ও মননশীলতা গড়ে তোলার সুবিশাল নেটওয়ার্ক।',
+                            desc_en: 'A vast network fostering reading habits with world literature among millions of school and madrasa students.',
+                            badge_bn: '১ম স্তম্ভ',
+                            badge_en: 'Pillar 1',
+                            color: 'amber'
+                          },
+                          {
+                            icon: '🚐',
+                            metric: '২০ লক্ষ+ পাঠক',
+                            metric_en: '2M+ Readers',
+                            title_bn: 'ভ্রাম্যমাণ লাইব্রেরি সেবা',
+                            title_en: 'Mobile Library Service',
+                            subtitle_bn: 'দোরগোড়ায় জ্ঞানের আলো',
+                            subtitle_en: 'Knowledge at Doorsteps',
+                            desc_bn: 'বিশেষায়িত ভ্রাম্যমাণ গাড়িবহরে দেশজুড়ে পাঠকের দোরগোড়ায় বই আদান-প্রদান ও মুক্তচিন্তার দ্বার উন্মোচন।',
+                            desc_en: 'Delivering thousands of books right to reader doorsteps via specialized mobile library fleet.',
+                            badge_bn: '২য় স্তম্ভ',
+                            badge_en: 'Pillar 2',
+                            color: 'emerald'
+                          },
+                          {
+                            icon: '💡',
+                            metric: '৮৫,০০০+ দুর্লভ বই',
+                            metric_en: '85k+ Rare Books',
+                            title_bn: 'পাঠচক্র ও উন্মুক্ত আলোচনা',
+                            title_en: 'Study Circles & Dialogues',
+                            subtitle_bn: 'মননশীল চর্চা ও বিতর্ক',
+                            subtitle_en: 'Intellectual Dialogues',
+                            desc_bn: 'বিশ্বের শ্রেষ্ঠ সাহিত্য, বিজ্ঞান ও দর্শন নিয়ে নিয়মিত আলোচনা, তরুণদের প্রজ্ঞাবান ও সংবেদনশীল হিসেবে গড়ে তোলা।',
+                            desc_en: 'Regular in-depth discussions on world literature, philosophy, and sciences to nurture enlightened minds.',
+                            badge_bn: '৩য় স্তম্ভ',
+                            badge_en: 'Pillar 3',
+                            color: 'bronze'
+                          },
+                          {
+                            icon: '✨',
+                            metric: '৪৬+ বছরের ঐতিহ্য',
+                            metric_en: '46+ Years Legacy',
+                            title_bn: 'সাংস্কৃতিক উৎকর্ষ ও নেতৃত্ব',
+                            title_en: 'Cultural Excellence & Arts',
+                            subtitle_bn: 'পরিপূর্ণ মানবিক বিকাশ',
+                            subtitle_en: 'Holistic Human Values',
+                            desc_bn: 'সংগীত, চিত্রকলা, চলচ্চিত্র ও নৈতিক মূল্যবোধের সমন্বয়ে একটি সংবেদনশীল, রুচিশীল ও আলোকিত জাতীয় চরিত্র নির্মাণ।',
+                            desc_en: 'Cultivating enlightened national character and empathetic leadership through fine arts, cinema, and moral values.',
+                            badge_bn: '৪র্থ স্তম্ভ',
+                            badge_en: 'Pillar 4',
+                            color: 'indigo'
+                          }
+                        ]
+                      };
 
-                        <div className="space-y-4 text-xs">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন শিরোনাম (বাংলা)' : 'Header Title (Bangla)'}</label>
-                              <input 
-                                type="text" 
-                                value={infographicBlock?.header_title_bn || ''} 
-                                onChange={(e) => setInfographicBlock({ ...infographicBlock, header_title_bn: e.target.value })}
-                                placeholder="বিশ্বসাহিত্য কেন্দ্র ফটো হাইলাইটস"
-                                className="w-full p-2.5 border rounded-lg"
-                              />
+                      const activeInfo = infographicBlock || defaultInfo;
+                      const activeItems = Array.isArray(activeInfo.items) && activeInfo.items.length >= 4 
+                        ? activeInfo.items 
+                        : defaultInfo.items;
+
+                      const updateInfographicField = (field: string, val: any) => {
+                        setInfographicBlock({
+                          ...activeInfo,
+                          [field]: val
+                        });
+                      };
+
+                      const updatePillarItem = (index: number, key: string, val: any) => {
+                        const copy = [...activeItems];
+                        copy[index] = {
+                          ...copy[index],
+                          [key]: val
+                        };
+                        setInfographicBlock({
+                          ...activeInfo,
+                          items: copy
+                        });
+                      };
+
+                      return (
+                        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-md space-y-6 animate-fade-in font-sans">
+                          {/* Header Bar */}
+                          <div className="border-b pb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                              <h4 className="font-bold text-stone-900 font-serif text-base flex items-center gap-2">
+                                <span className="text-xl">📊</span>
+                                <span>{language === 'bn' ? 'হোমপেজ ইনফোগ্রাফ ও ৪টি স্তম্ভ এডিটর' : 'Homepage Dynamic Infographic & 4-Pillar Editor'}</span>
+                              </h4>
+                              <p className="text-[11px] text-stone-500 mt-0.5">
+                                {language === 'bn' 
+                                  ? 'ইমেজ ছাড়াই সরাসরি টেমপ্লেট পছন্দ করুন এবং টেক্সট/মেট্রিক অনুযায়ী ওয়েবসাইট স্বয়ংক্রিয়ভাবে আধুনিক ইনফোগ্রাফ রেন্ডার করবে।' 
+                                  : 'Select a visual template and customize text/metrics without uploading any images.'}
+                              </p>
                             </div>
-                            <div className="space-y-1">
-                              <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন শিরোনাম (ইংরেজি)' : 'Header Title (English)'}</label>
-                              <input 
-                                type="text" 
-                                value={infographicBlock?.header_title_en || ''} 
-                                onChange={(e) => setInfographicBlock({ ...infographicBlock, header_title_en: e.target.value })}
-                                placeholder="BSK Activity Showcase"
-                                className="w-full p-2.5 border rounded-lg"
-                              />
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setInfographicBlock(defaultInfo);
+                                saveHomepageBlock('infographic', defaultInfo);
+                              }}
+                              className="text-[10px] bg-[#B8862A]/10 text-[#8C6212] px-3 py-1.5 font-bold rounded-lg hover:bg-[#B8862A]/20 transition cursor-pointer border border-[#B8862A]/30 shrink-0"
+                            >
+                              {language === 'bn' ? '✨ ডিফল্ট ইনফোগ্রাফ লোড করুন' : '✨ Load Default Infographic'}
+                            </button>
                           </div>
 
-                          {/* Full Section Wide Banner Image */}
-                          <div className="p-4 bg-stone-50 border rounded-xl space-y-2">
-                            <label className="font-bold text-stone-800 block flex items-center gap-2">
-                              <span>🖼️</span>
-                              <span>{language === 'bn' ? 'ফুল-উইডথ ইনফোগ্রাফ ব্যানার ছবি (১টি বড় ছবি দিলে ৪টি কার্ডের জায়গায় এটি আসবে)' : 'Full Wide Infograph Banner (Replaces 4-grid if set)'}</span>
+                          {/* 1. VISUAL TEMPLATE SELECTOR */}
+                          <div className="space-y-3 p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8DDD0]">
+                            <label className="font-bold text-stone-800 text-xs flex items-center gap-2">
+                              <span>🎨</span>
+                              <span>{language === 'bn' ? 'ইনফোগ্রাফ ভিজ্যুয়াল টেমপ্লেট নির্বাচন করুন (৪টি আধুনিক ডিজাইন)' : 'Select Infographic Visual Template Layout'}</span>
                             </label>
-                            <div className="flex gap-2">
-                              <input 
-                                type="text" 
-                                value={infographicBlock?.section_image || infographicBlock?.banner_image || ''} 
-                                onChange={(e) => setInfographicBlock({ ...infographicBlock, section_image: e.target.value, banner_image: e.target.value })}
-                                placeholder="https://... বা /assets/IMGS/..."
-                                className="flex-1 p-2 border rounded-lg font-mono text-xs bg-white"
-                              />
-                              <label className="px-3.5 py-2 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-lg transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
-                                <input 
-                                  type="file" 
-                                  accept="image/*" 
-                                  className="hidden"
-                                  disabled={isDirectUploading}
-                                  onChange={(e) => handleDirectImageUpload(e, (url) => {
-                                    setInfographicBlock({ ...infographicBlock, section_image: url, banner_image: url });
-                                  })}
-                                />
-                                <Upload className={`h-3.5 w-3.5 ${isDirectUploading ? 'animate-spin' : ''}`} />
-                                <span>{isDirectUploading ? '...' : (language === 'bn' ? 'আপলোড' : 'Upload')}</span>
-                              </label>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                              {[
+                                { id: 'template1', nameBn: '🌟 মডার্ন মেট্রিক ও পিলারস', nameEn: 'Modern Metric Pillars', descBn: '৪টি গ্লাস-মরফিজম কার্ড ও বড় মেট্রিক ব্যাজ' },
+                                { id: 'template2', nameBn: '🚀 পর্যায়ক্রমিক রোডম্যাপ', nameEn: 'Step-by-Step Roadmap', descBn: 'কানেক্টিং লাইন ও ক্রমান্বয়িক ফেজ ফ্লো' },
+                                { id: 'template3', nameBn: '💎 জ্যামিতিক স্ট্যাট হাব', nameEn: 'Geometric Stat Hub', descBn: 'মডার্ন ডার্ক/লাইট জ্যামিতিক ব্যাজ গ্রিড' },
+                                { id: 'template4', nameBn: '🏛️ রাজকীয় গোল্ডেন স্তম্ভ', nameEn: 'Heritage Golden Columns', descBn: 'ঐতিহ্যবাহী লাক্সারি আর্কিটেকচারাল স্তম্ভ' },
+                              ].map((tmpl) => {
+                                const isSelected = (activeInfo.template || 'template1') === tmpl.id;
+                                return (
+                                  <button
+                                    key={tmpl.id}
+                                    type="button"
+                                    onClick={() => updateInfographicField('template', tmpl.id)}
+                                    className={`p-3.5 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
+                                      isSelected 
+                                        ? 'bg-[#1A1207] text-[#F0CC7A] border-[#B8862A] shadow-md scale-102' 
+                                        : 'bg-white text-stone-800 border-[#E8DDD0] hover:border-[#B8862A] hover:bg-stone-50'
+                                    }`}
+                                  >
+                                    <div className="font-bold text-xs font-serif">
+                                      {language === 'bn' ? tmpl.nameBn : tmpl.nameEn}
+                                    </div>
+                                    <div className={`text-[10px] leading-tight ${isSelected ? 'text-amber-200/80' : 'text-stone-500'}`}>
+                                      {tmpl.descBn}
+                                    </div>
+                                    <div className={`text-[9px] font-mono font-bold uppercase pt-1 ${isSelected ? 'text-[#F0CC7A]' : 'text-stone-400'}`}>
+                                      {isSelected ? '✓ নির্বাচিত' : 'ক্লিক করে বেছে নিন'}
+                                    </div>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
 
-                          {/* 4 Individual Image Slots */}
-                          <div className="space-y-3 pt-2">
-                            <h5 className="font-bold text-stone-800 text-xs font-serif">{language === 'bn' ? '৪টি আলাদা ফটো স্লাইড স্লট:' : '4 Showcase Photo Grid Slots:'}</h5>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {[0, 1, 2, 3].map((sIdx) => {
-                                const defaultShowcases = [
-                                  "/assets/IMGS/482986950_1054527260032088_5237943853609018055_n.jpg",
-                                  "/assets/IMGS/484519885_1054490900035724_1436158340120607261_n.jpg",
-                                  "/assets/IMGS/493897528_1088721239946023_8232102595073591871_n.jpg",
-                                  "/assets/IMGS/534826832_1175889297895883_7988975073499309288_n.jpg"
-                                ];
-                                const rawItems = Array.isArray(infographicBlock?.items) ? infographicBlock.items : [];
-                                const item = rawItems[sIdx] || { image: defaultShowcases[sIdx] };
+                          {/* 2. SECTION HEADER TEXTS */}
+                          <div className="space-y-4 text-xs">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন ব্যাজ টেক্সট (বাংলা)' : 'Section Badge (Bangla)'}</label>
+                                <input 
+                                  type="text" 
+                                  value={activeInfo.badge_bn || ''} 
+                                  onChange={(e) => updateInfographicField('badge_bn', e.target.value)}
+                                  placeholder="✨ আলোকিত সমাজ বিনির্মাণের রূপরেখা"
+                                  className="w-full p-2.5 border rounded-lg"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন ব্যাজ টেক্সট (ইংরেজি)' : 'Section Badge (English)'}</label>
+                                <input 
+                                  type="text" 
+                                  value={activeInfo.badge_en || ''} 
+                                  onChange={(e) => updateInfographicField('badge_en', e.target.value)}
+                                  placeholder="✨ Roadmap for an Enlightened Society"
+                                  className="w-full p-2.5 border rounded-lg"
+                                />
+                              </div>
+                            </div>
 
-                                const updateSlotImg = (url: string) => {
-                                  const copy = [...rawItems];
-                                  while (copy.length <= sIdx) copy.push({});
-                                  copy[sIdx] = { ...copy[sIdx], image: url };
-                                  setInfographicBlock({ ...infographicBlock, items: copy });
-                                };
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন প্রধান শিরোনাম (বাংলা)' : 'Main Heading (Bangla)'}</label>
+                                <input 
+                                  type="text" 
+                                  value={activeInfo.title_bn || activeInfo.header_title_bn || ''} 
+                                  onChange={(e) => {
+                                    updateInfographicField('title_bn', e.target.value);
+                                    updateInfographicField('header_title_bn', e.target.value);
+                                  }}
+                                  placeholder="বিশ্বসাহিত্য কেন্দ্রের ৪টি মৌলিক স্তম্ভ ও কর্মপ্রবাহ"
+                                  className="w-full p-2.5 border rounded-lg font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন প্রধান শিরোনাম (ইংরেজি)' : 'Main Heading (English)'}</label>
+                                <input 
+                                  type="text" 
+                                  value={activeInfo.title_en || activeInfo.header_title_en || ''} 
+                                  onChange={(e) => {
+                                    updateInfographicField('title_en', e.target.value);
+                                    updateInfographicField('header_title_en', e.target.value);
+                                  }}
+                                  placeholder="Four Core Pillars & Strategic Roadmap of BSK"
+                                  className="w-full p-2.5 border rounded-lg"
+                                />
+                              </div>
+                            </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন উপশিরোনাম / বিবরণী (বাংলা)' : 'Subtitle Description (Bangla)'}</label>
+                                <textarea 
+                                  rows={2} 
+                                  value={activeInfo.subtitle_bn || ''} 
+                                  onChange={(e) => updateInfographicField('subtitle_bn', e.target.value)}
+                                  placeholder="দেশব্যাপী বইপড়া, ভ্রাম্যমাণ সেবা, পাঠচক্র ও সাংস্কৃতিক বিকাশের মাধ্যমে..."
+                                  className="w-full p-2.5 border rounded-lg"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেকশন উপশিরোনাম / বিবরণী (ইংরেজি)' : 'Subtitle Description (English)'}</label>
+                                <textarea 
+                                  rows={2} 
+                                  value={activeInfo.subtitle_en || ''} 
+                                  onChange={(e) => updateInfographicField('subtitle_en', e.target.value)}
+                                  placeholder="A continuous movement to foster wise human leadership..."
+                                  className="w-full p-2.5 border rounded-lg"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 3. 4 PILLARS DETAILED EDITING */}
+                          <div className="space-y-4 pt-2">
+                            <h5 className="font-bold text-stone-800 text-xs font-serif flex items-center justify-between border-b pb-2">
+                              <span className="flex items-center gap-1.5">
+                                <span>🏛️</span>
+                                <span>{language === 'bn' ? '৪টি স্তম্ভ / কার্ডের বিস্তারিত কনটেন্ট কাস্টমাইজেশন:' : '4 Pillar Cards Detailed Customization:'}</span>
+                              </span>
+                              <span className="text-[10px] text-stone-500 font-mono">মোট ৪টি স্তম্ভ</span>
+                            </h5>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                              {[0, 1, 2, 3].map((idx) => {
+                                const item = activeItems[idx] || defaultInfo.items[idx];
                                 return (
-                                  <div key={sIdx} className="p-3 bg-stone-50 border rounded-xl space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <span className="font-mono text-[10px] font-bold text-[#B8862A]">ফটো স্লট #{sIdx + 1}</span>
+                                  <div key={idx} className="p-4 bg-[#FAF8F5] border-2 border-[#E8DDD0] rounded-2xl space-y-3 text-xs shadow-2xs hover:border-[#B8862A] transition-all">
+                                    <div className="flex items-center justify-between border-b border-[#E8DDD0] pb-2">
+                                      <span className="font-mono text-xs font-bold text-[#8C6212] bg-white px-2.5 py-0.5 rounded-full border border-[#E8DDD0]">
+                                        স্তম্ভ / কার্ড #{idx + 1}
+                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-stone-500">কালার:</label>
+                                        <select
+                                          value={item.color || (idx === 0 ? 'amber' : idx === 1 ? 'emerald' : idx === 2 ? 'bronze' : 'indigo')}
+                                          onChange={(e) => updatePillarItem(idx, 'color', e.target.value)}
+                                          className="p-1 text-[10px] border rounded bg-white font-mono"
+                                        >
+                                          <option value="amber">গোল্ডেন / Amber</option>
+                                          <option value="emerald">সবুজ / Emerald</option>
+                                          <option value="bronze">ব্রোঞ্জ / Bronze</option>
+                                          <option value="indigo">রয়াল / Indigo</option>
+                                        </select>
+                                      </div>
                                     </div>
-                                    <img src={item.image || defaultShowcases[sIdx]} className="w-full h-32 object-cover rounded-lg border bg-white" alt="Showcase" />
-                                    <div className="flex gap-2">
-                                      <input 
-                                        type="text" 
-                                        value={item.image || ''} 
-                                        onChange={(e) => updateSlotImg(e.target.value)}
-                                        placeholder="Image URL"
-                                        className="flex-1 p-1.5 text-[11px] border rounded bg-white font-mono"
-                                      />
-                                      <label className="px-2.5 py-1.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-[11px] font-bold rounded transition cursor-pointer flex items-center gap-1">
+
+                                    {/* Icon & Metric */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">আইকন / ইমোজি</label>
                                         <input 
-                                          type="file" 
-                                          accept="image/*" 
-                                          className="hidden"
-                                          disabled={isDirectUploading}
-                                          onChange={(e) => handleDirectImageUpload(e, (url) => updateSlotImg(url))}
+                                          type="text" 
+                                          value={item.icon || '📚'} 
+                                          onChange={(e) => updatePillarItem(idx, 'icon', e.target.value)}
+                                          placeholder="📚"
+                                          className="w-full p-2 border rounded bg-white text-center text-base"
                                         />
-                                        <Upload className="h-3 w-3" />
-                                        <span>{language === 'bn' ? 'আপলোড' : 'Upload'}</span>
-                                      </label>
+                                      </div>
+                                      <div className="space-y-1 sm:col-span-2">
+                                        <label className="font-bold text-stone-700 block">মেট্রিক / সংখ্যা (বাংলা ও ইংরেজি)</label>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                          <input 
+                                            type="text" 
+                                            value={item.metric || ''} 
+                                            onChange={(e) => updatePillarItem(idx, 'metric', e.target.value)}
+                                            placeholder="২৫০+ উপজেলা"
+                                            className="w-full p-2 border rounded bg-white font-bold text-xs"
+                                          />
+                                          <input 
+                                            type="text" 
+                                            value={item.metric_en || ''} 
+                                            onChange={(e) => updatePillarItem(idx, 'metric_en', e.target.value)}
+                                            placeholder="250+ Upazilas"
+                                            className="w-full p-2 border rounded bg-white text-xs"
+                                          />
+                                        </div>
+                                      </div>
                                     </div>
+
+                                    {/* Title Bangla & English */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">শিরোনাম (বাংলা)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.title_bn || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'title_bn', e.target.value)}
+                                          placeholder="দেশব্যাপী বইপড়া কর্মসূচি"
+                                          className="w-full p-2 border rounded bg-white font-bold"
+                                        />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">শিরোনাম (ইংরেজি)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.title_en || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'title_en', e.target.value)}
+                                          placeholder="Nationwide Reading"
+                                          className="w-full p-2 border rounded bg-white"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Subtitle Bangla & English */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">সাব-টাইটেল (বাংলা)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.subtitle_bn || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'subtitle_bn', e.target.value)}
+                                          placeholder="স্কুল-কলেজ পর্যায়ের মূল ভিত্তি"
+                                          className="w-full p-2 border rounded bg-white"
+                                        />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">সাব-টাইটেল (ইংরেজি)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.subtitle_en || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'subtitle_en', e.target.value)}
+                                          placeholder="Foundational Tier"
+                                          className="w-full p-2 border rounded bg-white"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Description Bangla & English */}
+                                    <div className="space-y-1">
+                                      <label className="font-bold text-stone-700 block">বিস্তারিত বিবরণী (বাংলা)</label>
+                                      <textarea 
+                                        rows={2} 
+                                        value={item.desc_bn || ''} 
+                                        onChange={(e) => updatePillarItem(idx, 'desc_bn', e.target.value)}
+                                        placeholder="স্কুল ও মাদ্রাসার লাখ লাখ শিক্ষার্থীদের মাঝে..."
+                                        className="w-full p-2 border rounded bg-white"
+                                      />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                      <label className="font-bold text-stone-700 block">বিস্তারিত বিবরণী (ইংরেজি)</label>
+                                      <textarea 
+                                        rows={2} 
+                                        value={item.desc_en || ''} 
+                                        onChange={(e) => updatePillarItem(idx, 'desc_en', e.target.value)}
+                                        placeholder="Fostering reading habits with world literature..."
+                                        className="w-full p-2 border rounded bg-white"
+                                      />
+                                    </div>
+
+                                    {/* Badge */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">ব্যাজ লেখা (বাংলা)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.badge_bn || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'badge_bn', e.target.value)}
+                                          placeholder="১ম স্তম্ভ"
+                                          className="w-full p-1.5 border rounded bg-white text-xs"
+                                        />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <label className="font-bold text-stone-700 block">ব্যাজ লেখা (ইংরেজি)</label>
+                                        <input 
+                                          type="text" 
+                                          value={item.badge_en || ''} 
+                                          onChange={(e) => updatePillarItem(idx, 'badge_en', e.target.value)}
+                                          placeholder="Pillar 1"
+                                          className="w-full p-1.5 border rounded bg-white text-xs"
+                                        />
+                                      </div>
+                                    </div>
+
                                   </div>
                                 );
                               })}
                             </div>
                           </div>
 
+                          {/* Save Button */}
+                          <div className="pt-4 border-t flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => saveHomepageBlock('infographic', activeInfo)}
+                              className="px-6 py-3 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-xl shadow-md hover:scale-102 transition flex items-center gap-2 cursor-pointer"
+                            >
+                              <Save className="h-4 w-4" />
+                              <span>{language === 'bn' ? '“ইনফোগ্রাফ ও ৪টি স্তম্ভ” পরিবর্তন সংরক্ষণ করুন' : 'Save Infographic Changes'}</span>
+                            </button>
+                          </div>
                         </div>
-
-                        <div className="pt-3 border-t flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => saveHomepageBlock('infographic', infographicBlock || {})}
-                            className="px-5 py-2.5 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-lg shadow-sm hover:scale-102 transition flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Save className="h-4 w-4" />
-                            <span>{language === 'bn' ? 'ইনফোগ্রাফ পরিবর্তন সংরক্ষণ করুন' : 'Save Infograph Changes'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {/* SUB-BLOCK 4: INTRO QUOTE */}
                     {activeSubBlock === 'intro' && (
