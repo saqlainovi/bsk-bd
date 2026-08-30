@@ -696,55 +696,41 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
   const [readingGalleryIndex, setReadingGalleryIndex] = React.useState(0);
   const [culturalGalleryIndex, setCulturalGalleryIndex] = React.useState(0);
 
-  // Custom Slider implementation for Key 9 Departments
+  // Silky-Smooth Continuous Rolling Marquee for Programs
   const programSliderRef = React.useRef<HTMLDivElement>(null);
-  const [activeProgramIndex, setActiveProgramIndex] = React.useState(0);
-  const [isPlayingPrograms, setIsPlayingPrograms] = React.useState(true);
-
-  const scrollToProgramIndex = (index: number) => {
-    const len = activeProgramsList.length || 1;
-    const safeIndex = (index + len) % len;
-    setActiveProgramIndex(safeIndex);
-    if (programSliderRef.current) {
-      const container = programSliderRef.current;
-      const children = container.children;
-      if (children[safeIndex]) {
-        const child = children[safeIndex] as HTMLElement;
-        container.scrollTo({
-          left: child.offsetLeft - (container.clientWidth - child.clientWidth) / 2,
-          behavior: 'smooth'
-        });
-      }
-    }
-  };
+  const [isRollingPaused, setIsRollingPaused] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isPlayingPrograms) return;
-    const timer = setInterval(() => {
-      const len = activeProgramsList.length || 1;
-      scrollToProgramIndex((activeProgramIndex + 1) % len);
-    }, 4000); // Cycles automatically from left to right every 4 seconds
-    return () => clearInterval(timer);
-  }, [activeProgramIndex, isPlayingPrograms, activeProgramsList.length]);
+    const container = programSliderRef.current;
+    if (!container) return;
 
-  const handleProgramSliderScroll = () => {
-    if (programSliderRef.current) {
-      const container = programSliderRef.current;
-      const children = container.children;
-      let closestIndex = 0;
-      let minDiff = Infinity;
-      const containerCenter = container.scrollLeft + container.clientWidth / 2;
-      
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i] as HTMLElement;
-        const childCenter = child.offsetLeft + child.clientWidth / 2;
-        const diff = Math.abs(containerCenter - childCenter);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closestIndex = i;
+    let animationFrameId: number;
+    let lastTime = performance.now();
+    const scrollSpeed = 0.55; // Pixels per frame for continuous smooth rolling
+
+    const step = (currentTime: number) => {
+      const delta = currentTime - lastTime;
+      lastTime = currentTime;
+
+      if (!isRollingPaused && container) {
+        container.scrollLeft += scrollSpeed * (delta / 16.66);
+        // Seamless loop back when first set finishes
+        const halfWidth = container.scrollWidth / 2;
+        if (halfWidth > 0 && container.scrollLeft >= halfWidth) {
+          container.scrollLeft = container.scrollLeft - halfWidth;
         }
       }
-      setActiveProgramIndex(closestIndex);
+      animationFrameId = requestAnimationFrame(step);
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isRollingPaused, activeProgramsList.length]);
+
+  const rollPrograms = (direction: 'left' | 'right') => {
+    if (programSliderRef.current) {
+      const offset = direction === 'left' ? -280 : 280;
+      programSliderRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
 
@@ -1647,48 +1633,58 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
         </div>
       </div>
 
-      {/* ── SECTION 3: KEY 8 DEPARTMENTS & PROGRAMS SEAMLESS CUSTOM SWIPER SLIDER ── */}
+      {/* ── SECTION 3: KEY 8 DEPARTMENTS & PROGRAMS CONTINUOUS ROLLING MARQUEE ── */}
       <div 
         className="pt-4 pb-8" 
-        onMouseEnter={() => setIsPlayingPrograms(false)} 
-        onMouseLeave={() => setIsPlayingPrograms(true)}
+        onMouseEnter={() => setIsRollingPaused(true)} 
+        onMouseLeave={() => setIsRollingPaused(false)}
+        onTouchStart={() => setIsRollingPaused(true)}
+        onTouchEnd={() => setIsRollingPaused(false)}
       >
         {/* Section Header */}
         <div className="pb-3 mb-6 border-b border-[#E8DDD0]/60 flex justify-between items-center gap-2">
-          <h3 className="font-serif text-xl font-extrabold text-[#1A1207] tracking-wide">
-            {language === 'bn' ? 'কার্যক্রমসমূহ' : 'Activities'}
-          </h3>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#B8862A] animate-pulse" />
+            <h3 className="font-serif text-xl md:text-2xl font-extrabold text-[#1A1207] tracking-wide">
+              {language === 'bn' ? 'কার্যক্রমসমূহ' : 'Our Activities & Programs'}
+            </h3>
+          </div>
+
+          {/* Quick Rolling Direction Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => rollPrograms('left')}
+              className="h-8 w-8 rounded-full bg-stone-100 hover:bg-[#B8862A] border border-[#E8DDD0] hover:border-transparent text-stone-800 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              title="Roll left"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => rollPrograms('right')}
+              className="h-8 w-8 rounded-full bg-stone-100 hover:bg-[#B8862A] border border-[#E8DDD0] hover:border-transparent text-stone-800 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              title="Roll right"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Swiper Slider Wrapper Wrapper */}
-        <div className="relative flex items-center group/slider">
-          {/* Left Chevron Trigger */}
-          <button
-            onClick={() => { scrollToProgramIndex(activeProgramIndex - 1); setIsPlayingPrograms(false); }}
-            className="absolute -left-2 md:-left-4 z-30 h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#1A0A08]/90 hover:bg-[#B8862A] border border-white/10 hover:border-transparent text-white hover:text-stone-950 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg select-none"
-            title="Previous slide"
-          >
-            <ChevronLeft className="h-5 w-5 md:h-6 md:w-6 stroke-[1.8]" />
-          </button>
+        {/* Continuous Rolling Stream Wrapper */}
+        <div className="relative group/slider overflow-hidden rounded-2xl py-1">
+          
+          {/* Edge Fade Masks for Smooth Infinite Look */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-r from-[#FAF8F5] to-transparent z-20 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-l from-[#FAF8F5] to-transparent z-20 pointer-events-none" />
 
-          {/* Right Chevron Trigger */}
-          <button
-            onClick={() => { scrollToProgramIndex(activeProgramIndex + 1); setIsPlayingPrograms(false); }}
-            className="absolute -right-2 md:-right-4 z-30 h-10 w-10 md:h-12 md:w-12 rounded-full bg-[#1A0A08]/90 hover:bg-[#B8862A] border border-white/10 hover:border-transparent text-white hover:text-stone-950 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg select-none"
-            title="Next slide"
-          >
-            <ChevronRight className="h-5 w-5 md:h-6 md:w-6 stroke-[1.8]" />
-          </button>
-
-          {/* Multi-item Horizontal Scrolling Area */}
+          {/* Multi-item Horizontal Rolling Area (Duplicated for Seamless Infinite Loop) */}
           <div
             ref={programSliderRef}
-            onScroll={handleProgramSliderScroll}
-            className="w-full flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none py-1 px-1"
+            className="w-full flex gap-4 overflow-x-auto scrollbar-none py-2 px-1 select-none cursor-grab active:cursor-grabbing"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {activeProgramsList.map((program, idx) => {
-              const isCurrentActive = activeProgramIndex === idx;
+            {[...activeProgramsList, ...activeProgramsList].map((program, idx) => {
               const programId = (program.id || '').toLowerCase();
               const programObj = program as any;
               const targetRoute = (programObj.route && programObj.route !== 'home' && programObj.route !== 'bsk-history')
@@ -1710,37 +1706,36 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
 
               return (
                 <div
-                  key={program.id + '-slide-' + idx}
+                  key={program.id + '-roll-' + idx}
                   onClick={() => onNavigate(targetRoute)}
-                  className={`group/card shrink-0 w-[190px] sm:w-[210px] md:w-[230px] snap-center cursor-pointer select-none bg-transparent flex flex-col justify-start text-center ${
-                    isCurrentActive ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-80'
-                  } transition-all duration-300`}
+                  className="group/card shrink-0 w-[200px] sm:w-[220px] md:w-[240px] cursor-pointer bg-white rounded-2xl border border-[#E8DDD0] hover:border-[#B8862A] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-start text-center overflow-hidden hover:-translate-y-1"
                 >
-                  {/* Centered Top Title (Exactly as বিজ্ঞানচিন্তা in screenshots) */}
-                  <div className="font-serif text-[13px] md:text-[14px] font-bold text-[#1A1207] group-hover/card:text-[#B8862A] transition-all duration-200 tracking-wide mb-2 min-h-[36px] flex items-center justify-center leading-tight">
-                    {language === 'bn' ? program.title_bn : program.title_en}
-                  </div>
-
-                  {/* Highly Polished Portrait Image Area - Beautifully Framed with Rounded Borders (Taller aspect ratio for spectacular presentation) */}
-                  <div className="relative aspect-[2/3] w-full rounded-xl border border-[#B8862A]/35 overflow-hidden transition-all duration-300 group-hover/card:border-[#B8862A]/70">
-                    {/* Scalable background photo */}
+                  {/* Highly Polished Portrait Image Area */}
+                  <div className="relative aspect-[2/3] w-full overflow-hidden">
+                    {/* Background photo */}
                     <div 
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/card:scale-106"
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/card:scale-108"
                       style={{ backgroundImage: `url(${program.bgImage})` }}
                     />
                     
-                    {/* Subtle bottom-only vignette to keep images 100% bright, vivid and clear */}
-                    <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-black/95 via-black/80 to-transparent pointer-events-none" />
+                    {/* Bottom Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
 
                     {/* Bottom detail card info */}
-                    <div className="absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-black/95 via-black/85 to-transparent text-left flex flex-col justify-end space-y-1.5 transition-transform duration-300">
-                      <p className="!text-white text-[11.5px] sm:text-[12px]/relaxed font-medium line-clamp-3 font-sans !text-left drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                    <div className="absolute inset-x-0 bottom-0 p-4 text-left flex flex-col justify-end space-y-1.5 z-10">
+                      
+                      {/* Title */}
+                      <h4 className="font-serif text-sm sm:text-base font-bold text-white group-hover/card:text-[#F0CC7A] transition-colors leading-snug drop-shadow-md">
+                        {language === 'bn' ? program.title_bn : program.title_en}
+                      </h4>
+
+                      <p className="text-white/80 text-[11px] sm:text-xs font-medium line-clamp-2 font-sans leading-relaxed">
                         {language === 'bn' ? program.desc_bn : program.desc_en}
                       </p>
                       
-                      <div className="flex items-center justify-between !text-white group-hover/card:!text-[#F0CC7A] text-[10.5px] font-bold tracking-wider font-sans uppercase leading-none pt-1.5 border-t border-white/30">
-                        <span className="!text-white group-hover/card:!text-[#F0CC7A]">{language === 'bn' ? 'কার্যক্রম বিস্তারিত' : 'View Details'}</span>
-                        <span className="transform group-hover/card:translate-x-1.5 transition-transform text-[#F0CC7A]">→</span>
+                      <div className="flex items-center justify-between text-white/90 group-hover/card:text-[#F0CC7A] text-[10px] sm:text-[11px] font-bold tracking-wider font-sans uppercase pt-1.5 border-t border-white/20">
+                        <span>{language === 'bn' ? 'কার্যক্রম বিস্তারিত' : 'View Details'}</span>
+                        <span className="transform group-hover/card:translate-x-1 transition-transform text-[#F0CC7A]">→</span>
                       </div>
                     </div>
                   </div>
@@ -1750,21 +1745,6 @@ export default function Dashboard({ language, onNavigate }: DashboardProps) {
           </div>
         </div>
 
-        {/* Dot Slides Indicators */}
-        <div className="flex justify-center items-center space-x-1.5 mt-4 relative z-10">
-          {activeProgramsList.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => { scrollToProgramIndex(idx); setIsPlayingPrograms(false); }}
-              className={`h-1 cursor-pointer transition-all duration-300 rounded-full ${
-                activeProgramIndex === idx 
-                  ? 'w-5 bg-[#B8862A]' 
-                  : 'w-1.5 bg-stone-300 hover:bg-stone-400'
-              }`}
-              title={`Slide ${idx + 1}`}
-            />
-          ))}
-        </div>
       </div>
 
       {/* ── SECTION 2: UPCOMING ACTIVITIES GALLERY HERO SLIDER (CAROUSEL 2) - আসন্ন কার্যক্রমসমূহ ও ব্যানার ২ ── */}
