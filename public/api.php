@@ -549,10 +549,10 @@ function saveToSpecificTable($pdo, $collection, $id, $docData) {
             $stmt->execute([$id, $status, $sort_order, $badge_bn, $badge_en, $title_bn, $title_en, $desc_bn, $desc_en, $bg_image]);
         }
         else if ($tableName === 'bsk_homepage_blocks') {
-            $stmt = $pdo->prepare("INSERT INTO `bsk_homepage_blocks` (`id`, `block_type`, `data`) 
-                VALUES (?, ?, ?) 
+            $stmt = $pdo->prepare("INSERT INTO `bsk_homepage_blocks` (`id`, `data`) 
+                VALUES (?, ?) 
                 ON DUPLICATE KEY UPDATE `data` = VALUES(`data`)");
-            $stmt->execute([$id, $collection, $extra_json]);
+            $stmt->execute([$id, $extra_json]);
         }
         else if ($tableName === 'bsk_photo_albums') {
             $status = isset($docData['status']) ? $docData['status'] : 'published';
@@ -715,7 +715,8 @@ function normalize_collection_item($collection, $itemData) {
         'footer_settings', 'google_map', 'primaryTeacherData', 'admission_info',
         'centralLibraryData', 'buildingData', 'auditoriumData', 'cafeData',
         'bookshopData', 'publicationData', 'aalorIshkoolData', 'aalorPathshalaData',
-        'bangalirChintaData', 'nationwideExcellenceData', 'bookFairData', 'mobileLibraryData', 'membershipPlans'
+        'bangalirChintaData', 'nationwideExcellenceData', 'bookFairData', 'mobileLibraryData', 'membershipPlans',
+        'paragraphs_bn', 'paragraphs_en', 'pillars', 'motto_bn', 'motto_en', 'established_bn', 'established_en'
     ];
 
     foreach ($jsonFields as $jf) {

@@ -1460,11 +1460,15 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
     try {
       setActionStatus(language === 'bn' ? 'সংরক্ষণ করা হচ্ছে...' : 'Saving changes...');
       await setDoc(doc(db, 'homepage_blocks', docId), data);
-      setActionStatus(language === 'bn' ? 'সফলভাবে সংরক্ষিত!' : 'Saved Successfully!');
-      setTimeout(() => setActionStatus(''), 2000);
-    } catch (e) {
+      setActionStatus(language === 'bn' ? '✅ সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে!' : '✅ Saved Successfully!');
+      setTimeout(() => setActionStatus(''), 3000);
+      try {
+        window.dispatchEvent(new CustomEvent('bsk_db_updated', { detail: { collection: 'homepage_blocks', id: docId } }));
+      } catch (_) {}
+    } catch (e: any) {
       console.error("Error saving block doc:", docId, e);
-      alert(language === 'bn' ? 'সেভ করতে সমস্যা হয়েছে।' : 'Error saving to database.');
+      setActionStatus(language === 'bn' ? `❌ ডাটা সেভ করতে ত্রুটি: ${e?.message || ''}` : `❌ Error: ${e?.message || ''}`);
+      setTimeout(() => setActionStatus(''), 5000);
     }
   };
 

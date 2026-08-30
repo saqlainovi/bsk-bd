@@ -251,7 +251,8 @@ export function normalizeRecord<T = any>(tableName: string, item: any): T {
     'footer_settings', 'google_map', 'primaryTeacherData', 'admission_info',
     'centralLibraryData', 'buildingData', 'auditoriumData', 'cafeData',
     'bookshopData', 'publicationData', 'aalorIshkoolData', 'aalorPathshalaData',
-    'bangalirChintaData', 'nationwideExcellenceData', 'bookFairData', 'mobileLibraryData', 'membershipPlans'
+    'bangalirChintaData', 'nationwideExcellenceData', 'bookFairData', 'mobileLibraryData', 'membershipPlans',
+    'paragraphs_bn', 'paragraphs_en', 'pillars', 'motto_bn', 'motto_en', 'established_bn', 'established_en'
   ];
 
   for (const key of jsonKeys) {
