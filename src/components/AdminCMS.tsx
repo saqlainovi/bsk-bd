@@ -7317,70 +7317,87 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
 
                     {/* SUB-BLOCK 3: INFOGRAPHIC & 4 PILLARS */}
                     {activeSubBlock === 'infographic' && (() => {
-                      const defaultChart = {
-                        chart_type: 'pie_chart',
-                        badge_bn: '📊 পরিসংখ্যান ও প্রভাবচিত্র',
-                        badge_en: '📊 Statistics & Impact Analytics',
-                        title_bn: 'বিশ্বসাহিত্য কেন্দ্রের দেশব্যাপী কার্যক্রম ও পাঠক বিশ্লেষণ',
-                        title_en: 'BSK Nationwide Footprint & Reader Demographics Analysis',
-                        subtitle_bn: 'দেশজুড়ে বিস্তৃত কার্যক্রমের পরিসংখ্যান ও পাঠক অংশগ্রহণের প্রত্যক্ষ বিশ্লেষণ চিত্র।',
-                        subtitle_en: 'A visual statistical representation of reader demographics, national coverage, and program impact.',
+                      const defaultVectorInfo = {
+                        center_title_bn: 'কর্মপ্রবাহ ও স্তম্ভ',
+                        center_title_en: 'INFOGRAPHICS',
+                        center_subtitle_bn: 'বিশ্বসাহিত্য কেন্দ্র রূপরেখা',
+                        center_subtitle_en: 'CORE ELEMENTS',
+                        center_badge_bn: 'আলোকিত সমাজ বিনির্মাণ',
+                        center_badge_en: 'Enlightened Society',
                         items: [
                           {
-                            label_bn: 'নারী শিক্ষার্থী ও ছাত্রী পাঠক',
-                            label_en: 'Female Students & Readers',
-                            value: '১২.৫ লক্ষ+',
-                            percentage: 60,
-                            unit_bn: '৬০% অংশগ্রহণ',
-                            unit_en: '60% Share',
-                            desc_bn: 'দেশব্যাপী বইপড়া কর্মসূচিতে মেয়েদের স্বতঃস্ফূর্ত ও সক্রিয় অংশগ্রহণ।',
-                            desc_en: 'Spontaneous active participation of female students nationwide.',
-                            icon: '👩‍🎓',
-                            color: '#B8862A'
-                          },
-                          {
-                            label_bn: 'মাদ্রাসা ও সাধারণ ছাত্র পাঠক',
-                            label_en: 'Madrasa & General Male Students',
-                            value: '৫.২ লক্ষ+',
-                            percentage: 25,
-                            unit_bn: '২৫% অংশগ্রহণ',
-                            unit_en: '25% Share',
-                            desc_bn: 'স্কুল ও মাদ্রাসার সাধারণ শিক্ষার্থীদের বইপড়ার নিয়মিত চর্চা।',
-                            desc_en: 'Regular reading activities among general and madrasa students.',
-                            icon: '👨‍🎓',
-                            color: '#10B981'
-                          },
-                          {
-                            label_bn: 'ভ্রাম্যমাণ লাইব্রেরি পাঠক',
-                            label_en: 'Mobile Library Members',
-                            value: '২.১ লক্ষ+',
-                            percentage: 10,
-                            unit_bn: '১০% অংশগ্রহণ',
-                            unit_en: '10% Share',
-                            desc_bn: 'সরাসরি দোরগোড়ায় পৌঁছে দেওয়া ভ্রাম্যমাণ গাড়িবহরের নিয়মিত সদস্য।',
-                            desc_en: 'Registered members borrowing books via mobile library buses.',
-                            icon: '🚐',
-                            color: '#6366F1'
-                          },
-                          {
-                            label_bn: 'পাঠচক্র ও আজীবন গবেষক',
-                            label_en: 'Study Circle & Lifetime Scholars',
-                            value: '১.১ লক্ষ+',
-                            percentage: 5,
-                            unit_bn: '৫% অংশগ্রহণ',
-                            unit_en: '5% Share',
-                            desc_bn: 'উচ্চতর পাঠচক্র, সাহিত্য ও দর্শন চর্চার বিশিষ্ট সদস্য ও স্কলারবৃন্দ।',
-                            desc_en: 'Scholars and critical thinkers participating in study circles.',
+                            position_label_bn: 'পদ্ধতি ০১',
+                            position_label_en: 'POSITION A',
+                            title_bn: 'জ্ঞান ও বইয়ের আলো',
+                            title_en: 'Vision & Ideation',
+                            desc_bn: 'দেশব্যাপী সুখপাঠ্য মননশীল বইয়ের মাধ্যমে নতুন প্রজন্মের অন্তরে উচ্চতর জীবনাকাঙ্ক্ষা ও মূল্যবোধ জাগ্রত করা।',
+                            desc_en: 'Cultivating visionary thinking and noble human values through quality literature.',
                             icon: '💡',
-                            color: '#EC4899'
+                            color: '#F59E0B',
+                            ring_color: '#FBBF24'
+                          },
+                          {
+                            position_label_bn: 'পদ্ধতি ০২',
+                            position_label_en: 'POSITION B',
+                            title_bn: 'সুসংগঠিত পরিচালনা',
+                            title_en: 'Execution & Operations',
+                            desc_bn: 'দেশজুড়ে ২৫০+ উপজেলায় ১২,৯১৭টি শিক্ষাপ্রতিষ্ঠানে কার্যকর ও সুবিন্যস্ত বইপড়া নেটওয়ার্ক পরিচালনা।',
+                            desc_en: 'Operating a nationwide reading network across 250+ upazilas and 12,000+ schools.',
+                            icon: '⚙️',
+                            color: '#06B6D4',
+                            ring_color: '#22D3EE'
+                          },
+                          {
+                            position_label_bn: 'পদ্ধতি ০৩',
+                            position_label_en: 'POSITION C',
+                            title_bn: 'নিয়মানুবর্তিতা ও সময়ানুগ সেবা',
+                            title_en: 'Timely Outreach',
+                            desc_bn: 'প্রতিটি শিক্ষাবর্ষে সময়মতো বই বিতরণ, পাঠচক্র মূল্যায়ন এবং ভ্রাম্যমাণ গাড়িবহরের নিয়মিত রুট পরিচালনা।',
+                            desc_en: 'Ensuring on-time book distribution, routine assessments, and active mobile fleets.',
+                            icon: '⏰',
+                            color: '#EF4444',
+                            ring_color: '#F87171'
+                          },
+                          {
+                            position_label_bn: 'পদ্ধতি ০৪',
+                            position_label_en: 'POSITION D',
+                            title_bn: 'গভীর গবেষণা ও দর্শন',
+                            title_en: 'Inquiry & Philosophy',
+                            desc_bn: 'বিশ্বের শ্রেষ্ঠ দর্শন, সাহিত্য, বিজ্ঞান ও শিল্পকলা নিয়ে গভীর পঠন-পাঠন এবং তরুণদের বিশ্লেষণী চিন্তার বিকাশ।',
+                            desc_en: 'In-depth research and critical study of world literature and philosophy.',
+                            icon: '🔍',
+                            color: '#D946EF',
+                            ring_color: '#E879F9'
+                          },
+                          {
+                            position_label_bn: 'পদ্ধতি ০৫',
+                            position_label_en: 'POSITION E',
+                            title_bn: 'উন্মুক্ত আলোচনা ও মতবিনিময়',
+                            title_en: 'Dialogue & Discourse',
+                            desc_bn: 'নিয়মিত পাঠচক্র, সাহিত্য আড্ডা এবং মুক্ত সংলাপের মাধ্যমে পরমতসহিষ্ণু মানবিক সমাজ গঠন।',
+                            desc_en: 'Interactive dialogues, debates, and seminars nurturing an empathetic culture.',
+                            icon: '💬',
+                            color: '#0EA5E9',
+                            ring_color: '#38BDF8'
+                          },
+                          {
+                            position_label_bn: 'পদ্ধতি ০৬',
+                            position_label_en: 'POSITION F',
+                            title_bn: 'সাফল্য ও আলোকিত জাতি',
+                            title_en: 'Excellence & Impact',
+                            desc_bn: 'কোটি মানুষের জীবনে আলোর স্পর্শ এবং মানবিক গুণসম্পন্ন আলোকিত ভবিষ্যৎ নেতৃত্ব তৈরি।',
+                            desc_en: 'Empowering millions with enlightenment, awards, and noble leadership.',
+                            icon: '🏆',
+                            color: '#84CC16',
+                            ring_color: '#A3E635'
                           }
                         ]
                       };
 
-                      const activeInfo = infographicBlock || defaultChart;
-                      const activeItems = Array.isArray(activeInfo.items) && activeInfo.items.length >= 2 
+                      const activeInfo = infographicBlock || defaultVectorInfo;
+                      const activeItems = Array.isArray(activeInfo.items) && activeInfo.items.length >= 6 
                         ? activeInfo.items 
-                        : defaultChart.items;
+                        : defaultVectorInfo.items;
 
                       const updateInfographicField = (field: string, val: any) => {
                         setInfographicBlock({
@@ -7389,7 +7406,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         });
                       };
 
-                      const updateChartItem = (index: number, key: string, val: any) => {
+                      const updateNodeItem = (index: number, key: string, val: any) => {
                         const copy = [...activeItems];
                         copy[index] = {
                           ...copy[index],
@@ -7401,266 +7418,152 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                         });
                       };
 
-                      const currentType = activeInfo.chart_type || (activeInfo as any).template === 'template2' ? 'flow_diagram' : (activeInfo as any).template === 'template3' ? 'data_table' : (activeInfo as any).template === 'template4' ? 'infochart_bars' : (activeInfo.chart_type || 'pie_chart');
-
                       return (
                         <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-md space-y-6 animate-fade-in font-sans">
                           {/* Header Bar */}
                           <div className="border-b pb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
                             <div>
                               <h4 className="font-bold text-stone-900 font-serif text-base flex items-center gap-2">
-                                <span className="text-xl">📊</span>
-                                <span>{language === 'bn' ? 'হোমপেজ ইনফোগ্রাফ ও চার্ট ভিজ্যুয়ালাইজেশন এডিটর' : 'Homepage Infographic & Chart Visualization Editor'}</span>
+                                <span className="text-xl">🌟</span>
+                                <span>{language === 'bn' ? 'হোমপেজ সার্কুলার ইনফোগ্রাফিক এলিমেন্টস এডিটর' : 'Homepage Circular Infographics Elements Editor'}</span>
                               </h4>
                               <p className="text-[11px] text-stone-500 mt-0.5">
                                 {language === 'bn' 
-                                  ? 'পাই চার্ট, ফ্লো ডায়াগ্রাম, ডাটা টেবিল বা ইনফোচার্ট নির্বাচন করুন এবং ডাটা কাস্টমাইজ করুন।' 
-                                  : 'Select Pie Chart, Flow Diagram, Data Table or Infochart and customize live data.'}
+                                  ? 'সেন্টার হাব এবং ৬টি রঙিন নোডের টেক্সট, আইকন ও কালার কাস্টমাইজ করুন।' 
+                                  : 'Customize the center circular hub and 6 radiating color nodes with icons and text.'}
                               </p>
                             </div>
                             <button
                               type="button"
                               onClick={() => {
-                                setInfographicBlock(defaultChart);
-                                saveHomepageBlock('infographic', defaultChart);
+                                setInfographicBlock(defaultVectorInfo);
+                                saveHomepageBlock('infographic', defaultVectorInfo);
                               }}
                               className="text-[10px] bg-[#B8862A]/10 text-[#8C6212] px-3 py-1.5 font-bold rounded-lg hover:bg-[#B8862A]/20 transition cursor-pointer border border-[#B8862A]/30 shrink-0"
                             >
-                              {language === 'bn' ? '✨ ডিফল্ট চার্ট ডাটা লোড করুন' : '✨ Load Default Chart Data'}
+                              {language === 'bn' ? '✨ ডিফল্ট ইনফোগ্রাফ লোড করুন' : '✨ Load Default Infographic'}
                             </button>
                           </div>
 
-                          {/* 1. VISUAL CHART TYPE SELECTOR */}
-                          <div className="space-y-3 p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8DDD0]">
+                          {/* 1. CENTER HUB CONTROLS */}
+                          <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8DDD0] space-y-3">
                             <label className="font-bold text-stone-800 text-xs flex items-center gap-2">
-                              <span>🎨</span>
-                              <span>{language === 'bn' ? 'ইনফোগ্রাফ চার্ট টাইপ নির্বাচন করুন (৪টি ভিজ্যুয়াল স্টাইল)' : 'Select Infographic Chart Visual Type'}</span>
+                              <span>⭕</span>
+                              <span>{language === 'bn' ? 'সেন্টার সার্কেল হাব সেটিংস (Center Circular Hub)' : 'Center Circular Hub Settings'}</span>
                             </label>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                              {[
-                                { id: 'pie_chart', icon: '📊', nameBn: '১. ডোনাট ও পাই চার্ট', nameEn: 'Interactive Pie/Donut Chart', descBn: 'অ্যানিমেটেড পাই চার্ট ও ডেমোগ্রাফিক ব্রেকডাউন' },
-                                { id: 'flow_diagram', icon: '🔄', nameBn: '২. প্রসেস ফ্লো ডায়াগ্রাম', nameEn: 'Visual Process Flowchart', descBn: '৪-ধাপের ডিরেকশনাল পাইপলাইন ও অ্যারো চার্ট' },
-                                { id: 'data_table', icon: '📋', nameBn: '৩. স্ট্যাটিস্টিক্যাল ডেটা টেবিল', nameEn: 'Statistical Data Table Matrix', descBn: 'প্রগ্রেস বার ও রিয়েল-টাইম মেট্রিক টেবিল' },
-                                { id: 'infochart_bars', icon: '📈', nameBn: '৪. মাল্টি-বার ইনফোচার্ট', nameEn: 'Multi-Metric Progress Infochart', descBn: 'টার্গেট মেট্রিক বার ও গেজ ভিজ্যুয়ালাইজেশন' },
-                              ].map((chart) => {
-                                const isSelected = currentType === chart.id;
-                                return (
-                                  <button
-                                    key={chart.id}
-                                    type="button"
-                                    onClick={() => {
-                                      updateInfographicField('chart_type', chart.id);
-                                      updateInfographicField('template', chart.id);
-                                    }}
-                                    className={`p-3.5 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
-                                      isSelected 
-                                        ? 'bg-[#1A1207] text-[#F0CC7A] border-[#B8862A] shadow-md scale-102' 
-                                        : 'bg-white text-stone-800 border-[#E8DDD0] hover:border-[#B8862A] hover:bg-stone-50'
-                                    }`}
-                                  >
-                                    <div className="font-bold text-xs font-serif flex items-center gap-1.5">
-                                      <span>{chart.icon}</span>
-                                      <span>{language === 'bn' ? chart.nameBn : chart.nameEn}</span>
-                                    </div>
-                                    <div className={`text-[10px] leading-tight ${isSelected ? 'text-amber-200/80' : 'text-stone-500'}`}>
-                                      {chart.descBn}
-                                    </div>
-                                    <div className={`text-[9px] font-mono font-bold uppercase pt-1 ${isSelected ? 'text-[#F0CC7A]' : 'text-stone-400'}`}>
-                                      {isSelected ? '✓ সক্রিয় চার্ট' : 'ক্লিক করুন'}
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* 2. SECTION HEADER TEXTS */}
-                          <div className="space-y-4 text-xs">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                               <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'চার্ট ব্যাজ টেক্সট (বাংলা)' : 'Chart Badge (Bangla)'}</label>
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেন্টার ব্যাজ' : 'Center Badge'}</label>
                                 <input 
                                   type="text" 
-                                  value={activeInfo.badge_bn || ''} 
-                                  onChange={(e) => updateInfographicField('badge_bn', e.target.value)}
-                                  placeholder="📊 পরিসংখ্যান ও প্রভাবচিত্র"
-                                  className="w-full p-2.5 border rounded-lg"
+                                  value={activeInfo.center_badge_bn || ''} 
+                                  onChange={(e) => updateInfographicField('center_badge_bn', e.target.value)}
+                                  placeholder="আলোকিত সমাজ বিনির্মাণ"
+                                  className="w-full p-2 border rounded-lg bg-white"
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'চার্ট ব্যাজ টেক্সট (ইংরেজি)' : 'Chart Badge (English)'}</label>
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেন্টার মূল টাইটেল' : 'Center Title'}</label>
                                 <input 
                                   type="text" 
-                                  value={activeInfo.badge_en || ''} 
-                                  onChange={(e) => updateInfographicField('badge_en', e.target.value)}
-                                  placeholder="📊 Statistics & Impact Analytics"
-                                  className="w-full p-2.5 border rounded-lg"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'চার্ট প্রধান শিরোনাম (বাংলা)' : 'Main Heading (Bangla)'}</label>
-                                <input 
-                                  type="text" 
-                                  value={activeInfo.title_bn || activeInfo.header_title_bn || ''} 
+                                  value={activeInfo.center_title_bn || activeInfo.title_bn || ''} 
                                   onChange={(e) => {
+                                    updateInfographicField('center_title_bn', e.target.value);
                                     updateInfographicField('title_bn', e.target.value);
-                                    updateInfographicField('header_title_bn', e.target.value);
                                   }}
-                                  placeholder="বিশ্বসাহিত্য কেন্দ্রের দেশব্যাপী কার্যক্রম ও পাঠক বিশ্লেষণ"
-                                  className="w-full p-2.5 border rounded-lg font-bold"
+                                  placeholder="কর্মপ্রবাহ ও স্তম্ভ"
+                                  className="w-full p-2 border rounded-lg bg-white font-bold"
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'চার্ট প্রধান শিরোনাম (ইংরেজি)' : 'Main Heading (English)'}</label>
+                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'সেন্টার সাব-টাইটেল' : 'Center Subtitle'}</label>
                                 <input 
                                   type="text" 
-                                  value={activeInfo.title_en || activeInfo.header_title_en || ''} 
-                                  onChange={(e) => {
-                                    updateInfographicField('title_en', e.target.value);
-                                    updateInfographicField('header_title_en', e.target.value);
-                                  }}
-                                  placeholder="BSK Nationwide Footprint & Reader Demographics Analysis"
-                                  className="w-full p-2.5 border rounded-lg"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'উপশিরোনাম / সংক্ষিপ্ত বিবরণী (বাংলা)' : 'Subtitle Description (Bangla)'}</label>
-                                <input 
-                                  type="text" 
-                                  value={activeInfo.subtitle_bn || ''} 
-                                  onChange={(e) => updateInfographicField('subtitle_bn', e.target.value)}
-                                  placeholder="দেশজুড়ে বিস্তৃত কার্যক্রমের পরিসংখ্যান ও পাঠক অংশগ্রহণের প্রত্যক্ষ বিশ্লেষণ চিত্র।"
-                                  className="w-full p-2.5 border rounded-lg"
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="font-bold text-stone-700 block">{language === 'bn' ? 'উপশিরোনাম / সংক্ষিপ্ত বিবরণী (ইংরেজি)' : 'Subtitle Description (English)'}</label>
-                                <input 
-                                  type="text" 
-                                  value={activeInfo.subtitle_en || ''} 
-                                  onChange={(e) => updateInfographicField('subtitle_en', e.target.value)}
-                                  placeholder="A visual statistical representation of reader demographics..."
-                                  className="w-full p-2.5 border rounded-lg"
+                                  value={activeInfo.center_subtitle_bn || ''} 
+                                  onChange={(e) => updateInfographicField('center_subtitle_bn', e.target.value)}
+                                  placeholder="বিশ্বসাহিত্য কেন্দ্র রূপরেখা"
+                                  className="w-full p-2 border rounded-lg bg-white"
                                 />
                               </div>
                             </div>
                           </div>
 
-                          {/* 3. 4 CHART DATA ITEMS */}
+                          {/* 2. 6 RADIATING NODES (POSITION A - F) */}
                           <div className="space-y-4 pt-2">
                             <h5 className="font-bold text-stone-800 text-xs font-serif flex items-center justify-between border-b pb-2">
                               <span className="flex items-center gap-1.5">
-                                <span>📊</span>
-                                <span>{language === 'bn' ? 'চার্টের ৪টি ডাটা রো / স্লাইস / নোড কাস্টমাইজেশন:' : '4 Chart Data Rows / Slices / Nodes:'}</span>
+                                <span>🔘</span>
+                                <span>{language === 'bn' ? '৬টি রঙিন নোড ও পজিশন বিবরণী (Position A to F):' : '6 Radiating Position Nodes:'}</span>
                               </span>
-                              <span className="text-[10px] text-stone-500 font-mono">মোট ৪টি ডাটা এন্ট্রি</span>
+                              <span className="text-[10px] text-stone-500 font-mono">মোট ৬টি নোড</span>
                             </h5>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                              {[0, 1, 2, 3].map((idx) => {
-                                const item = activeItems[idx] || defaultChart.items[idx] || {};
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {[0, 1, 2, 3, 4, 5].map((idx) => {
+                                const item = activeItems[idx] || defaultVectorInfo.items[idx] || {};
+                                const posChar = String.fromCharCode(65 + idx);
                                 return (
                                   <div key={idx} className="p-4 bg-[#FAF8F5] border-2 border-[#E8DDD0] rounded-2xl space-y-3 text-xs shadow-2xs hover:border-[#B8862A] transition-all">
                                     <div className="flex items-center justify-between border-b border-[#E8DDD0] pb-2">
-                                      <span className="font-mono text-xs font-bold text-[#8C6212] bg-white px-2.5 py-0.5 rounded-full border border-[#E8DDD0]">
-                                        ডাটা আইটেম #{idx + 1}
+                                      <span className="font-mono text-xs font-bold text-white px-2.5 py-0.5 rounded-full" style={{ backgroundColor: item.color || '#B8862A' }}>
+                                        POSITION {posChar}
                                       </span>
                                       <div className="flex items-center gap-2">
                                         <label className="text-[10px] font-bold text-stone-500">কালার:</label>
                                         <input 
                                           type="color"
-                                          value={item.color || (idx === 0 ? '#B8862A' : idx === 1 ? '#10B981' : idx === 2 ? '#6366F1' : '#EC4899')}
-                                          onChange={(e) => updateChartItem(idx, 'color', e.target.value)}
+                                          value={item.color || '#F59E0B'}
+                                          onChange={(e) => updateNodeItem(idx, 'color', e.target.value)}
                                           className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
                                         />
                                       </div>
                                     </div>
 
-                                    {/* Icon & Percentage & Value */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {/* Icon & Position Label */}
+                                    <div className="grid grid-cols-3 gap-2">
                                       <div className="space-y-1">
-                                        <label className="font-bold text-stone-700 block">আইকন / ইমোজি</label>
+                                        <label className="font-bold text-stone-700 block">আইকন</label>
                                         <input 
                                           type="text" 
-                                          value={item.icon || (idx === 0 ? '👩‍🎓' : idx === 1 ? '👨‍🎓' : idx === 2 ? '🚐' : '💡')} 
-                                          onChange={(e) => updateChartItem(idx, 'icon', e.target.value)}
-                                          className="w-full p-2 border rounded bg-white text-center text-base"
+                                          value={item.icon || '💡'} 
+                                          onChange={(e) => updateNodeItem(idx, 'icon', e.target.value)}
+                                          className="w-full p-2 border rounded bg-white text-center text-lg"
                                         />
                                       </div>
-                                      <div className="space-y-1">
-                                        <label className="font-bold text-stone-700 block">শতকরা হার (%)</label>
-                                        <input 
-                                          type="number" 
-                                          min={1} 
-                                          max={100}
-                                          value={item.percentage !== undefined ? item.percentage : (idx === 0 ? 60 : idx === 1 ? 25 : idx === 2 ? 10 : 5)} 
-                                          onChange={(e) => updateChartItem(idx, 'percentage', Number(e.target.value))}
-                                          className="w-full p-2 border rounded bg-white font-bold text-xs"
-                                        />
-                                      </div>
-                                      <div className="space-y-1">
-                                        <label className="font-bold text-stone-700 block">সংখ্যা / ভ্যালু</label>
+                                      <div className="space-y-1 col-span-2">
+                                        <label className="font-bold text-stone-700 block">পজিশন ট্যাগ (যেমন: পদ্ধতি ০১)</label>
                                         <input 
                                           type="text" 
-                                          value={item.value || ''} 
-                                          onChange={(e) => updateChartItem(idx, 'value', e.target.value)}
-                                          placeholder="১২.৫ লক্ষ+"
+                                          value={item.position_label_bn || ''} 
+                                          onChange={(e) => updateNodeItem(idx, 'position_label_bn', e.target.value)}
+                                          placeholder={`পদ্ধতি ০${idx + 1}`}
                                           className="w-full p-2 border rounded bg-white font-bold text-xs"
                                         />
                                       </div>
                                     </div>
 
-                                    {/* Label Bangla & English */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      <div className="space-y-1">
-                                        <label className="font-bold text-stone-700 block">লেবেল / নাম (বাংলা)</label>
-                                        <input 
-                                          type="text" 
-                                          value={item.label_bn || ''} 
-                                          onChange={(e) => updateChartItem(idx, 'label_bn', e.target.value)}
-                                          placeholder="নারী শিক্ষার্থী ও ছাত্রী পাঠক"
-                                          className="w-full p-2 border rounded bg-white font-bold"
-                                        />
-                                      </div>
-                                      <div className="space-y-1">
-                                        <label className="font-bold text-stone-700 block">লেবেল / নাম (ইংরেজি)</label>
-                                        <input 
-                                          type="text" 
-                                          value={item.label_en || ''} 
-                                          onChange={(e) => updateChartItem(idx, 'label_en', e.target.value)}
-                                          placeholder="Female Students & Readers"
-                                          className="w-full p-2 border rounded bg-white"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    {/* Description Bangla & English */}
+                                    {/* Title Bangla & English */}
                                     <div className="space-y-1">
-                                      <label className="font-bold text-stone-700 block">বিবরণ / সাবটেক্সট (বাংলা)</label>
+                                      <label className="font-bold text-stone-700 block">শিরোনাম (বাংলা)</label>
                                       <input 
-                                        type="text"
-                                        value={item.desc_bn || ''} 
-                                        onChange={(e) => updateChartItem(idx, 'desc_bn', e.target.value)}
-                                        placeholder="দেশব্যাপী বইপড়া কর্মসূচিতে মেয়েদের স্বতঃস্ফূর্ত অংশগ্রহণ..."
-                                        className="w-full p-2 border rounded bg-white"
+                                        type="text" 
+                                        value={item.title_bn || ''} 
+                                        onChange={(e) => updateNodeItem(idx, 'title_bn', e.target.value)}
+                                        placeholder="জ্ঞান ও বইয়ের আলো"
+                                        className="w-full p-2 border rounded bg-white font-bold"
                                       />
                                     </div>
 
+                                    {/* Description Bangla */}
                                     <div className="space-y-1">
-                                      <label className="font-bold text-stone-700 block">বিবরণ / সাবটেক্সট (ইংরেজি)</label>
-                                      <input 
-                                        type="text"
-                                        value={item.desc_en || ''} 
-                                        onChange={(e) => updateChartItem(idx, 'desc_en', e.target.value)}
-                                        placeholder="Spontaneous active participation of female students..."
-                                        className="w-full p-2 border rounded bg-white"
+                                      <label className="font-bold text-stone-700 block">বিস্তারিত বিবরণী (বাংলা)</label>
+                                      <textarea 
+                                        rows={3}
+                                        value={item.desc_bn || ''} 
+                                        onChange={(e) => updateNodeItem(idx, 'desc_bn', e.target.value)}
+                                        placeholder="দেশব্যাপী সুখপাঠ্য মননশীল বইয়ের মাধ্যমে..."
+                                        className="w-full p-2 border rounded bg-white text-xs leading-relaxed"
                                       />
                                     </div>
 
@@ -7678,7 +7581,7 @@ export default function AdminCMS({ language, onClose }: AdminCMSProps) {
                               className="px-6 py-3 bg-[#2E5942] hover:bg-[#1E3B2C] text-white text-xs font-bold rounded-xl shadow-md hover:scale-102 transition flex items-center gap-2 cursor-pointer"
                             >
                               <Save className="h-4 w-4" />
-                              <span>{language === 'bn' ? '“ইনফোগ্রাফ চার্ট” পরিবর্তন সংরক্ষণ করুন' : 'Save Infographic Chart Changes'}</span>
+                              <span>{language === 'bn' ? '“ইনফোগ্রাফিক এলিমেন্টস” সংরক্ষণ করুন' : 'Save Infographic Elements'}</span>
                             </button>
                           </div>
                         </div>

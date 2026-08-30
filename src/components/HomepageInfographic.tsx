@@ -1,34 +1,38 @@
 import React, { useState } from 'react';
 import { 
-  PieChart as PieIcon, GitFork, Table as TableIcon, BarChart3, 
-  ArrowRight, CheckCircle2, TrendingUp, Sparkles, Activity, Layers, Compass
+  Lightbulb, Settings, Clock, Search, MessageSquare, Trophy, 
+  BookOpen, Sparkles, Compass, HeartHandshake, Award, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { Language } from '../types';
 
-export interface ChartDataItem {
-  label_bn?: string;
-  label_en?: string;
-  value?: number | string;
-  percentage?: number;
-  unit_bn?: string;
-  unit_en?: string;
+export interface InfographicNodeItem {
+  id?: string;
+  position_label_bn?: string;
+  position_label_en?: string;
+  title_bn?: string;
+  title_en?: string;
   desc_bn?: string;
   desc_en?: string;
-  icon?: string;
-  color?: string; // hex or tailwind class
+  icon?: string; // emoji or key
+  color?: string; // hex
+  ring_color?: string;
+  metric?: string;
 }
 
 export interface InfographicData {
-  chart_type?: 'pie_chart' | 'flow_diagram' | 'data_table' | 'infochart_bars';
+  center_title_bn?: string;
+  center_title_en?: string;
+  center_subtitle_bn?: string;
+  center_subtitle_en?: string;
+  center_badge_bn?: string;
+  center_badge_en?: string;
   badge_bn?: string;
   badge_en?: string;
   title_bn?: string;
   title_en?: string;
   subtitle_bn?: string;
   subtitle_en?: string;
-  header_title_bn?: string;
-  header_title_en?: string;
-  items?: ChartDataItem[];
+  items?: InfographicNodeItem[];
 }
 
 interface HomepageInfographicProps {
@@ -36,454 +40,318 @@ interface HomepageInfographicProps {
   language: Language;
 }
 
-export const defaultChartData: InfographicData = {
-  chart_type: 'pie_chart',
-  badge_bn: '📊 পরিসংখ্যান ও প্রভাবচিত্র',
-  badge_en: '📊 Statistics & Impact Analytics',
-  title_bn: 'বিশ্বসাহিত্য কেন্দ্রের দেশব্যাপী কার্যক্রম ও পাঠক বিশ্লেষণ',
-  title_en: 'BSK Nationwide Footprint & Reader Demographics Analysis',
-  subtitle_bn: 'দেশজুড়ে বিস্তৃত কার্যক্রমের পরিসংখ্যান ও পাঠক অংশগ্রহণের প্রত্যক্ষ বিশ্লেষণ চিত্র।',
-  subtitle_en: 'A visual statistical representation of reader demographics, national coverage, and program impact.',
+export const defaultInfographicNodes: InfographicData = {
+  center_title_bn: 'কর্মপ্রবাহ ও স্তম্ভ',
+  center_title_en: 'INFOGRAPHICS',
+  center_subtitle_bn: 'বিশ্বসাহিত্য কেন্দ্র রূপরেখা',
+  center_subtitle_en: 'CORE ELEMENTS',
+  center_badge_bn: 'আলোকিত সমাজ বিনির্মাণ',
+  center_badge_en: 'Enlightened Society',
   items: [
     {
-      label_bn: 'নারী শিক্ষার্থী ও ছাত্রী পাঠক',
-      label_en: 'Female Students & Readers',
-      value: '১২.৫ লক্ষ+',
-      percentage: 60,
-      unit_bn: '৬০% অংশগ্রহণ',
-      unit_en: '60% Share',
-      desc_bn: 'দেশব্যাপী বইপড়া কর্মসূচিতে মেয়েদের স্বতঃস্ফূর্ত ও সক্রিয় অংশগ্রহণ।',
-      desc_en: 'Spontaneous active participation of female students nationwide.',
-      icon: '👩‍🎓',
-      color: '#B8862A'
-    },
-    {
-      label_bn: 'মাদ্রাসা ও সাধারণ ছাত্র পাঠক',
-      label_en: 'Madrasa & General Male Students',
-      value: '৫.২ লক্ষ+',
-      percentage: 25,
-      unit_bn: '২৫% অংশগ্রহণ',
-      unit_en: '25% Share',
-      desc_bn: 'স্কুল ও মাদ্রাসার সাধারণ শিক্ষার্থীদের বইপড়ার নিয়মিত চর্চা।',
-      desc_en: 'Regular reading activities among general and madrasa students.',
-      icon: '👨‍🎓',
-      color: '#10B981'
-    },
-    {
-      label_bn: 'ভ্রাম্যমাণ লাইব্রেরি পাঠক',
-      label_en: 'Mobile Library Members',
-      value: '২.১ লক্ষ+',
-      percentage: 10,
-      unit_bn: '১০% অংশগ্রহণ',
-      unit_en: '10% Share',
-      desc_bn: 'সরাসরি দোরগোড়ায় পৌঁছে দেওয়া ভ্রাম্যমাণ গাড়িবহরের নিয়মিত সদস্য।',
-      desc_en: 'Registered members borrowing books via mobile library buses.',
-      icon: '🚐',
-      color: '#6366F1'
-    },
-    {
-      label_bn: 'পাঠচক্র ও আজীবন গবেষক',
-      label_en: 'Study Circle & Lifetime Scholars',
-      value: '১.১ লক্ষ+',
-      percentage: 5,
-      unit_bn: '৫% অংশগ্রহণ',
-      unit_en: '5% Share',
-      desc_bn: 'উচ্চতর পাঠচক্র, সাহিত্য ও দর্শন চর্চার বিশিষ্ট সদস্য ও স্কলারবৃন্দ।',
-      desc_en: 'Scholars and critical thinkers participating in study circles.',
+      position_label_bn: 'পদ্ধতি ০১',
+      position_label_en: 'POSITION A',
+      title_bn: 'জ্ঞান ও বইয়ের আলো',
+      title_en: 'Vision & Ideation',
+      desc_bn: 'দেশব্যাপী সুখপাঠ্য মননশীল বইয়ের মাধ্যমে নতুন প্রজন্মের অন্তরে উচ্চতর জীবনাকাঙ্ক্ষা ও মূল্যবোধ জাগ্রত করা।',
+      desc_en: 'Cultivating visionary thinking and noble human values through quality literature.',
       icon: '💡',
-      color: '#EC4899'
+      color: '#F59E0B',
+      ring_color: '#FBBF24'
+    },
+    {
+      position_label_bn: 'পদ্ধতি ০২',
+      position_label_en: 'POSITION B',
+      title_bn: 'সুসংগঠিত পরিচালনা',
+      title_en: 'Execution & Operations',
+      desc_bn: 'দেশজুড়ে ২৫০+ উপজেলায় ১২,৯১৭টি শিক্ষাপ্রতিষ্ঠানে কার্যকর ও সুবিন্যস্ত বইপড়া নেটওয়ার্ক পরিচালনা।',
+      desc_en: 'Operating a nationwide reading network across 250+ upazilas and 12,000+ schools.',
+      icon: '⚙️',
+      color: '#06B6D4',
+      ring_color: '#22D3EE'
+    },
+    {
+      position_label_bn: 'পদ্ধতি ০৩',
+      position_label_en: 'POSITION C',
+      title_bn: 'নিয়মানুবর্তিতা ও সময়ানুগ সেবা',
+      title_en: 'Timely Outreach',
+      desc_bn: 'প্রতিটি শিক্ষাবর্ষে সময়মতো বই বিতরণ, পাঠচক্র মূল্যায়ন এবং ভ্রাম্যমাণ গাড়িবহরের নিয়মিত রুট পরিচালনা।',
+      desc_en: 'Ensuring on-time book distribution, routine assessments, and active mobile fleets.',
+      icon: '⏰',
+      color: '#EF4444',
+      ring_color: '#F87171'
+    },
+    {
+      position_label_bn: 'পদ্ধতি ০৪',
+      position_label_en: 'POSITION D',
+      title_bn: 'গভীর গবেষণা ও দর্শন',
+      title_en: 'Inquiry & Philosophy',
+      desc_bn: 'বিশ্বের শ্রেষ্ঠ দর্শন, সাহিত্য, বিজ্ঞান ও শিল্পকলা নিয়ে গভীর পঠন-পাঠন এবং তরুণদের বিশ্লেষণী চিন্তার বিকাশ।',
+      desc_en: 'In-depth research and critical study of world literature and philosophy.',
+      icon: '🔍',
+      color: '#D946EF',
+      ring_color: '#E879F9'
+    },
+    {
+      position_label_bn: 'পদ্ধতি ০৫',
+      position_label_en: 'POSITION E',
+      title_bn: 'উন্মুক্ত আলোচনা ও মতবিনিময়',
+      title_en: 'Dialogue & Discourse',
+      desc_bn: 'নিয়মিত পাঠচক্র, সাহিত্য আড্ডা এবং মুক্ত সংলাপের মাধ্যমে পরমতসহিষ্ণু মানবিক সমাজ গঠন।',
+      desc_en: 'Interactive dialogues, debates, and seminars nurturing an empathetic culture.',
+      icon: '💬',
+      color: '#0EA5E9',
+      ring_color: '#38BDF8'
+    },
+    {
+      position_label_bn: 'পদ্ধতি ০৬',
+      position_label_en: 'POSITION F',
+      title_bn: 'সাফল্য ও আলোকিত জাতি',
+      title_en: 'Excellence & Impact',
+      desc_bn: 'কোটি মানুষের জীবনে আলোর স্পর্শ এবং মানবিক গুণসম্পন্ন আলোকিত ভবিষ্যৎ নেতৃত্ব তৈরি।',
+      desc_en: 'Empowering millions with enlightenment, awards, and noble leadership.',
+      icon: '🏆',
+      color: '#84CC16',
+      ring_color: '#A3E635'
     }
   ]
 };
 
 export const HomepageInfographic: React.FC<HomepageInfographicProps> = ({ data, language }) => {
-  const [activeHoverIdx, setActiveHoverIdx] = useState<number | null>(null);
+  const [activeNodeIdx, setActiveNodeIdx] = useState<number | null>(null);
 
   const merged: InfographicData = {
-    ...defaultChartData,
+    ...defaultInfographicNodes,
     ...(data || {}),
-    items: Array.isArray(data?.items) && data.items.length >= 2 
+    items: Array.isArray(data?.items) && data.items.length > 0 
       ? data.items 
-      : defaultChartData.items
+      : defaultInfographicNodes.items
   };
 
-  const chartType = merged.chart_type || (merged as any).template === 'template2' ? 'flow_diagram' : (merged as any).template === 'template3' ? 'data_table' : (merged as any).template === 'template4' ? 'infochart_bars' : (merged.chart_type || 'pie_chart');
-  
-  const badge = language === 'bn' ? (merged.badge_bn || '📊 ইনফোগ্রাফ বিশ্লেষণ') : (merged.badge_en || '📊 Infograph Analytics');
-  const title = language === 'bn' 
-    ? (merged.title_bn || merged.header_title_bn || defaultChartData.title_bn) 
-    : (merged.title_en || merged.header_title_en || defaultChartData.title_en);
-  const subtitle = language === 'bn' 
-    ? (merged.subtitle_bn || defaultChartData.subtitle_bn) 
-    : (merged.subtitle_en || defaultChartData.subtitle_en);
+  const centerTitle = language === 'bn' 
+    ? (merged.center_title_bn || merged.title_bn || defaultInfographicNodes.center_title_bn) 
+    : (merged.center_title_en || merged.title_en || defaultInfographicNodes.center_title_en);
 
-  const items = (merged.items || defaultChartData.items!).slice(0, 4);
+  const centerSubtitle = language === 'bn' 
+    ? (merged.center_subtitle_bn || defaultInfographicNodes.center_subtitle_bn) 
+    : (merged.center_subtitle_en || defaultInfographicNodes.center_subtitle_en);
 
-  // Colors fallback
-  const sliceColors = ['#B8862A', '#10B981', '#6366F1', '#EC4899'];
+  const items = (merged.items || defaultInfographicNodes.items!).slice(0, 6);
 
-  // Calculate Pie / Donut SVG strokes
-  let cumulativePercentage = 0;
-  const totalCircumference = 2 * Math.PI * 70; // r = 70
-
-  const pieSlices = items.map((item, idx) => {
-    const pct = item.percentage !== undefined ? Number(item.percentage) : (idx === 0 ? 60 : idx === 1 ? 25 : idx === 2 ? 10 : 5);
-    const strokeDasharray = `${(pct / 100) * totalCircumference} ${totalCircumference}`;
-    const strokeDashoffset = -((cumulativePercentage / 100) * totalCircumference);
-    cumulativePercentage += pct;
-    const color = item.color || sliceColors[idx % sliceColors.length];
-    return {
-      ...item,
-      pct,
-      strokeDasharray,
-      strokeDashoffset,
-      color
-    };
-  });
+  // Rainbow dot colors below center hub
+  const rainbowDots = ['#F59E0B', '#06B6D4', '#EF4444', '#D946EF', '#0EA5E9', '#84CC16'];
 
   return (
-    <section className="w-full space-y-6 animate-fade-in font-sans text-left my-4">
-      
-      {/* MINIMAL HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#E8DDD0] pb-4 gap-3">
-        <div className="space-y-1.5 max-w-2xl">
-          {badge && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#8C6212] bg-[#FAF7F2] px-3 py-0.5 rounded-full border border-[#B8862A]/20 font-mono">
-              <Sparkles className="w-3 h-3 text-[#B8862A]" />
-              <span>{badge}</span>
-            </span>
-          )}
-          <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1A1207] tracking-tight">
-            {title}
-          </h3>
-          {subtitle && (
-            <p className="text-xs text-stone-500 font-sans font-light">
-              {subtitle}
-            </p>
-          )}
-        </div>
+    <section className="w-full my-6 md:my-10 animate-fade-in font-sans text-left">
+      <div className="bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5] border-2 border-[#E8DDD0] rounded-3xl p-6 sm:p-8 lg:p-12 shadow-sm overflow-hidden relative">
+        
+        {/* Subtle background glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-gradient-to-tr from-[#B8862A]/5 via-amber-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex items-center gap-2 text-xs font-mono text-stone-400 bg-white px-3 py-1.5 rounded-xl border border-[#E8DDD0] shrink-0 self-start md:self-auto">
-          <Activity className="w-3.5 h-3.5 text-[#B8862A]" />
-          <span>{language === 'bn' ? 'লাইভ ইনফোগ্রাফ চার্ট' : 'Interactive Visual Chart'}</span>
-        </div>
-      </div>
+        {/* ── DESKTOP & TABLET ARC VISUAL INFOGRAPHIC (md & above) ── */}
+        <div className="hidden md:block relative w-full max-w-5xl mx-auto">
+          
+          {/* 1. CENTER TOP HERO CIRCLE HUB */}
+          <div className="flex justify-center relative z-20 mb-8">
+            <div className="relative group">
+              {/* Outer soft shadow aura */}
+              <div className="absolute -inset-3 bg-gradient-to-b from-stone-200/50 to-stone-100/30 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition duration-500" />
+              
+              {/* Center White Neumorphic Hub */}
+              <div className="relative w-56 h-56 lg:w-64 lg:h-64 rounded-full bg-gradient-to-b from-white via-[#FDFCFA] to-[#F7F4EE] border-4 border-white shadow-[0_15px_35px_rgba(0,0,0,0.08),0_5px_15px_rgba(0,0,0,0.04),inset_0_-4px_6px_rgba(0,0,0,0.02)] flex flex-col items-center justify-center p-6 text-center">
+                
+                <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#8C6212] bg-[#FAF7F2] px-3 py-1 rounded-full border border-[#B8862A]/20 mb-1.5 shadow-2xs">
+                  {language === 'bn' ? (merged.center_badge_bn || 'ইনফোগ্রাফ এলিমেন্টস') : (merged.center_badge_en || 'INFOGRAPHICS')}
+                </span>
 
-      {/* ──────────────────────────────────────────────────────────
-          1. PIE / DONUT CHART INFOGRAPHIC
-      ────────────────────────────────────────────────────────── */}
-      {chartType === 'pie_chart' && (
-        <div className="bg-white border-2 border-[#E8DDD0] rounded-3xl p-6 md:p-8 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* SVG Interactive Donut Chart */}
-            <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
-                <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90 transform">
-                  {/* Background Circle */}
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="70"
-                    fill="transparent"
-                    stroke="#FAF8F5"
-                    strokeWidth="28"
-                  />
-                  {/* Slices */}
-                  {pieSlices.map((slice, sIdx) => {
-                    const isHovered = activeHoverIdx === sIdx;
-                    return (
-                      <circle
-                        key={sIdx}
-                        cx="100"
-                        cy="100"
-                        r="70"
-                        fill="transparent"
-                        stroke={slice.color}
-                        strokeWidth={isHovered ? 34 : 28}
-                        strokeDasharray={slice.strokeDasharray}
-                        strokeDashoffset={slice.strokeDashoffset}
-                        className="transition-all duration-300 cursor-pointer"
-                        onMouseEnter={() => setActiveHoverIdx(sIdx)}
-                        onMouseLeave={() => setActiveHoverIdx(null)}
-                      />
-                    );
-                  })}
-                </svg>
+                <h3 className="font-serif text-xl lg:text-2xl font-black text-[#1A1207] tracking-tight leading-tight uppercase">
+                  {centerTitle}
+                </h3>
 
-                {/* Center Summary Dial */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none p-4">
-                  {activeHoverIdx !== null && pieSlices[activeHoverIdx] ? (
-                    <div className="space-y-0.5 animate-in fade-in zoom-in duration-150">
-                      <span className="text-2xl sm:text-3xl font-black font-serif text-[#1A1207]">
-                        {pieSlices[activeHoverIdx].pct}%
-                      </span>
-                      <span className="text-[10px] font-bold text-stone-500 block truncate max-w-[120px]">
-                        {language === 'bn' ? pieSlices[activeHoverIdx].label_bn : pieSlices[activeHoverIdx].label_en}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="space-y-0.5">
-                      <span className="text-xl sm:text-2xl font-black font-serif text-[#1A1207]">
-                        ১০০%
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-[#8C6212] uppercase tracking-wider block">
-                        {language === 'bn' ? 'মোট নেটওয়ার্ক' : 'Total Coverage'}
-                      </span>
-                    </div>
-                  )}
+                <p className="text-[11px] font-sans font-semibold text-stone-500 tracking-wider uppercase mt-1">
+                  {centerSubtitle}
+                </p>
+
+                {/* 6 Cute Rainbow Indicator Dots */}
+                <div className="flex items-center gap-2 mt-3">
+                  {rainbowDots.map((dot, dIdx) => (
+                    <span 
+                      key={dIdx} 
+                      className={`w-2 h-2 rounded-full transition-transform duration-300 ${activeNodeIdx === dIdx ? 'scale-150 shadow-xs' : 'opacity-80'}`}
+                      style={{ backgroundColor: dot }}
+                    />
+                  ))}
                 </div>
+
               </div>
             </div>
-
-            {/* Side Interactive Breakdown & Legend */}
-            <div className="lg:col-span-7 space-y-3.5">
-              {pieSlices.map((slice, idx) => {
-                const isHovered = activeHoverIdx === idx;
-                const itemLabel = language === 'bn' ? slice.label_bn : slice.label_en;
-                const itemDesc = language === 'bn' ? slice.desc_bn : slice.desc_en;
-                const itemUnit = language === 'bn' ? (slice.unit_bn || `${slice.pct}% অনুপাত`) : (slice.unit_en || `${slice.pct}% Share`);
-
-                return (
-                  <div
-                    key={idx}
-                    onMouseEnter={() => setActiveHoverIdx(idx)}
-                    onMouseLeave={() => setActiveHoverIdx(null)}
-                    className={`p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isHovered
-                        ? 'bg-[#FAF8F5] border-[#B8862A] shadow-md -translate-y-0.5'
-                        : 'bg-stone-50/70 border-stone-200/80 hover:bg-stone-50 hover:border-stone-300'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-xs"
-                        style={{ backgroundColor: `${slice.color}15`, color: slice.color, border: `1.5px solid ${slice.color}30` }}
-                      >
-                        {slice.icon || '📊'}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-serif font-bold text-sm text-stone-900 leading-snug">
-                            {itemLabel}
-                          </h4>
-                          <span 
-                            className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: `${slice.color}20`, color: slice.color }}
-                          >
-                            {slice.pct}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-stone-600 font-sans font-light leading-relaxed">
-                          {itemDesc}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="sm:text-right shrink-0 pl-13 sm:pl-0">
-                      <div className="font-serif font-extrabold text-base text-[#1A1207]">
-                        {slice.value || `${slice.pct}%`}
-                      </div>
-                      <div className="text-[10px] font-mono text-stone-400">
-                        {itemUnit}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
           </div>
-        </div>
-      )}
 
-      {/* ──────────────────────────────────────────────────────────
-          2. FLOW DIAGRAM & PROCESS PIPELINE
-      ────────────────────────────────────────────────────────── */}
-      {chartType === 'flow_diagram' && (
-        <div className="bg-white border-2 border-[#E8DDD0] rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xs space-y-8 relative overflow-hidden">
-          {/* Connecting Directional Gradient Line */}
-          <div className="hidden lg:block absolute top-[92px] left-[8%] right-[8%] h-1.5 bg-gradient-to-r from-[#B8862A] via-[#10B981] to-[#6366F1] z-0 rounded-full opacity-35" />
+          {/* 2. SVG CONNECTING ARC & DOT CONNECTOR NODES */}
+          <div className="absolute top-[110px] left-0 right-0 w-full h-[180px] pointer-events-none z-10">
+            <svg viewBox="0 0 1000 180" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+              {/* Main curved smooth connecting bridge line */}
+              <path
+                d="M 120,10 Q 500,210 880,10"
+                fill="none"
+                stroke="#E5E7EB"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 120,10 Q 500,210 880,10"
+                fill="none"
+                stroke="url(#arcGradient)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="6 6"
+              />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-            {items.map((item, idx) => {
-              const color = item.color || sliceColors[idx % sliceColors.length];
-              const itemLabel = language === 'bn' ? item.label_bn : item.label_en;
-              const itemDesc = language === 'bn' ? item.desc_bn : item.desc_en;
-              const itemValue = item.value || `Phase 0${idx + 1}`;
+              <defs>
+                <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#F59E0B" />
+                  <stop offset="20%" stopColor="#06B6D4" />
+                  <stop offset="40%" stopColor="#EF4444" />
+                  <stop offset="60%" stopColor="#D946EF" />
+                  <stop offset="80%" stopColor="#0EA5E9" />
+                  <stop offset="100%" stopColor="#84CC16" />
+                </linearGradient>
+              </defs>
+
+              {/* 6 Connector Nodes along the curve */}
+              <circle cx="140" cy="18" r="7" fill="#FFFFFF" stroke="#F59E0B" strokeWidth="4" />
+              <circle cx="280" cy="78" r="7" fill="#FFFFFF" stroke="#06B6D4" strokeWidth="4" />
+              <circle cx="420" cy="108" r="7" fill="#FFFFFF" stroke="#EF4444" strokeWidth="4" />
+              <circle cx="580" cy="108" r="7" fill="#FFFFFF" stroke="#D946EF" strokeWidth="4" />
+              <circle cx="720" cy="78" r="7" fill="#FFFFFF" stroke="#0EA5E9" strokeWidth="4" />
+              <circle cx="860" cy="18" r="7" fill="#FFFFFF" stroke="#84CC16" strokeWidth="4" />
+            </svg>
+          </div>
+
+          {/* 3. 6 RADIATING LAYERED CIRCULAR BUTTONS & POSITION DESCRIPTIONS */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 relative z-20 pt-4">
+            {items.map((node, idx) => {
+              const isHovered = activeNodeIdx === idx;
+              const nodeColor = node.color || rainbowDots[idx % rainbowDots.length];
+              const ringColor = node.ring_color || nodeColor;
+              const posLabel = language === 'bn' ? (node.position_label_bn || `পজিশন ০${idx + 1}`) : (node.position_label_en || `POSITION ${String.fromCharCode(65 + idx)}`);
+              const nodeTitle = language === 'bn' ? node.title_bn : node.title_en;
+              const nodeDesc = language === 'bn' ? node.desc_bn : node.desc_en;
 
               return (
                 <div
                   key={idx}
-                  className="bg-[#FAF8F5] border-2 border-[#E8DDD0] hover:border-[#B8862A] rounded-2xl p-5 space-y-4 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between"
+                  onMouseEnter={() => setActiveNodeIdx(idx)}
+                  onMouseLeave={() => setActiveNodeIdx(null)}
+                  className="flex flex-col items-center text-center space-y-4 group cursor-pointer transition-all duration-300"
                 >
-                  <div className="space-y-3">
-                    {/* Node Dial Header */}
-                    <div className="flex items-center justify-between">
+                  
+                  {/* Layered 3D Button Node Frame */}
+                  <div className="relative">
+                    {/* Outer Dashed Colored Orbit Ring */}
+                    <div 
+                      className={`w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 border-dashed p-1 flex items-center justify-center transition-all duration-500 ${
+                        isHovered ? 'scale-110 rotate-45' : 'group-hover:scale-105'
+                      }`}
+                      style={{ borderColor: ringColor }}
+                    >
+                      {/* Mid Neumorphic Solid Colored Disc */}
                       <div 
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform"
-                        style={{ backgroundColor: color, color: '#FFFFFF' }}
+                        className="w-full h-full rounded-full p-2 flex items-center justify-center shadow-lg transition-transform duration-300"
+                        style={{ 
+                          backgroundColor: nodeColor,
+                          boxShadow: `0 10px 25px ${nodeColor}40, inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -3px 4px rgba(0,0,0,0.15)`
+                        }}
                       >
-                        {item.icon || '🔄'}
-                      </div>
-                      <div className="flex items-center gap-1 font-mono text-xs font-bold bg-white px-2.5 py-1 rounded-full border border-[#E8DDD0] text-stone-700">
-                        <span>FLOW 0{idx + 1}</span>
-                        {idx < 3 && <ArrowRight className="w-3 h-3 text-[#B8862A] ml-0.5" />}
+                        {/* Inner White Glossy Button Core with Icon */}
+                        <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-stone-50 flex items-center justify-center text-2xl lg:text-3xl shadow-inner border border-white">
+                          <span className="group-hover:scale-115 transition-transform duration-300">
+                            {node.icon || '✨'}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="bg-white p-2.5 rounded-xl border border-[#E8DDD0]">
-                      <span className="font-serif font-black text-sm text-[#1A1207] block">
-                        {itemValue}
-                      </span>
+                  {/* Text Content */}
+                  <div className="space-y-1.5 px-1">
+                    <div 
+                      className="font-mono text-xs font-black tracking-wider uppercase transition-colors"
+                      style={{ color: nodeColor }}
+                    >
+                      {posLabel}
                     </div>
 
-                    <h4 className="font-serif font-bold text-sm text-stone-900 leading-snug">
-                      {itemLabel}
+                    <h4 className="font-serif font-bold text-xs sm:text-sm text-[#1A1207] leading-snug group-hover:text-[#8C6212] transition-colors">
+                      {nodeTitle}
                     </h4>
 
-                    <p className="text-xs text-stone-600 leading-relaxed font-sans font-light">
-                      {itemDesc}
+                    <p className="text-[11px] text-stone-500 font-sans font-light leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">
+                      {nodeDesc}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-[#E8DDD0] flex items-center justify-between text-[11px] font-bold text-stone-500">
-                    <span>{language === 'bn' ? `ধাপ #০${idx + 1}` : `Step #0${idx + 1}`}</span>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  </div>
                 </div>
               );
             })}
           </div>
+
         </div>
-      )}
 
-      {/* ──────────────────────────────────────────────────────────
-          3. STATISTICAL DATA TABLE
-      ────────────────────────────────────────────────────────── */}
-      {chartType === 'data_table' && (
-        <div className="bg-white border-2 border-[#E8DDD0] rounded-3xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs font-sans">
-              <thead>
-                <tr className="bg-[#FAF8F5] border-b border-[#E8DDD0] text-[#1A1207] font-serif font-bold">
-                  <th className="p-4 sm:p-5">{language === 'bn' ? 'কার্যক্রম ও পাঠক বিভাগ' : 'Program & Demographics'}</th>
-                  <th className="p-4 sm:p-5">{language === 'bn' ? 'সক্রিয় সংখ্যা / মেট্রিক' : 'Active Footprint / Metric'}</th>
-                  <th className="p-4 sm:p-5">{language === 'bn' ? 'অগ্রগতি ও শতকরা অনুপাত' : 'Progress & Share (%)'}</th>
-                  <th className="p-4 sm:p-5">{language === 'bn' ? 'স্ট্যাটাস' : 'Status'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100">
-                {items.map((item, idx) => {
-                  const pct = item.percentage !== undefined ? Number(item.percentage) : (idx === 0 ? 60 : idx === 1 ? 25 : idx === 2 ? 10 : 5);
-                  const color = item.color || sliceColors[idx % sliceColors.length];
-                  const itemLabel = language === 'bn' ? item.label_bn : item.label_en;
-                  const itemDesc = language === 'bn' ? item.desc_bn : item.desc_en;
-
-                  return (
-                    <tr key={idx} className="hover:bg-stone-50/80 transition-colors">
-                      <td className="p-4 sm:p-5">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl p-2 rounded-xl bg-[#FAF8F5] border border-[#E8DDD0]">
-                            {item.icon || '📊'}
-                          </span>
-                          <div>
-                            <div className="font-serif font-bold text-sm text-stone-900">
-                              {itemLabel}
-                            </div>
-                            <div className="text-[11px] text-stone-500 font-light">
-                              {itemDesc}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="p-4 sm:p-5 font-serif font-extrabold text-sm text-[#1A1207]">
-                        {item.value || `${pct}%`}
-                      </td>
-
-                      <td className="p-4 sm:p-5">
-                        <div className="space-y-1 max-w-xs">
-                          <div className="flex justify-between font-mono text-[10px] font-bold text-stone-600">
-                            <span>{pct}%</span>
-                          </div>
-                          <div className="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full rounded-full transition-all duration-700" 
-                              style={{ width: `${pct}%`, backgroundColor: color }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="p-4 sm:p-5">
-                        <span 
-                          className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full"
-                          style={{ backgroundColor: `${color}15`, color: color }}
-                        >
-                          <TrendingUp className="w-3 h-3" />
-                          <span>{language === 'bn' ? 'চলমান' : 'Active'}</span>
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* ── MOBILE ACCORDION / STACKED VIEW (sm screens) ── */}
+        <div className="block md:hidden space-y-6">
+          {/* Center Hub */}
+          <div className="w-48 h-48 mx-auto rounded-full bg-gradient-to-b from-white to-[#FAF7F2] border-4 border-white shadow-xl flex flex-col items-center justify-center p-4 text-center">
+            <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#8C6212] bg-[#FAF7F2] px-2.5 py-0.5 rounded-full border border-[#B8862A]/20 mb-1">
+              {language === 'bn' ? (merged.center_badge_bn || 'ইনফোগ্রাফ') : (merged.center_badge_en || 'INFOGRAPHICS')}
+            </span>
+            <h3 className="font-serif text-base font-black text-[#1A1207] uppercase">
+              {centerTitle}
+            </h3>
+            <p className="text-[10px] font-sans font-semibold text-stone-500 uppercase mt-0.5">
+              {centerSubtitle}
+            </p>
+            <div className="flex items-center gap-1.5 mt-2">
+              {rainbowDots.map((dot, dIdx) => (
+                <span key={dIdx} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dot }} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* ──────────────────────────────────────────────────────────
-          4. MULTI-BAR & PROGRESS INFOCHART
-      ────────────────────────────────────────────────────────── */}
-      {chartType === 'infochart_bars' && (
-        <div className="bg-white border-2 border-[#E8DDD0] rounded-3xl p-6 md:p-8 shadow-xs space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {items.map((item, idx) => {
-              const pct = item.percentage !== undefined ? Number(item.percentage) : (idx === 0 ? 85 : idx === 1 ? 65 : idx === 2 ? 45 : 30);
-              const color = item.color || sliceColors[idx % sliceColors.length];
-              const itemLabel = language === 'bn' ? item.label_bn : item.label_en;
-              const itemDesc = language === 'bn' ? item.desc_bn : item.desc_en;
+          {/* Node Cards List */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {items.map((node, idx) => {
+              const nodeColor = node.color || rainbowDots[idx % rainbowDots.length];
+              const posLabel = language === 'bn' ? (node.position_label_bn || `পজিশন ০${idx + 1}`) : (node.position_label_en || `POSITION ${String.fromCharCode(65 + idx)}`);
+              const nodeTitle = language === 'bn' ? node.title_bn : node.title_en;
+              const nodeDesc = language === 'bn' ? node.desc_bn : node.desc_en;
 
               return (
-                <div key={idx} className="p-5 bg-[#FAF8F5] border border-[#E8DDD0] rounded-2xl space-y-3 shadow-2xs hover:border-[#B8862A] transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{item.icon || '📈'}</span>
-                      <h4 className="font-serif font-bold text-sm text-stone-900">
-                        {itemLabel}
-                      </h4>
-                    </div>
-                    <span className="font-serif font-black text-base text-[#1A1207]">
-                      {item.value || `${pct}%`}
-                    </span>
+                <div key={idx} className="bg-white border border-[#E8DDD0] rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+                  <div 
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0 text-white shadow-md"
+                    style={{ backgroundColor: nodeColor }}
+                  >
+                    {node.icon || '✨'}
                   </div>
-
                   <div className="space-y-1">
-                    <div className="w-full h-3 bg-white border border-stone-200 rounded-full overflow-hidden p-0.5">
-                      <div 
-                        className="h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${pct}%`, backgroundColor: color }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[10px] font-mono text-stone-400">
-                      <span>0%</span>
-                      <span>{pct}% Target Metric</span>
-                      <span>100%</span>
-                    </div>
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-wider block" style={{ color: nodeColor }}>
+                      {posLabel}
+                    </span>
+                    <h4 className="font-serif font-bold text-xs text-stone-900 leading-snug">
+                      {nodeTitle}
+                    </h4>
+                    <p className="text-[11px] text-stone-500 font-sans font-light leading-relaxed">
+                      {nodeDesc}
+                    </p>
                   </div>
-
-                  <p className="text-xs text-stone-600 font-sans font-light leading-relaxed">
-                    {itemDesc}
-                  </p>
                 </div>
               );
             })}
           </div>
         </div>
-      )}
 
+      </div>
     </section>
   );
 };
